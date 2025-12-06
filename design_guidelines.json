@@ -1,0 +1,159 @@
+{
+  "identity": {
+    "name": "E1",
+    "persona": "The Anti-AI Designer",
+    "principles": [
+      "Fusion over Imitation",
+      "Emotion First",
+      "Content is King",
+      "Zoom In",
+      "Negative Space",
+      "Contrast"
+    ]
+  },
+  "project": {
+    "name": "Nail Salon Booking System",
+    "type": "Landing + Booking + Admin",
+    "theme": "Light Mode (Mandatory)",
+    "vibe": "Gentle, Feminine, Minimalist, Editorial"
+  },
+  "typography": {
+    "strategy": "The Old Money Tech",
+    "fonts": {
+      "heading": {
+        "family": "Playfair Display, serif",
+        "weights": ["400", "600", "700"],
+        "usage": "Headings, Hero Text, Quotes"
+      },
+      "body": {
+        "family": "Manrope, sans-serif",
+        "weights": ["300", "400", "500"],
+        "usage": "Paragraphs, UI Elements, Buttons"
+      }
+    },
+    "rules": [
+      "Headings must use tight tracking (tracking-tight).",
+      "Overlines must be uppercase and wide spaced (tracking-widest).",
+      "Body text should have relaxed line-height (leading-relaxed)."
+    ]
+  },
+  "colors": {
+    "palette_name": "Porcelain & Rose Gold",
+    "base": {
+      "background": "#FDFCFB",
+      "foreground": "#2D2A2E",
+      "card": "#FFFFFF",
+      "card_foreground": "#2D2A2E"
+    },
+    "brand": {
+      "primary": "#D4A5A5",
+      "primary_foreground": "#FFFFFF",
+      "secondary": "#F3EBEB",
+      "secondary_foreground": "#4A4A4A",
+      "accent": "#9E829C",
+      "accent_foreground": "#FFFFFF"
+    },
+    "status": {
+      "success": "#A7C4A0",
+      "warning": "#E8C39E",
+      "error": "#DFA0A0"
+    },
+    "rules": [
+      "Never use pure black (#000000). Use Charcoal (#2D2A2E).",
+      "Primary color is for CTAs only.",
+      "Backgrounds should not be pure white, use Porcelain (#FDFCFB) for warmth."
+    ]
+  },
+  "visual_enhancers": {
+    "texture": "Subtle noise/grain overlay on backgrounds to avoid digital flatness.",
+    "borders": "Soft, semi-transparent borders (border-rose-200/50).",
+    "shadows": "Soft, diffuse ambient shadows (shadow-[0_8px_30px_rgb(0,0,0,0.04)]).",
+    "radius": "Rounded-xl or Rounded-2xl for a softer, friendlier feel."
+  },
+  "layout_strategy": {
+    "landing_page": {
+      "grid": "Mode A: The Tetris Grid",
+      "spacing": "Generous (p-12 to p-24)",
+      "hero": "Split screen or Centered with large typography and floating images."
+    },
+    "booking_flow": {
+      "style": "Step-by-step Wizard",
+      "container": "Centered, max-w-2xl, clean card layout.",
+      "interaction": "Large clickable areas for mobile users."
+    },
+    "admin_panel": {
+      "grid": "Mode B: The Control Room",
+      "style": "Clean, high-density but with breathing room.",
+      "sidebar": "Fixed left, soft background."
+    }
+  },
+  "components": {
+    "buttons": {
+      "style": "Pill-shaped or Soft Rounded (rounded-full or rounded-xl).",
+      "animation": "Scale down on click (active:scale-95), subtle lift on hover."
+    },
+    "cards": {
+      "style": "Flat with subtle border, or soft shadow hover lift.",
+      "padding": "p-6 or p-8"
+    },
+    "inputs": {
+      "style": "Shadcn Input with customized border colors (focus:ring-rose-200).",
+      "bg": "bg-white/50 backdrop-blur-sm"
+    }
+  },
+  "image_urls": {
+    "hero": [
+      {
+        "url": "https://images.unsplash.com/photo-1666117584374-28eb6796f5d7",
+        "description": "Artistic hand with finger extended, soft lighting",
+        "category": "hero_main"
+      }
+    ],
+    "interior": [
+      {
+        "url": "https://images.unsplash.com/photo-1619596664171-1707d321835d",
+        "description": "White wooden drawer with pink cushion, minimalist",
+        "category": "about_section"
+      }
+    ],
+    "services": [
+      {
+        "url": "https://images.pexels.com/photos/5128123/pexels-photo-5128123.jpeg",
+        "description": "Manicure process close up",
+        "category": "service_card_1"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1727199433272-70fdb94c8430",
+        "description": "Woman's hands with red nail polish",
+        "category": "service_card_2"
+      }
+    ]
+  },
+  "motion": {
+    "transitions": "transition-all duration-300 ease-out",
+    "hover": "hover:-translate-y-1 hover:shadow-lg",
+    "entrance": "Fade in up (opacity-0 translate-y-4 -> opacity-100 translate-y-0)"
+  },
+  "accessibility": {
+    "contrast": "Ensure text meets WCAG AA (4.5:1). Use dark charcoal for text on pastel backgrounds.",
+    "focus": "Visible focus rings (ring-2 ring-rose-300) for keyboard navigation.",
+    "labels": "All inputs must have visible labels or aria-labels."
+  },
+  "instructions_to_main_agent": [
+    "Use 'lucide-react' for icons.",
+    "Use 'date-fns' for date manipulation.",
+    "Implement the booking flow as a multi-step form.",
+    "Admin panel must be protected (mock auth is fine if backend not ready).",
+    "Do not use generic 'Lorem Ipsum', use realistic beauty salon copy in Russian.",
+    "Ensure mobile responsiveness is top priority (80% of users are on mobile).",
+    "Use the provided image URLs for specific sections.",
+    "Apply the 'Porcelain & Rose Gold' color palette strictly."
+  ],
+  "universal_guidelines": [
+    "Avoid 'AI Slop' aesthetics (generic gradients, centered everything).",
+    "Use 2-3x more spacing than typical.",
+    "Add micro-interactions to every clickable element.",
+    "Use 'sonner' for toast notifications.",
+    "All interactive elements must have 'data-testid'."
+  ]
+}
