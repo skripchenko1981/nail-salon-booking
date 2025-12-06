@@ -1,0 +1,275 @@
+import React, { useEffect, useState } from 'react';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Textarea } from '../ui/textarea';
+import { Plus, Edit, Trash2, Clock, DollarSign } from 'lucide-react';
+import axios from 'axios';
+import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../ui/dialog';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
+
+function AdminServices() {
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingService, setEditingService] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    duration_minutes: 60,
+    price: 0,
+    image_url: ''
+  });
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = async () => {
+    try {
+      const response = await axios.get(`${API}/services`);
+      setServices(response.data);
+    } catch (error) {
+      toast.error('Ошибка загрузки услуг');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenDialog = (service = null) => {
+    if (service) {
+      setEditingService(service);
+      setFormData({
+        name: service.name,
+        description: service.description,
+        duration_minutes: service.duration_minutes,
+        price: service.price,
+        image_url: service.image_url || ''
+      });
+    } else {
+      setEditingService(null);
+      setFormData({
+        name: '',
+        description: '',
+        duration_minutes: 60,
+        price: 0,
+        image_url: ''
+      });
+    }
+    setDialogOpen(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('admin_token');
+    
+    try {
+      if (editingService) {
+        await axios.put(
+          `${API}/services/${editingService.id}`,
+          formData,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        toast.success('Услуга обновлена');
+      } else {
+        await axios.post(
+          `${API}/services`,
+          formData,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        toast.success('Услуга создана');
+      }
+      setDialogOpen(false);
+      fetchServices();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Ошибка при сохранении');
+    }
+  };
+
+  const handleDelete = async (serviceId) => {
+    if (!window.confirm('Вы уверены, что хотите удалить эту услугу?')) return;
+    
+    const token = localStorage.getItem('admin_token');
+    try {
+      await axios.delete(`${API}/services/${serviceId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Услуга удалена');
+      fetchServices();
+    } catch (error) {
+      toast.error('Ошибка при удалении');
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center py-12">Загрузка...</div>;
+  }
+
+  return (
+    <div className="space-y-8">
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
+            Услуги
+          </h1>
+          <p className="text-gray-600 mt-2">Управление услугами и ценами</p>
+        </div>
+        <Button 
+          onClick={() => handleOpenDialog()} 
+          className="bg-[#D4A5A5] hover:bg-[#9E829C] text-white"
+          data-testid="add-service-button"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Добавить услугу
+        </Button>
+      </div>
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {services.map((service) => (
+          <div 
+            key={service.id} 
+            className="bg-white rounded-2xl overflow-hidden border border-rose-200/50 shadow-[0_2px_8px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all"
+            data-testid={`service-card-${service.id}`}
+          >
+            {service.image_url && (
+              <div className="aspect-[4/3] overflow-hidden">
+                <img 
+                  src={service.image_url} 
+                  alt={service.name} 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            <div className="p-6 space-y-3">
+              <h3 className="text-xl font-bold" style={{ fontFamily: 'Playfair Display, serif' }}>
+                {service.name}
+              </h3>
+              <p className="text-sm text-gray-600 line-clamp-2">{service.description}</p>
+              <div className="flex items-center gap-4 text-sm text-gray-500 pt-2">
+                <span className="flex items-center gap-1">
+                  <Clock className="h-4 w-4" />
+                  {service.duration_minutes} мин
+                </span>
+                <span className="flex items-center gap-1 font-bold text-[#D4A5A5]" style={{ fontFamily: 'Playfair Display, serif' }}>
+                  <DollarSign className="h-4 w-4" />
+                  {service.price} ₽
+                </span>
+              </div>
+              <div className="flex gap-2 pt-4 border-t border-rose-200/50">
+                <Button 
+                  onClick={() => handleOpenDialog(service)} 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1"
+                  data-testid={`edit-service-${service.id}`}
+                >
+                  <Edit className="h-4 w-4 mr-1" />
+                  Редактировать
+                </Button>
+                <Button 
+                  onClick={() => handleDelete(service.id)} 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-red-600 hover:bg-red-50"
+                  data-testid={`delete-service-${service.id}`}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Service Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingService ? 'Редактировать услугу' : 'Добавить услугу'}
+            </DialogTitle>
+            <DialogDescription>
+              Заполните информацию об услуге
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="name">Название *</Label>
+              <Input
+                id="name"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                data-testid="service-name-input"
+              />
+            </div>
+            <div>
+              <Label htmlFor="description">Описание *</Label>
+              <Textarea
+                id="description"
+                required
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                data-testid="service-description-input"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="duration">Длительность (мин) *</Label>
+                <Input
+                  id="duration"
+                  type="number"
+                  required
+                  value={formData.duration_minutes}
+                  onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
+                  data-testid="service-duration-input"
+                />
+              </div>
+              <div>
+                <Label htmlFor="price">Цена (₽) *</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  required
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) })}
+                  data-testid="service-price-input"
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="image_url">URL изображения</Label>
+              <Input
+                id="image_url"
+                value={formData.image_url}
+                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                placeholder="https://..."
+                data-testid="service-image-input"
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                Отмена
+              </Button>
+              <Button type="submit" className="bg-[#D4A5A5] hover:bg-[#9E829C] text-white" data-testid="service-save-button">
+                Сохранить
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+export default AdminServices;
