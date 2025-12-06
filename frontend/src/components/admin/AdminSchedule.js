@@ -1,0 +1,155 @@
+import React, { useEffect, useState } from 'react';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Clock, Save } from 'lucide-react';
+import axios from 'axios';
+import { toast } from 'sonner';
+import { Switch } from '../ui/switch';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
+
+function AdminSchedule() {
+  const [schedule, setSchedule] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const daysOfWeek = [
+    'Понедельник',
+    'Вторник',
+    'Среда',
+    'Четверг',
+    'Пятница',
+    'Суббота',
+    'Воскресенье'
+  ];
+
+  useEffect(() => {
+    fetchSchedule();
+  }, []);
+
+  const fetchSchedule = async () => {
+    try {
+      const response = await axios.get(`${API}/schedule`);
+      setSchedule(response.data);
+    } catch (error) {
+      toast.error('Ошибка загрузки расписания');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async (daySchedule) => {
+    const token = localStorage.getItem('admin_token');
+    try {
+      await axios.post(
+        `${API}/schedule`,
+        {
+          day_of_week: daySchedule.day_of_week,
+          start_time: daySchedule.start_time,
+          end_time: daySchedule.end_time,
+          is_working: daySchedule.is_working
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success('Расписание обновлено');
+      fetchSchedule();
+    } catch (error) {
+      toast.error('Ошибка при сохранении');
+    }
+  };
+
+  const handleChange = (index, field, value) => {
+    const newSchedule = [...schedule];
+    newSchedule[index] = { ...newSchedule[index], [field]: value };
+    setSchedule(newSchedule);
+  };
+
+  if (loading) {
+    return <div className="text-center py-12">Загрузка...</div>;
+  }
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-4xl font-bold tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
+          Расписание работы
+        </h1>
+        <p className="text-gray-600 mt-2">Настройте рабочие часы для каждого дня недели</p>
+      </div>
+
+      <div className="space-y-4">
+        {schedule.map((daySchedule, index) => (
+          <div 
+            key={daySchedule.day_of_week} 
+            className="bg-white rounded-2xl p-6 border border-rose-200/50 shadow-[0_2px_8px_rgb(0,0,0,0.04)]"
+            data-testid={`schedule-day-${daySchedule.day_of_week}`}
+          >
+            <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+              <div className="lg:w-48">
+                <h3 className="text-lg font-semibold">{daysOfWeek[daySchedule.day_of_week]}</h3>
+              </div>
+
+              <div className="flex items-center gap-4 flex-1">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={daySchedule.is_working}
+                    onCheckedChange={(checked) => handleChange(index, 'is_working', checked)}
+                    data-testid={`schedule-working-${daySchedule.day_of_week}`}
+                  />
+                  <span className="text-sm text-gray-600">
+                    {daySchedule.is_working ? 'Рабочий день' : 'Выходной'}
+                  </span>
+                </div>
+
+                {daySchedule.is_working && (
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-[#D4A5A5]" />
+                      <Input
+                        type="time"
+                        value={daySchedule.start_time}
+                        onChange={(e) => handleChange(index, 'start_time', e.target.value)}
+                        className="w-32"
+                        data-testid={`schedule-start-${daySchedule.day_of_week}`}
+                      />
+                    </div>
+                    <span className="text-gray-400">—</span>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="time"
+                        value={daySchedule.end_time}
+                        onChange={(e) => handleChange(index, 'end_time', e.target.value)}
+                        className="w-32"
+                        data-testid={`schedule-end-${daySchedule.day_of_week}`}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <Button 
+                onClick={() => handleSave(daySchedule)} 
+                className="bg-[#D4A5A5] hover:bg-[#9E829C] text-white lg:w-auto"
+                data-testid={`schedule-save-${daySchedule.day_of_week}`}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Сохранить
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-gradient-to-r from-[#F3EBEB] to-[#FDFCFB] rounded-2xl p-6 border border-rose-200/50">
+        <h3 className="font-semibold mb-2">💡 Подсказка</h3>
+        <p className="text-sm text-gray-600">
+          Расписание определяет, в какие дни и часы клиенты могут записываться на услуги. 
+          Выключите переключатель для выходных дней.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default AdminSchedule;
