@@ -1,0 +1,69 @@
+version: '3.8'
+
+# Конфигурация для локальной разработки с hot reload
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: nail-salon-mongodb-dev
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-password123}
+    volumes:
+      - mongodb_dev_data:/data/db
+    networks:
+      - nail-salon-dev-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nail-salon-backend-dev
+    restart: unless-stopped
+    environment:
+      MONGO_URL: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password123}@mongodb:27017/
+      DB_NAME: ${DB_NAME:-nail_salon_dev}
+      CORS_ORIGINS: "*"
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-key}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - mongodb
+    networks:
+      - nail-salon-dev-network
+    command: uvicorn server:app --host 0.0.0.0 --port 8001 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: nail-salon-frontend-dev
+    restart: unless-stopped
+    environment:
+      REACT_APP_BACKEND_URL: http://localhost:8001
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - nail-salon-dev-network
+    stdin_open: true
+    tty: true
+
+volumes:
+  mongodb_dev_data:
+    driver: local
+
+networks:
+  nail-salon-dev-network:
+    driver: bridge
