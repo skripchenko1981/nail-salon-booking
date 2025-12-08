@@ -36,7 +36,7 @@ function AdminVacations() {
 
   const fetchVacations = async () => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
       const response = await axios.get(`${API}/vacations`, {
         headers: { Authorization: `Bearer ${token}` }
       });
