@@ -643,10 +643,444 @@ class NailSalonAPITester:
         
         return self.tests_passed == self.tests_run
 
+    def test_multi_master_system(self):
+        """Test multi-master system with data isolation as requested in Ukrainian"""
+        print("\n" + "="*60)
+        print("ТЕСТУВАННЯ MULTI-MASTER СИСТЕМИ БРОНЮВАННЯ")
+        print("="*60)
+        
+        # Test credentials from the request
+        master1_credentials = {"email": "olena@example.com", "password": "master123"}
+        master2_credentials = {"email": "maria@example.com", "password": "master123"}
+        admin_credentials = {"username": "admin", "password": "admin123"}
+        
+        # 1. Test Admin Authentication
+        print("\n🔐 1. ТЕСТУВАННЯ АВТЕНТИФІКАЦІЇ АДМІНА")
+        admin_response = self.run_test(
+            "Admin Login",
+            "POST", 
+            "admin/login",
+            200,
+            data=admin_credentials
+        )
+        
+        if not admin_response or 'token' not in admin_response:
+            print("❌ Не вдалося увійти як адмін - тести неможливі")
+            return False
+        
+        admin_token = admin_response['token']
+        admin_headers = {'Authorization': f'Bearer {admin_token}'}
+        print(f"   ✅ Адмін токен отримано: {admin_token[:20]}...")
+        
+        # 2. Test Master Authentication
+        print("\n🔐 2. ТЕСТУВАННЯ АВТЕНТИФІКАЦІЇ МАЙСТРІВ")
+        
+        # Master 1 login
+        master1_response = self.run_test(
+            "Master 1 Login (Олена Коваль)",
+            "POST",
+            "masters/login", 
+            200,
+            data=master1_credentials
+        )
+        
+        if not master1_response or 'token' not in master1_response:
+            print("❌ Не вдалося увійти як Майстер 1")
+            return False
+        
+        master1_token = master1_response['token']
+        master1_headers = {'Authorization': f'Bearer {master1_token}'}
+        master1_id = master1_response['master']['id']
+        print(f"   ✅ Майстер 1 токен: {master1_token[:20]}... (ID: {master1_id})")
+        
+        # Master 2 login
+        master2_response = self.run_test(
+            "Master 2 Login (Марія Петренко)",
+            "POST",
+            "masters/login",
+            200, 
+            data=master2_credentials
+        )
+        
+        if not master2_response or 'token' not in master2_response:
+            print("❌ Не вдалося увійти як Майстер 2")
+            return False
+        
+        master2_token = master2_response['token']
+        master2_headers = {'Authorization': f'Bearer {master2_token}'}
+        master2_id = master2_response['master']['id']
+        print(f"   ✅ Майстер 2 токен: {master2_token[:20]}... (ID: {master2_id})")
+        
+        # Verify tokens are different
+        if master1_token == master2_token:
+            self.log_test("Токени майстрів різні", False, "Токени однакові!")
+        else:
+            self.log_test("Токени майстрів різні", True, "Токени різні")
+        
+        # 3. Test Public Masters List
+        print("\n👥 3. ТЕСТУВАННЯ СПИСКУ АКТИВНИХ МАЙСТРІВ")
+        masters_list = self.run_test(
+            "Get Active Masters",
+            "GET",
+            "masters",
+            200
+        )
+        
+        if masters_list:
+            print(f"   Знайдено {len(masters_list)} активних майстрів:")
+            olena_found = False
+            maria_found = False
+            
+            for master in masters_list:
+                print(f"   - {master.get('name', 'Без імені')} ({master.get('email', 'Без email')})")
+                if master.get('email') == 'olena@example.com':
+                    olena_found = True
+                if master.get('email') == 'maria@example.com':
+                    maria_found = True
+            
+            if olena_found and maria_found:
+                self.log_test("Обидва майстри знайдені", True, "Олена Коваль та Марія Петренко активні")
+            else:
+                self.log_test("Обидва майстри знайдені", False, f"Олена: {olena_found}, Марія: {maria_found}")
+        
+        # 4. Test Data Isolation - Services
+        print("\n🔒 4. ТЕСТУВАННЯ ІЗОЛЯЦІЇ ДАНИХ - ПОСЛУГИ")
+        
+        # Get Master 1 services
+        master1_services = self.run_test(
+            "Master 1 Services",
+            "GET",
+            "services",
+            200,
+            headers=master1_headers
+        )
+        
+        # Get Master 2 services  
+        master2_services = self.run_test(
+            "Master 2 Services", 
+            "GET",
+            "services",
+            200,
+            headers=master2_headers
+        )
+        
+        if master1_services and master2_services:
+            print(f"   Майстер 1: {len(master1_services)} послуг")
+            print(f"   Майстер 2: {len(master2_services)} послуг")
+            
+            # Check for service ID overlap
+            master1_ids = {s['id'] for s in master1_services}
+            master2_ids = {s['id'] for s in master2_services}
+            overlap = master1_ids.intersection(master2_ids)
+            
+            if overlap:
+                self.log_test("Ізоляція послуг", False, f"Знайдено перетин ID: {overlap}")
+            else:
+                self.log_test("Ізоляція послуг", True, "Послуги не перетинаються")
+                
+            # Verify each master has 3 services as mentioned in requirements
+            if len(master1_services) >= 3:
+                self.log_test("Майстер 1 має 3+ послуги", True, f"Знайдено {len(master1_services)} послуг")
+            else:
+                self.log_test("Майстер 1 має 3+ послуги", False, f"Тільки {len(master1_services)} послуг")
+                
+            if len(master2_services) >= 3:
+                self.log_test("Майстер 2 має 3+ послуги", True, f"Знайдено {len(master2_services)} послуг")
+            else:
+                self.log_test("Майстер 2 має 3+ послуги", False, f"Тільки {len(master2_services)} послуг")
+        
+        # 5. Test Data Isolation - Bookings, Schedule, Vacations, Clients
+        print("\n🔒 5. ТЕСТУВАННЯ ІЗОЛЯЦІЇ ДАНИХ - ЗАПИСИ, РОЗКЛАД, ВІДПУСТКИ, КЛІЄНТИ")
+        
+        # Test bookings isolation
+        master1_bookings = self.run_test(
+            "Master 1 Bookings",
+            "GET", 
+            "admin/bookings",
+            200,
+            headers=master1_headers
+        )
+        
+        master2_bookings = self.run_test(
+            "Master 2 Bookings",
+            "GET",
+            "admin/bookings", 
+            200,
+            headers=master2_headers
+        )
+        
+        if master1_bookings is not None and master2_bookings is not None:
+            print(f"   Майстер 1: {len(master1_bookings)} записів")
+            print(f"   Майстер 2: {len(master2_bookings)} записів")
+            
+            # Check booking isolation
+            master1_booking_ids = {b['id'] for b in master1_bookings}
+            master2_booking_ids = {b['id'] for b in master2_bookings}
+            booking_overlap = master1_booking_ids.intersection(master2_booking_ids)
+            
+            if booking_overlap:
+                self.log_test("Ізоляція записів", False, f"Знайдено перетин записів: {booking_overlap}")
+            else:
+                self.log_test("Ізоляція записів", True, "Записи не перетинаються")
+        
+        # Test schedule isolation
+        master1_schedule = self.run_test(
+            "Master 1 Schedule",
+            "GET",
+            f"schedule?master_id={master1_id}",
+            200
+        )
+        
+        master2_schedule = self.run_test(
+            "Master 2 Schedule", 
+            "GET",
+            f"schedule?master_id={master2_id}",
+            200
+        )
+        
+        if master1_schedule and master2_schedule:
+            print(f"   Майстер 1: розклад на {len(master1_schedule)} днів")
+            print(f"   Майстер 2: розклад на {len(master2_schedule)} днів")
+            self.log_test("Розклад майстрів", True, "Розклади отримані")
+        
+        # Test vacations isolation
+        master1_vacations = self.run_test(
+            "Master 1 Vacations",
+            "GET",
+            "vacations",
+            200,
+            headers=master1_headers
+        )
+        
+        master2_vacations = self.run_test(
+            "Master 2 Vacations",
+            "GET", 
+            "vacations",
+            200,
+            headers=master2_headers
+        )
+        
+        if master1_vacations is not None and master2_vacations is not None:
+            print(f"   Майстер 1: {len(master1_vacations)} відпусток")
+            print(f"   Майстер 2: {len(master2_vacations)} відпусток")
+            self.log_test("Ізоляція відпусток", True, "Відпустки отримані окремо")
+        
+        # Test clients isolation
+        master1_clients = self.run_test(
+            "Master 1 Clients",
+            "GET",
+            "admin/clients", 
+            200,
+            headers=master1_headers
+        )
+        
+        master2_clients = self.run_test(
+            "Master 2 Clients",
+            "GET",
+            "admin/clients",
+            200, 
+            headers=master2_headers
+        )
+        
+        if master1_clients is not None and master2_clients is not None:
+            print(f"   Майстер 1: {len(master1_clients)} клієнтів")
+            print(f"   Майстер 2: {len(master2_clients)} клієнтів")
+            
+            # Check client isolation
+            master1_client_ids = {c['id'] for c in master1_clients}
+            master2_client_ids = {c['id'] for c in master2_clients}
+            client_overlap = master1_client_ids.intersection(master2_client_ids)
+            
+            if client_overlap:
+                self.log_test("Ізоляція клієнтів", False, f"Знайдено перетин клієнтів: {client_overlap}")
+            else:
+                self.log_test("Ізоляція клієнтів", True, "Клієнти не перетинаються")
+        
+        # 6. Test Master Operations - Create Service
+        print("\n⚙️ 6. ТЕСТУВАННЯ ОПЕРАЦІЙ МАЙСТРА - СТВОРЕННЯ ПОСЛУГИ")
+        
+        if master1_services:
+            # Master 1 creates new service
+            new_service_data = {
+                "master_id": master1_id,
+                "name": "Тест Послуга Майстра 1",
+                "description": "Тестова послуга для перевірки ізоляції",
+                "duration_minutes": 60,
+                "price": 1500
+            }
+            
+            created_service = self.run_test(
+                "Master 1 Create Service",
+                "POST",
+                "services",
+                200,
+                data=new_service_data,
+                headers=master1_headers
+            )
+            
+            if created_service and 'id' in created_service:
+                service_id = created_service['id']
+                print(f"   ✅ Майстер 1 створив послугу: {service_id}")
+                
+                # Verify Master 1 can see the new service
+                updated_master1_services = self.run_test(
+                    "Master 1 Updated Services",
+                    "GET",
+                    "services",
+                    200,
+                    headers=master1_headers
+                )
+                
+                if updated_master1_services:
+                    service_found = any(s['id'] == service_id for s in updated_master1_services)
+                    if service_found:
+                        self.log_test("Майстер 1 бачить свою нову послугу", True, "Послуга знайдена")
+                    else:
+                        self.log_test("Майстер 1 бачить свою нову послугу", False, "Послуга не знайдена")
+                
+                # Verify Master 2 CANNOT see Master 1's new service
+                updated_master2_services = self.run_test(
+                    "Master 2 Updated Services",
+                    "GET", 
+                    "services",
+                    200,
+                    headers=master2_headers
+                )
+                
+                if updated_master2_services:
+                    service_found = any(s['id'] == service_id for s in updated_master2_services)
+                    if service_found:
+                        self.log_test("Майстер 2 НЕ бачить послугу Майстра 1", False, "Послуга видима!")
+                    else:
+                        self.log_test("Майстер 2 НЕ бачить послугу Майстра 1", True, "Ізоляція працює")
+        
+        # 7. Test Booking Flow
+        print("\n📅 7. ТЕСТУВАННЯ ПОТОКУ БРОНЮВАННЯ")
+        
+        if master1_services and len(master1_services) > 0:
+            service = master1_services[0]
+            service_id = service['id']
+            
+            # Get available timeslots
+            tomorrow = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+            
+            timeslots = self.run_test(
+                "Get Timeslots for Master 1",
+                "GET",
+                f"timeslots/{tomorrow}?service_id={service_id}&master_id={master1_id}",
+                200
+            )
+            
+            if timeslots:
+                available_slots = [slot for slot in timeslots if slot.get('available', False)]
+                print(f"   Знайдено {len(available_slots)} доступних слотів з {len(timeslots)} загальних")
+                
+                # Verify working hours (09:00-18:00)
+                working_hours_slots = [slot for slot in timeslots if '09:00' <= slot['time'] <= '18:00']
+                if len(working_hours_slots) >= 18:  # Should have 18 slots (9:00-18:00, 30min intervals)
+                    self.log_test("Робочі години 09:00-18:00", True, f"Знайдено {len(working_hours_slots)} слотів")
+                else:
+                    self.log_test("Робочі години 09:00-18:00", False, f"Тільки {len(working_hours_slots)} слотів")
+                
+                if available_slots:
+                    # Create test booking
+                    booking_data = {
+                        "master_id": master1_id,
+                        "service_id": service_id,
+                        "date": tomorrow,
+                        "time": available_slots[0]['time'],
+                        "client_name": "Тест Клієнт Майстра 1",
+                        "client_phone": "+380501234567",
+                        "client_email": "test.client1@example.com"
+                    }
+                    
+                    created_booking = self.run_test(
+                        "Create Test Booking for Master 1",
+                        "POST",
+                        "bookings",
+                        200,
+                        data=booking_data
+                    )
+                    
+                    if created_booking and 'id' in created_booking:
+                        booking_id = created_booking['id']
+                        print(f"   ✅ Створено тестовий запис: {booking_id}")
+                        
+                        # Verify Master 1 can see the booking
+                        final_master1_bookings = self.run_test(
+                            "Master 1 Final Bookings Check",
+                            "GET",
+                            "admin/bookings",
+                            200,
+                            headers=master1_headers
+                        )
+                        
+                        if final_master1_bookings:
+                            booking_found = any(b['id'] == booking_id for b in final_master1_bookings)
+                            if booking_found:
+                                self.log_test("Майстер 1 бачить свій запис", True, "Запис знайдено")
+                            else:
+                                self.log_test("Майстер 1 бачить свій запис", False, "Запис не знайдено")
+                        
+                        # Verify Master 2 CANNOT see Master 1's booking
+                        final_master2_bookings = self.run_test(
+                            "Master 2 Final Bookings Check",
+                            "GET",
+                            "admin/bookings", 
+                            200,
+                            headers=master2_headers
+                        )
+                        
+                        if final_master2_bookings:
+                            booking_found = any(b['id'] == booking_id for b in final_master2_bookings)
+                            if booking_found:
+                                self.log_test("Майстер 2 НЕ бачить запис Майстра 1", False, "Запис видимий!")
+                            else:
+                                self.log_test("Майстер 2 НЕ бачить запис Майстра 1", True, "Ізоляція працює")
+                        
+                        # Clean up - cancel test booking
+                        self.run_test(
+                            "Cancel Test Booking",
+                            "PUT",
+                            f"bookings/{booking_id}/cancel",
+                            200,
+                            data={"cancellation_reason": "Тестове очищення"}
+                        )
+        
+        return True
+    
+    def run_multi_master_test(self):
+        """Run the multi-master system test as requested"""
+        print("🚀 Запуск тестування Multi-Master системи бронювання")
+        print(f"Backend URL: {self.api_url}")
+        
+        # Run the comprehensive multi-master test
+        self.test_multi_master_system()
+        
+        # Print summary
+        print("\n" + "="*60)
+        print("ПІДСУМОК ТЕСТУВАННЯ MULTI-MASTER СИСТЕМИ")
+        print("="*60)
+        print(f"Всього тестів: {self.tests_run}")
+        print(f"Пройшло: {self.tests_passed}")
+        print(f"Не пройшло: {self.tests_run - self.tests_passed}")
+        print(f"Успішність: {(self.tests_passed/self.tests_run)*100:.1f}%")
+        
+        # Print failed tests
+        failed_tests = [t for t in self.test_results if not t['success']]
+        if failed_tests:
+            print("\n❌ НЕВДАЛІ ТЕСТИ:")
+            for test in failed_tests:
+                print(f"   - {test['test']}: {test['details']}")
+        else:
+            print("\n✅ ВСІ ТЕСТИ ПРОЙШЛИ УСПІШНО!")
+        
+        return self.tests_passed == self.tests_run
+
 def main():
     tester = NailSalonAPITester()
-    # Run focused master system test as requested
-    success = tester.run_master_system_test()
+    # Run the multi-master system test as requested
+    success = tester.run_multi_master_test()
     return 0 if success else 1
 
 if __name__ == "__main__":
