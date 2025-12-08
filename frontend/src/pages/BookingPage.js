@@ -71,7 +71,7 @@ function BookingPage() {
 
   const fetchTimeSlots = async () => {
     try {
-      const response = await axios.get(`${API}/timeslots/${formData.date}?service_id=${formData.service_id}&master_id=admin`);
+      const response = await axios.get(`${API}/timeslots/${formData.date}?service_id=${formData.service_id}&master_id=${formData.master_id}`);
       setTimeSlots(response.data);
     } catch (error) {
       toast.error('Помилка завантаження доступного часу');
