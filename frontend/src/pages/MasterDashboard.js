@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Users, Package, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Calendar, Users, Package, Settings, LogOut, User } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import AdminOverview from '../components/admin/AdminOverview';
 import AdminBookings from '../components/admin/AdminBookings';
@@ -11,6 +11,19 @@ import AdminVacations from '../components/admin/AdminVacations';
 
 function MasterDashboard() {
   const navigate = useNavigate();
+  const [masterName, setMasterName] = useState('Майстер');
+  const [masterEmail, setMasterEmail] = useState('');
+  
+  useEffect(() => {
+    // Отримати дані майстра з localStorage
+    const masterData = JSON.parse(localStorage.getItem('master_data') || '{}');
+    if (masterData.name) {
+      setMasterName(masterData.name);
+    }
+    if (masterData.email) {
+      setMasterEmail(masterData.email);
+    }
+  }, []);
   
   const handleLogout = () => {
     localStorage.removeItem('master_token');
