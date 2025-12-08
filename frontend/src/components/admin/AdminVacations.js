@@ -55,7 +55,7 @@ function AdminVacations() {
     if (vacation) {
       setEditingVacation(vacation);
       setFormData({
-        master_id: vacation.master_id,
+        master_id: masterId,  // Завжди використовуємо поточного майстра
         start_date: vacation.start_date,
         end_date: vacation.end_date,
         reason: vacation.reason || ''
