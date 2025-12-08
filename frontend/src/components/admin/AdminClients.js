@@ -29,7 +29,7 @@ function AdminClients() {
 
   const fetchData = async () => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
       const [clientsRes, statsRes] = await Promise.all([
         axios.get(`${API}/admin/clients`, {
           headers: { Authorization: `Bearer ${token}` }
