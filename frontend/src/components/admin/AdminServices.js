@@ -37,7 +37,9 @@ function AdminServices() {
 
   const fetchServices = async () => {
     try {
-      const response = await axios.get(`${API}/services`);
+      const masterData = JSON.parse(localStorage.getItem('master_data') || '{"id": "admin"}');
+      const masterId = masterData.id;
+      const response = await axios.get(`${API}/services?master_id=${masterId}`);
       setServices(response.data);
     } catch (error) {
       toast.error('Помилка завантаження послуг');
