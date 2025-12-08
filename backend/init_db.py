@@ -90,7 +90,9 @@ async def init_database():
             "name": "Класичний манікюр",
             "description": "Класичний манікюр з покриттям",
             "duration_minutes": 60,
-            "price": 350.0
+            "price": 350.0,
+            "image_url": "",
+            "active": True
         },
         {
             "id": str(uuid4()),
@@ -98,7 +100,9 @@ async def init_database():
             "name": "Педикюр",
             "description": "Класичний педикюр",
             "duration_minutes": 90,
-            "price": 450.0
+            "price": 450.0,
+            "image_url": "",
+            "active": True
         },
         {
             "id": str(uuid4()),
@@ -106,7 +110,9 @@ async def init_database():
             "name": "Манікюр + Педикюр",
             "description": "Комплекс манікюр + педикюр",
             "duration_minutes": 120,
-            "price": 700.0
+            "price": 700.0,
+            "image_url": "",
+            "active": True
         },
         # Послуги для Марії
         {
@@ -115,7 +121,9 @@ async def init_database():
             "name": "Класичний манікюр",
             "description": "Класичний манікюр з покриттям",
             "duration_minutes": 60,
-            "price": 400.0
+            "price": 400.0,
+            "image_url": "",
+            "active": True
         },
         {
             "id": str(uuid4()),
@@ -123,7 +131,9 @@ async def init_database():
             "name": "Апаратний педикюр",
             "description": "Апаратний педикюр з покриттям",
             "duration_minutes": 75,
-            "price": 500.0
+            "price": 500.0,
+            "image_url": "",
+            "active": True
         },
         {
             "id": str(uuid4()),
@@ -131,7 +141,9 @@ async def init_database():
             "name": "Нарощування нігтів",
             "description": "Нарощування гелем",
             "duration_minutes": 180,
-            "price": 800.0
+            "price": 800.0,
+            "image_url": "",
+            "active": True
         }
     ]
     
