@@ -1088,8 +1088,13 @@ async def update_booking_status(booking_id: str, update: BookingUpdate,
     return Booking(**updated_booking)
 
 @api_router.get("/admin/stats", response_model=Stats)
-async def get_stats(_: str = Depends(verify_token)):
-    all_bookings = await db.bookings.find({}, {"_id": 0}).to_list(10000)
+async def get_stats(user: Dict = Depends(verify_master_or_admin)):
+    """Отримати статистику (майстер бачить тільки свою)"""
+    query = {}
+    if user["role"] == "master":
+        query["master_id"] = user["user_id"]
+    
+    all_bookings = await db.bookings.find(query, {"_id": 0}).to_list(10000)
     
     total = len(all_bookings)
     pending = len([b for b in all_bookings if b["status"] == "pending"])
