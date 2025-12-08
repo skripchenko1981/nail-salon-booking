@@ -45,6 +45,7 @@ function AdminSchedule() {
       await axios.post(
         `${API}/schedule`,
         {
+          master_id: "admin",
           day_of_week: daySchedule.day_of_week,
           start_time: daySchedule.start_time,
           end_time: daySchedule.end_time,
