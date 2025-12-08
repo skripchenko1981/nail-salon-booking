@@ -234,8 +234,48 @@ function BookingPage() {
             </div>
           )}
 
-          {/* Step 2: Date Selection */}
+          {/* Step 2: Master Selection */}
           {step === 2 && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Оберіть майстра</h2>
+                <p className="text-gray-600">До кого б ви хотіли записатись?</p>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                {masters.map((master) => (
+                  <button
+                    key={master.id}
+                    onClick={() => handleMasterSelect(master)}
+                    className="text-left p-6 border-2 border-rose-200/50 rounded-2xl hover:border-[#D4A5A5] hover:shadow-lg transition-all active:scale-98 group"
+                    data-testid={`master-option-${master.id}`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-full bg-[#F3EBEB] flex items-center justify-center">
+                        {master.photo_url ? (
+                          <img src={master.photo_url} alt={master.name} className="w-full h-full rounded-full object-cover" />
+                        ) : (
+                          <span className="text-2xl font-bold text-[#D4A5A5]">
+                            {master.name.charAt(0)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold group-hover:text-[#D4A5A5] transition-colors">
+                          {master.name}
+                        </h3>
+                        {master.bio && (
+                          <p className="text-sm text-gray-600 mt-1">{master.bio}</p>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Date Selection */}
+          {step === 3 && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Оберіть дату</h2>
