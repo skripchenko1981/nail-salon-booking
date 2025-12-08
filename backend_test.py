@@ -1032,7 +1032,7 @@ class NailSalonAPITester:
                             headers=master2_headers
                         )
                         
-                        if final_master2_bookings:
+                        if final_master2_bookings is not None:
                             booking_found = any(b['id'] == booking_id for b in final_master2_bookings)
                             if booking_found:
                                 self.log_test("Майстер 2 НЕ бачить запис Майстра 1", False, "Запис видимий!")
