@@ -847,6 +847,113 @@ async def delete_master(master_id: str, _: Dict = Depends(verify_admin)):
         raise HTTPException(status_code=404, detail="Master not found")
     return {"message": "Master deactivated"}
 
+# ============ VACATION ROUTES ============
+
+@api_router.get("/vacations", response_model=List[Vacation])
+async def get_vacations(master_id: Optional[str] = None, user: Dict = Depends(verify_master_or_admin)):
+    """Отримати відпустки (опціонально фільтр по майстру)"""
+    query = {}
+    
+    # Майстер може бачити тільки свої відпустки
+    if user["role"] == "master":
+        query["master_id"] = user["user_id"]
+    elif master_id:
+        query["master_id"] = master_id
+    
+    vacations = await db.vacations.find(query, {"_id": 0}).sort("start_date", 1).to_list(100)
+    return vacations
+
+@api_router.post("/vacations", response_model=Vacation)
+async def create_vacation(vacation: VacationCreate, user: Dict = Depends(verify_master_or_admin)):
+    """Створити відпустку"""
+    # Майстер може створювати тільки собі
+    if user["role"] == "master" and vacation.master_id != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Can only create vacation for yourself")
+    
+    # Перевірити валідність дат
+    try:
+        start = datetime.fromisoformat(vacation.start_date)
+        end = datetime.fromisoformat(vacation.end_date)
+        if end < start:
+            raise HTTPException(status_code=400, detail="End date must be after start date")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format")
+    
+    # Перевірити перетин з існуючими відпустками
+    existing = await db.vacations.find({
+        "master_id": vacation.master_id,
+        "$or": [
+            {"start_date": {"$lte": vacation.end_date}, "end_date": {"$gte": vacation.start_date}}
+        ]
+    }).to_list(10)
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="Vacation period overlaps with existing vacation")
+    
+    vacation_obj = Vacation(**vacation.model_dump())
+    doc = vacation_obj.model_dump()
+    await db.vacations.insert_one(doc)
+    return vacation_obj
+
+@api_router.get("/vacations/{vacation_id}", response_model=Vacation)
+async def get_vacation(vacation_id: str, user: Dict = Depends(verify_master_or_admin)):
+    """Отримати відпустку по ID"""
+    vacation = await db.vacations.find_one({"id": vacation_id}, {"_id": 0})
+    if not vacation:
+        raise HTTPException(status_code=404, detail="Vacation not found")
+    
+    # Майстер може бачити тільки свої відпустки
+    if user["role"] == "master" and vacation["master_id"] != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    return Vacation(**vacation)
+
+@api_router.put("/vacations/{vacation_id}", response_model=Vacation)
+async def update_vacation(vacation_id: str, vacation: VacationUpdate, user: Dict = Depends(verify_master_or_admin)):
+    """Оновити відпустку"""
+    existing_vacation = await db.vacations.find_one({"id": vacation_id}, {"_id": 0})
+    if not existing_vacation:
+        raise HTTPException(status_code=404, detail="Vacation not found")
+    
+    # Майстер може редагувати тільки свої відпустки
+    if user["role"] == "master" and existing_vacation["master_id"] != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Can only edit your own vacations")
+    
+    update_data = {k: v for k, v in vacation.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    # Перевірити валідність дат якщо вони оновлюються
+    if "start_date" in update_data or "end_date" in update_data:
+        start_date = update_data.get("start_date", existing_vacation["start_date"])
+        end_date = update_data.get("end_date", existing_vacation["end_date"])
+        
+        try:
+            start = datetime.fromisoformat(start_date)
+            end = datetime.fromisoformat(end_date)
+            if end < start:
+                raise HTTPException(status_code=400, detail="End date must be after start date")
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid date format")
+    
+    result = await db.vacations.update_one({"id": vacation_id}, {"$set": update_data})
+    updated_vacation = await db.vacations.find_one({"id": vacation_id}, {"_id": 0})
+    return Vacation(**updated_vacation)
+
+@api_router.delete("/vacations/{vacation_id}")
+async def delete_vacation(vacation_id: str, user: Dict = Depends(verify_master_or_admin)):
+    """Видалити відпустку"""
+    vacation = await db.vacations.find_one({"id": vacation_id}, {"_id": 0})
+    if not vacation:
+        raise HTTPException(status_code=404, detail="Vacation not found")
+    
+    # Майстер може видаляти тільки свої відпустки
+    if user["role"] == "master" and vacation["master_id"] != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Can only delete your own vacations")
+    
+    await db.vacations.delete_one({"id": vacation_id})
+    return {"message": "Vacation deleted"}
+
 # ============ ADMIN ROUTES ============
 
 @api_router.post("/admin/login", response_model=AdminLoginResponse)
