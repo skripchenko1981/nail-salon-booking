@@ -492,7 +492,7 @@ class NailSalonAPITester:
         
         # 4. Try to login as the created master
         master_login_data = {
-            "email": "test.master@example.com",
+            "email": unique_email,
             "password": "test123"
         }
         
