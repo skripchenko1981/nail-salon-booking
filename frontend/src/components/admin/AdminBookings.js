@@ -31,7 +31,7 @@ function AdminBookings() {
       });
       setBookings(response.data);
     } catch (error) {
-      toast.error('Ошибка загрузки записей');
+      toast.error('Помилка завантаження записів');
     } finally {
       setLoading(false);
     }
