@@ -240,6 +240,73 @@ function AdminBookings() {
           ))}
         </div>
       )}
+
+      {/* Діалог редагування тривалості */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Підтвердження запису з коригуванням часу</DialogTitle>
+            <DialogDescription>
+              Скоригуйте тривалість послуги при необхідності
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editingBooking && (
+            <div className="space-y-4">
+              <div className="bg-[#F3EBEB] p-4 rounded-lg space-y-2">
+                <p className="text-sm font-medium">{editingBooking.service_name}</p>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Calendar className="h-4 w-4" />
+                  <span>{editingBooking.date}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Clock className="h-4 w-4" />
+                  <span>{editingBooking.time}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <User className="h-4 w-4" />
+                  <span>{editingBooking.client_name}</span>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="duration">Тривалість (хвилин)</Label>
+                <Input
+                  id="duration"
+                  type="number"
+                  min="15"
+                  step="15"
+                  value={editDuration}
+                  onChange={(e) => setEditDuration(parseInt(e.target.value))}
+                  className="mt-1"
+                  data-testid="input-duration"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Оригінальна тривалість: {editingBooking.duration_minutes} хв
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setEditDialogOpen(false)}
+            >
+              Скасувати
+            </Button>
+            <Button 
+              type="button"
+              onClick={handleSaveBookingChanges}
+              className="bg-[#D4A5A5] hover:bg-[#9E829C] text-white"
+              data-testid="save-duration-button"
+            >
+              Підтвердити запис
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
