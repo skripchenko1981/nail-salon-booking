@@ -52,7 +52,7 @@ function AdminClients() {
     setDialogOpen(true);
     
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
       const response = await axios.get(`${API}/admin/clients/${client.id}/bookings`, {
         headers: { Authorization: `Bearer ${token}` }
       });
