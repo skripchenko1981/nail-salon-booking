@@ -64,10 +64,10 @@ function AdminBookings() {
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'pending': return 'Ожидает';
-      case 'confirmed': return 'Подтверждена';
-      case 'completed': return 'Завершена';
-      case 'cancelled': return 'Отменена';
+      case 'pending': return 'Очікує';
+      case 'confirmed': return 'Підтверджено';
+      case 'completed': return 'Завершено';
+      case 'cancelled': return 'Скасовано';
       default: return status;
     }
   };
