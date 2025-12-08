@@ -1095,10 +1095,9 @@ async def update_booking_status(booking_id: str, update: BookingUpdate,
 
 @api_router.get("/admin/stats", response_model=Stats)
 async def get_stats(user: Dict = Depends(verify_master_or_admin)):
-    """Отримати статистику (майстер бачить тільки свою)"""
-    query = {}
-    if user["role"] == "master":
-        query["master_id"] = user["user_id"]
+    """Отримати статистику (кожен майстер бачить тільки свою)"""
+    # Кожен користувач бачить тільки свою статистику
+    query = {"master_id": user["user_id"]}
     
     all_bookings = await db.bookings.find(query, {"_id": 0}).to_list(10000)
     
