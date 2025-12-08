@@ -436,10 +436,15 @@ class NailSalonAPITester:
         
         auth_headers = {'Authorization': f'Bearer {self.admin_token}'}
         
+        # Generate unique email with timestamp
+        import time
+        timestamp = int(time.time())
+        unique_email = f"test.master.{timestamp}@example.com"
+        
         # 1. Create a master
         master_data = {
             "name": "Тестовий Майстер",
-            "email": "test.master@example.com",
+            "email": unique_email,
             "phone": "+380501111111",
             "password": "test123"
         }
