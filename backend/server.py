@@ -410,15 +410,21 @@ async def create_service(service: ServiceCreate, user: Dict = Depends(verify_mas
     return service_obj
 
 @api_router.put("/services/{service_id}", response_model=Service)
-async def update_service(service_id: str, service: ServiceUpdate, _: str = Depends(verify_token)):
+async def update_service(service_id: str, service: ServiceUpdate, user: Dict = Depends(verify_master_or_admin)):
+    """Оновити послугу"""
+    # Перевірити доступ
+    existing_service = await db.services.find_one({"id": service_id}, {"_id": 0})
+    if not existing_service:
+        raise HTTPException(status_code=404, detail="Service not found")
+    
+    if user["role"] == "master" and existing_service["master_id"] != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Can only update your own services")
+    
     update_data = {k: v for k, v in service.model_dump().items() if v is not None}
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
     
     result = await db.services.update_one({"id": service_id}, {"$set": update_data})
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Service not found")
-    
     updated_service = await db.services.find_one({"id": service_id}, {"_id": 0})
     return Service(**updated_service)
 
