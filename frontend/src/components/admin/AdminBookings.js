@@ -160,14 +160,14 @@ function AdminBookings() {
 
                   {booking.notes && (
                     <div className="bg-[#F3EBEB] p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">Пожелания</p>
+                      <p className="text-xs text-gray-500 mb-1">Побажання</p>
                       <p className="text-sm">{booking.notes}</p>
                     </div>
                   )}
                 </div>
 
                 <div className="lg:w-48">
-                  <label className="text-xs text-gray-500 mb-2 block">Изменить статус</label>
+                  <label className="text-xs text-gray-500 mb-2 block">Змінити статус</label>
                   <Select 
                     value={booking.status} 
                     onValueChange={(value) => handleStatusChange(booking.id, value)}
@@ -176,10 +176,10 @@ function AdminBookings() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="pending">Ожидает</SelectItem>
-                      <SelectItem value="confirmed">Подтвердить</SelectItem>
-                      <SelectItem value="completed">Завершить</SelectItem>
-                      <SelectItem value="cancelled">Отменить</SelectItem>
+                      <SelectItem value="pending">Очікує</SelectItem>
+                      <SelectItem value="confirmed">Підтвердити</SelectItem>
+                      <SelectItem value="completed">Завершити</SelectItem>
+                      <SelectItem value="cancelled">Скасувати</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
