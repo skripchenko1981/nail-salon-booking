@@ -547,27 +547,48 @@ async def update_booking_status(booking_id: str, update: BookingUpdate,
         if new_status == "completed":
             await update_client_stats(booking["client_id"], booking["price"], "completed")
         
-        # Відправити Telegram повідомлення
-        if booking.get("telegram_id") and background_tasks:
+        # Відправити повідомлення (SMS або Telegram)
+        if background_tasks:
             if new_status == "confirmed":
-                background_tasks.add_task(
-                    telegram_bot.send_booking_confirmed,
-                    booking["client_name"],
-                    booking["service_name"],
-                    booking["date"],
-                    booking["time"],
-                    booking["telegram_id"]
-                )
+                if booking.get("telegram_id"):
+                    background_tasks.add_task(
+                        telegram_bot.send_booking_confirmed,
+                        booking["client_name"],
+                        booking["service_name"],
+                        booking["date"],
+                        booking["time"],
+                        booking["telegram_id"]
+                    )
+                else:
+                    background_tasks.add_task(
+                        sms_service.send_booking_confirmation,
+                        booking["client_name"],
+                        booking["service_name"],
+                        booking["date"],
+                        booking["time"],
+                        booking["client_phone"]
+                    )
             elif new_status == "cancelled":
-                background_tasks.add_task(
-                    telegram_bot.send_booking_cancelled,
-                    booking["client_name"],
-                    booking["service_name"],
-                    booking["date"],
-                    booking["time"],
-                    booking["telegram_id"],
-                    update.cancellation_reason
-                )
+                if booking.get("telegram_id"):
+                    background_tasks.add_task(
+                        telegram_bot.send_booking_cancelled,
+                        booking["client_name"],
+                        booking["service_name"],
+                        booking["date"],
+                        booking["time"],
+                        booking["telegram_id"],
+                        update.cancellation_reason
+                    )
+                else:
+                    background_tasks.add_task(
+                        sms_service.send_booking_cancelled,
+                        booking["client_name"],
+                        booking["service_name"],
+                        booking["date"],
+                        booking["time"],
+                        booking["client_phone"],
+                        update.cancellation_reason
+                    )
     
     updated_booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
     return Booking(**updated_booking)
