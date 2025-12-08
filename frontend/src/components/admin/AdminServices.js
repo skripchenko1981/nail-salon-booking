@@ -73,7 +73,9 @@ function AdminServices() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('admin_token');
+    const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
+    const masterData = JSON.parse(localStorage.getItem('master_data') || '{"id": "admin"}');
+    const masterId = masterData.id;
     
     try {
       if (editingService) {
@@ -84,9 +86,10 @@ function AdminServices() {
         );
         toast.success('Послугу оновлено');
       } else {
+        const serviceData = { ...formData, master_id: masterId };
         await axios.post(
           `${API}/services`,
-          formData,
+          serviceData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         toast.success('Послугу створено');
