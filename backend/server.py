@@ -160,6 +160,7 @@ class WorkSchedule(BaseModel):
     is_working: bool = True
 
 class WorkScheduleCreate(BaseModel):
+    master_id: str
     day_of_week: int
     start_time: str
     end_time: str
