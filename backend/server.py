@@ -135,6 +135,7 @@ class Service(BaseModel):
     active: bool = True
 
 class ServiceCreate(BaseModel):
+    master_id: str
     name: str
     description: str
     duration_minutes: int
