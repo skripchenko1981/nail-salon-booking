@@ -53,7 +53,7 @@ function AdminBookings() {
 
   const handleStatusChange = async (bookingId, newStatus) => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
       await axios.put(
         `${API}/admin/bookings/${bookingId}`,
         { status: newStatus },
@@ -62,7 +62,8 @@ function AdminBookings() {
       toast.success('Статус оновлено');
       fetchBookings();
     } catch (error) {
-      toast.error('Помилка оновлення статусу');
+      console.error('Status update error:', error);
+      toast.error(error.response?.data?.detail || 'Помилка оновлення статусу');
     }
   };
 
