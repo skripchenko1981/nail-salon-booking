@@ -306,9 +306,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Admin panel Ukrainian localization"
-    - "Site Settings functionality"
-    - "Main page Ukrainian localization"
+    - "Timeslots with duration consideration"
+    - "Booking duration update via admin API"
+    - "Updated timeslots after duration change"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
