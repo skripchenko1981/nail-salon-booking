@@ -434,7 +434,7 @@ function BookingPage() {
 
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="client_name">Ім'я *</Label>
+                  <Label htmlFor="client_name">Ім&apos;я *</Label>
                   <Input
                     id="client_name"
                     required
