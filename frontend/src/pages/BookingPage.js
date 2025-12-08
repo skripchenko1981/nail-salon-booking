@@ -404,7 +404,7 @@ function BookingPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Ваші контакти</h2>
-                <p className="text-gray-600">Ми зв'яжемося з вами для підтвердження</p>
+                <p className="text-gray-600">Ми зв&apos;яжемося з вами для підтвердження</p>
               </div>
 
               {/* Booking Summary */}
