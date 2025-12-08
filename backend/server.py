@@ -153,6 +153,7 @@ class ServiceUpdate(BaseModel):
 class WorkSchedule(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    master_id: str
     day_of_week: int
     start_time: str
     end_time: str
