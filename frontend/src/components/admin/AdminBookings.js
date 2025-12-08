@@ -77,7 +77,7 @@ function AdminBookings() {
     : bookings.filter(b => b.status === filterStatus);
 
   if (loading) {
-    return <div className="text-center py-12">Загрузка...</div>;
+    return <div className="text-center py-12">Завантаження...</div>;
   }
 
   return (
@@ -87,25 +87,25 @@ function AdminBookings() {
           <h1 className="text-4xl font-bold tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
             Записи
           </h1>
-          <p className="text-gray-600 mt-2">Управление записями клиентов</p>
+          <p className="text-gray-600 mt-2">Керування записами клієнтів</p>
         </div>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
           <SelectTrigger className="w-48" data-testid="filter-status">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Все записи</SelectItem>
-            <SelectItem value="pending">Ожидают</SelectItem>
-            <SelectItem value="confirmed">Подтверждены</SelectItem>
-            <SelectItem value="completed">Завершены</SelectItem>
-            <SelectItem value="cancelled">Отменены</SelectItem>
+            <SelectItem value="all">Всі записи</SelectItem>
+            <SelectItem value="pending">Очікують</SelectItem>
+            <SelectItem value="confirmed">Підтверджені</SelectItem>
+            <SelectItem value="completed">Завершені</SelectItem>
+            <SelectItem value="cancelled">Скасовані</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {filteredBookings.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center border border-rose-200/50">
-          <p className="text-gray-500">Записей не найдено</p>
+          <p className="text-gray-500">Записів не знайдено</p>
         </div>
       ) : (
         <div className="grid gap-6">
