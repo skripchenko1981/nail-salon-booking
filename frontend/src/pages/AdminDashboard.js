@@ -127,6 +127,7 @@ function AdminDashboard() {
             <Route path="/clients" element={<AdminClients />} />
             <Route path="/services" element={<AdminServices />} />
             <Route path="/schedule" element={<AdminSchedule />} />
+            <Route path="/vacations" element={<AdminVacations />} />
             <Route path="/settings" element={<AdminSettings />} />
           </Routes>
         </div>
