@@ -83,6 +83,15 @@ function BookingPage() {
     setStep(2);
   };
 
+  const handleMasterSelect = (master) => {
+    setFormData({
+      ...formData,
+      master_id: master.id,
+      master_name: master.name
+    });
+    setStep(3);
+  };
+
   const handleDateSelect = (date) => {
     setFormData({ ...formData, date });
     setStep(3);
