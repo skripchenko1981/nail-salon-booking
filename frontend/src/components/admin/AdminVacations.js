@@ -60,7 +60,7 @@ function AdminVacations() {
     } else {
       setEditingVacation(null);
       setFormData({
-        master_id: '',
+        master_id: 'admin',  // Тимчасово використовуємо admin
         start_date: '',
         end_date: '',
         reason: ''
