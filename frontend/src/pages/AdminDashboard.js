@@ -9,6 +9,7 @@ import AdminSchedule from '../components/admin/AdminSchedule';
 import AdminClients from '../components/admin/AdminClients';
 import AdminSettings from '../components/admin/AdminSettings';
 import AdminVacations from '../components/admin/AdminVacations';
+import AdminMasters from '../components/admin/AdminMasters';
 import axios from 'axios';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
