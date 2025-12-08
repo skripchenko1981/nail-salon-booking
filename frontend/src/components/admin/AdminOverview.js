@@ -22,40 +22,40 @@ function AdminOverview() {
       });
       setStats(response.data);
     } catch (error) {
-      toast.error('Ошибка загрузки статистики');
+      toast.error('Помилка завантаження статистики');
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) {
-    return <div className="text-center py-12">Загрузка...</div>;
+    return <div className="text-center py-12">Завантаження...</div>;
   }
 
   const statCards = [
     {
-      title: 'Всего записей',
+      title: 'Всього записів',
       value: stats?.total_bookings || 0,
       icon: Calendar,
       color: 'bg-blue-100 text-blue-600',
       testId: 'stat-total-bookings'
     },
     {
-      title: 'Сегодня',
+      title: 'Сьогодні',
       value: stats?.today_bookings || 0,
       icon: Clock,
       color: 'bg-purple-100 text-purple-600',
       testId: 'stat-today-bookings'
     },
     {
-      title: 'Ожидают подтверждения',
+      title: 'Очікують підтвердження',
       value: stats?.pending_bookings || 0,
       icon: AlertCircle,
       color: 'bg-yellow-100 text-yellow-600',
       testId: 'stat-pending-bookings'
     },
     {
-      title: 'Подтверждено',
+      title: 'Підтверджено',
       value: stats?.confirmed_bookings || 0,
       icon: CheckCircle,
       color: 'bg-green-100 text-green-600',
@@ -69,15 +69,15 @@ function AdminOverview() {
       testId: 'stat-completed-bookings'
     },
     {
-      title: 'Отменено',
+      title: 'Скасовано',
       value: stats?.cancelled_bookings || 0,
       icon: XCircle,
       color: 'bg-red-100 text-red-600',
       testId: 'stat-cancelled-bookings'
     },
     {
-      title: 'Общая выручка',
-      value: `${stats?.total_revenue || 0} ₽`,
+      title: 'Загальна виручка',
+      value: `${stats?.total_revenue || 0} ₴`,
       icon: DollarSign,
       color: 'bg-[#F3EBEB] text-[#D4A5A5]',
       testId: 'stat-total-revenue'
@@ -88,9 +88,9 @@ function AdminOverview() {
     <div className="space-y-8">
       <div>
         <h1 className="text-4xl font-bold tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
-          Обзор
+          Огляд
         </h1>
-        <p className="text-gray-600 mt-2">Статистика и ключевые показатели</p>
+        <p className="text-gray-600 mt-2">Статистика та ключові показники</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -119,11 +119,11 @@ function AdminOverview() {
       {/* Quick Info */}
       <div className="bg-gradient-to-r from-[#F3EBEB] to-[#FDFCFB] rounded-2xl p-8 border border-rose-200/50">
         <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
-          Добро пожаловать в админ-панель!
+          Ласкаво просимо до адмін-панелі!
         </h2>
         <p className="text-gray-600">
-          Здесь вы можете управлять записями, услугами, расписанием и просматривать статистику.
-          Используйте меню слева для навигации.
+          Тут ви можете керувати записами, послугами, розкладом та переглядати статистику.
+          Використовуйте меню зліва для навігації.
         </p>
       </div>
     </div>
