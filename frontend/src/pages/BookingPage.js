@@ -179,7 +179,7 @@ function BookingPage() {
           <h1 className="text-4xl lg:text-5xl font-bold tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
             Онлайн-запис
           </h1>
-          <p className="text-gray-600 mt-2">Крок {step} з 4</p>
+          <p className="text-gray-600 mt-2">Крок {step} з 5</p>
         </div>
 
         {/* Progress Bar */}
