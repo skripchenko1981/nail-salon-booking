@@ -104,6 +104,82 @@ class TelegramBot:
 📍 Чекаємо на вас!"""
         
         return await self.send_message(telegram_id, text)
+    
+    # ============ ADMIN NOTIFICATIONS ============
+    
+    async def notify_admin_new_booking(self, client_name: str, client_phone: str,
+                                      service_name: str, date: str, time: str,
+                                      price: int, admin_telegram_id: str) -> bool:
+        """Повідомлення адміну про новий запис"""
+        text = f"""🔔 <b>НОВИЙ ЗАПИС!</b>
+
+👤 Клієнт: {client_name}
+📱 Телефон: {client_phone}
+
+💅 Послуга: {service_name}
+📅 Дата: {date}
+🕐 Час: {time}
+💰 Вартість: {price} ₴
+
+⚠️ Потребує підтвердження!"""
+        
+        return await self.send_message(admin_telegram_id, text)
+    
+    async def notify_admin_booking_cancelled(self, client_name: str, client_phone: str,
+                                            service_name: str, date: str, time: str,
+                                            price: int, reason: Optional[str],
+                                            admin_telegram_id: str) -> bool:
+        """Повідомлення адміну про скасування запису"""
+        text = f"""❌ <b>СКАСОВАНО ЗАПИС</b>
+
+👤 Клієнт: {client_name}
+📱 Телефон: {client_phone}
+
+💅 Послуга: {service_name}
+📅 Дата: {date}
+🕐 Час: {time}
+💰 Втрачено: {price} ₴"""
+        
+        if reason:
+            text += f"\n\n📝 Причина: {reason}"
+        
+        return await self.send_message(admin_telegram_id, text)
+    
+    async def notify_admin_daily_summary(self, today_bookings: int, pending_count: int,
+                                        confirmed_count: int, total_revenue: int,
+                                        admin_telegram_id: str) -> bool:
+        """Щоденна статистика для адміна"""
+        text = f"""📊 <b>СТАТИСТИКА ЗА ДЕНЬ</b>
+
+📅 Дата: {datetime.now().strftime('%d.%m.%Y')}
+
+📋 Всього записів: {today_bookings}
+⏳ Очікують: {pending_count}
+✅ Підтверджено: {confirmed_count}
+
+💰 Очікувана виручка: {total_revenue} ₴
+
+Гарного дня! 💅"""
+        
+        return await self.send_message(admin_telegram_id, text)
+    
+    async def notify_admin_upcoming_bookings(self, bookings: list, admin_telegram_id: str) -> bool:
+        """Нагадування адміну про майбутні записи"""
+        if not bookings:
+            return False
+        
+        text = "⏰ <b>ЗАПИСИ НА СЬОГОДНІ</b>\n\n"
+        
+        for booking in bookings:
+            text += f"""🕐 {booking['time']} - {booking['client_name']}
+💅 {booking['service_name']}
+📱 {booking['client_phone']}
+
+"""
+        
+        text += "Гарної роботи! 💅"
+        
+        return await self.send_message(admin_telegram_id, text)
 
 # Глобальний екземпляр бота
 telegram_bot = TelegramBot()
