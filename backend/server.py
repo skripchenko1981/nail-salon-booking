@@ -1182,8 +1182,12 @@ async def get_client_stats(user: Dict = Depends(verify_master_or_admin)):
     )
 
 @api_router.get("/admin/clients/{client_id}", response_model=Client)
-async def get_client(client_id: str, _: str = Depends(verify_token)):
-    client = await db.clients.find_one({"id": client_id}, {"_id": 0})
+async def get_client(client_id: str, user: Dict = Depends(verify_master_or_admin)):
+    """Отримати клієнта (кожен майстер бачить тільки своїх)"""
+    client = await db.clients.find_one({
+        "id": client_id,
+        "master_id": user["user_id"]
+    }, {"_id": 0})
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
     return Client(**client)
