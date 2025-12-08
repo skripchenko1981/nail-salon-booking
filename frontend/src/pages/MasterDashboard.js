@@ -52,6 +52,23 @@ function MasterDashboard() {
             <p className="text-sm text-gray-600 mt-1">Панель майстра</p>
           </div>
 
+          {/* Master Info */}
+          <div className="px-4 pb-4 mb-4 border-b border-rose-200/50">
+            <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-[#F3EBEB] to-[#FDFCFB] rounded-xl">
+              <div className="w-10 h-10 rounded-full bg-[#D4A5A5] flex items-center justify-center flex-shrink-0">
+                <User className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-900 truncate" title={masterName}>
+                  {masterName}
+                </p>
+                <p className="text-xs text-gray-500 truncate" title={masterEmail}>
+                  {masterEmail}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <nav className="px-3">
             {menuItems.map((item) => {
               const Icon = item.icon;
