@@ -402,7 +402,6 @@ class BookingDurationTester:
         booking_duration = booking_response.get('duration_minutes', 90)
         
         # Calculate expected slots based on actual booking
-        from datetime import datetime, timedelta
         booking_start = datetime.strptime(booking_time, "%H:%M")
         booking_end = booking_start + timedelta(minutes=booking_duration)
         
