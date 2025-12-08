@@ -126,7 +126,7 @@ function BookingPage() {
     
     try {
       const bookingData = {
-        master_id: 'admin',  // Тимчасово використовуємо admin як майстра
+        master_id: formData.master_id,
         service_id: formData.service_id,
         date: formData.date,
         time: formData.time,
