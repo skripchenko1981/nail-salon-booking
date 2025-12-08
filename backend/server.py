@@ -789,7 +789,7 @@ async def master_login(credentials: MasterLogin):
     
     return MasterLoginResponse(token=token, master=master_data)
 
-@api_router.get("/masters", response_model=List[Master])
+@api_router.get("/masters", response_model=List[MasterResponse])
 async def get_masters(_: Dict = Depends(verify_admin)):
     """Отримати список всіх майстрів (тільки адмін)"""
     masters = await db.masters.find({}, {"_id": 0, "password_hash": 0}).to_list(100)
