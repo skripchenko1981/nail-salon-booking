@@ -330,6 +330,100 @@ class NailSalonAPITester:
         
         return True
 
+    def test_6_month_booking_limit(self):
+        """Test 6-month booking limit functionality"""
+        print("\n" + "="*50)
+        print("TESTING 6-MONTH BOOKING LIMIT")
+        print("="*50)
+        
+        # Get services first
+        services = self.run_test("Get Services for 6-month test", "GET", "services", 200)
+        
+        if not services or len(services) == 0:
+            print("❌ No services available for 6-month booking test")
+            return False
+        
+        service = services[0]
+        service_id = service['id']
+        print(f"   Using service: {service['name']} (ID: {service_id})")
+        
+        # Test 1: Get timeslots for date 150 days from today (should work)
+        date_150_days = (datetime.now() + timedelta(days=150)).strftime('%Y-%m-%d')
+        print(f"   Testing date 150 days from now: {date_150_days}")
+        
+        time_slots_150 = self.run_test(
+            "Get Timeslots 150 days ahead",
+            "GET",
+            f"timeslots/{date_150_days}?service_id={service_id}&master_id=admin",
+            200
+        )
+        
+        if time_slots_150 is not None:
+            print(f"   ✅ Found {len(time_slots_150)} timeslots for 150 days ahead")
+        else:
+            print("   ❌ Failed to get timeslots for 150 days ahead")
+            return False
+        
+        # Test 2: Create booking for date 100 days from today (should work)
+        date_100_days = (datetime.now() + timedelta(days=100)).strftime('%Y-%m-%d')
+        print(f"   Testing booking creation for date 100 days from now: {date_100_days}")
+        
+        # Get available slots for 100 days ahead
+        time_slots_100 = self.run_test(
+            "Get Timeslots 100 days ahead",
+            "GET",
+            f"timeslots/{date_100_days}?service_id={service_id}&master_id=admin",
+            200
+        )
+        
+        if not time_slots_100:
+            print("   ❌ No time slots available for 100 days ahead")
+            return False
+        
+        available_slots = [slot for slot in time_slots_100 if slot.get('available', False)]
+        if not available_slots:
+            print("   ❌ No available time slots for 100 days ahead")
+            return False
+        
+        time_slot = available_slots[0]['time']
+        print(f"   Using time slot: {time_slot} on {date_100_days}")
+        
+        # Create booking for 100 days ahead
+        booking_data = {
+            "master_id": "admin",
+            "service_id": service_id,
+            "date": date_100_days,
+            "time": time_slot,
+            "client_name": "Тест Клієнт",
+            "client_phone": "+380501234567"
+        }
+        
+        created_booking = self.run_test(
+            "Create Booking 100 days ahead",
+            "POST",
+            "bookings",
+            200,
+            data=booking_data
+        )
+        
+        if created_booking and 'id' in created_booking:
+            booking_id = created_booking['id']
+            print(f"   ✅ Created booking ID: {booking_id} for 100 days ahead")
+            
+            # Clean up - cancel the test booking
+            self.run_test(
+                "Cancel Test Booking",
+                "PUT",
+                f"bookings/{booking_id}/cancel",
+                200,
+                data={"cancellation_reason": "Test cleanup"}
+            )
+            
+            return True
+        else:
+            print("   ❌ Failed to create booking for 100 days ahead")
+            return False
+
     def test_error_cases(self):
         """Test error handling"""
         print("\n" + "="*50)
