@@ -398,7 +398,12 @@ async def get_master_services(master_id: str):
     return services
 
 @api_router.post("/services", response_model=Service)
-async def create_service(service: ServiceCreate, _: str = Depends(verify_token)):
+async def create_service(service: ServiceCreate, user: Dict = Depends(verify_master_or_admin)):
+    """Створити послугу"""
+    # Майстер може створювати тільки для себе
+    if user["role"] == "master" and service.master_id != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Can only create services for yourself")
+    
     service_obj = Service(**service.model_dump())
     doc = service_obj.model_dump()
     await db.services.insert_one(doc)
