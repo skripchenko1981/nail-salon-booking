@@ -15,13 +15,13 @@ function AdminSchedule() {
   const [loading, setLoading] = useState(true);
 
   const daysOfWeek = [
-    'Понедельник',
-    'Вторник',
-    'Среда',
-    'Четверг',
-    'Пятница',
-    'Суббота',
-    'Воскресенье'
+    'Понеділок',
+    'Вівторок',
+    'Середа',
+    'Четвер',
+    'П'ятниця',
+    'Субота',
+    'Неділя'
   ];
 
   useEffect(() => {
@@ -33,7 +33,7 @@ function AdminSchedule() {
       const response = await axios.get(`${API}/schedule`);
       setSchedule(response.data);
     } catch (error) {
-      toast.error('Ошибка загрузки расписания');
+      toast.error('Помилка завантаження розкладу');
     } finally {
       setLoading(false);
     }
@@ -52,10 +52,10 @@ function AdminSchedule() {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success('Расписание обновлено');
+      toast.success('Розклад оновлено');
       fetchSchedule();
     } catch (error) {
-      toast.error('Ошибка при сохранении');
+      toast.error('Помилка при збереженні');
     }
   };
 
@@ -66,16 +66,16 @@ function AdminSchedule() {
   };
 
   if (loading) {
-    return <div className="text-center py-12">Загрузка...</div>;
+    return <div className="text-center py-12">Завантаження...</div>;
   }
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-4xl font-bold tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
-          Расписание работы
+          Розклад роботи
         </h1>
-        <p className="text-gray-600 mt-2">Настройте рабочие часы для каждого дня недели</p>
+        <p className="text-gray-600 mt-2">Налаштуйте робочі години для кожного дня тижня</p>
       </div>
 
       <div className="space-y-4">
@@ -98,7 +98,7 @@ function AdminSchedule() {
                     data-testid={`schedule-working-${daySchedule.day_of_week}`}
                   />
                   <span className="text-sm text-gray-600">
-                    {daySchedule.is_working ? 'Рабочий день' : 'Выходной'}
+                    {daySchedule.is_working ? 'Робочий день' : 'Вихідний'}
                   </span>
                 </div>
 
@@ -134,7 +134,7 @@ function AdminSchedule() {
                 data-testid={`schedule-save-${daySchedule.day_of_week}`}
               >
                 <Save className="h-4 w-4 mr-2" />
-                Сохранить
+                Зберегти
               </Button>
             </div>
           </div>
@@ -142,10 +142,10 @@ function AdminSchedule() {
       </div>
 
       <div className="bg-gradient-to-r from-[#F3EBEB] to-[#FDFCFB] rounded-2xl p-6 border border-rose-200/50">
-        <h3 className="font-semibold mb-2">💡 Подсказка</h3>
+        <h3 className="font-semibold mb-2">💡 Підказка</h3>
         <p className="text-sm text-gray-600">
-          Расписание определяет, в какие дни и часы клиенты могут записываться на услуги. 
-          Выключите переключатель для выходных дней.
+          Розклад визначає, в які дні та години клієнти можуть записуватися на послуги. 
+          Вимкніть перемикач для вихідних днів.
         </p>
       </div>
     </div>
