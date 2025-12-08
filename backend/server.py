@@ -552,6 +552,7 @@ async def create_booking(booking: BookingCreate, background_tasks: BackgroundTas
     
     # Створити або отримати клієнта
     client_id = await get_or_create_client(
+        booking.master_id,
         booking.client_name,
         booking.client_phone,
         booking.client_email,
