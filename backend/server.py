@@ -364,12 +364,17 @@ def verify_master_or_admin(user: Dict = Depends(verify_token)) -> Dict:
 
 # ============ CLIENT HELPERS ============
 
-async def get_or_create_client(name: str, phone: str, email: Optional[str] = None, 
+async def get_or_create_client(master_id: str, name: str, phone: str, 
+                                email: Optional[str] = None, 
                                 telegram_id: Optional[str] = None) -> str:
-    """Отримати або створити клієнта"""
+    """Отримати або створити клієнта для майстра"""
     phone_normalized = validate_ukrainian_phone(phone)
     
-    existing_client = await db.clients.find_one({"phone": phone_normalized}, {"_id": 0})
+    # Шукати клієнта у цього майстра
+    existing_client = await db.clients.find_one({
+        "master_id": master_id,
+        "phone": phone_normalized
+    }, {"_id": 0})
     
     if existing_client:
         # Оновити дані якщо потрібно
@@ -382,12 +387,16 @@ async def get_or_create_client(name: str, phone: str, email: Optional[str] = Non
             update_data["name"] = name
             
         if update_data:
-            await db.clients.update_one({"phone": phone_normalized}, {"$set": update_data})
+            await db.clients.update_one({
+                "master_id": master_id,
+                "phone": phone_normalized
+            }, {"$set": update_data})
         
         return existing_client["id"]
     else:
         # Створити нового клієнта
         client = Client(
+            master_id=master_id,
             name=name,
             phone=phone_normalized,
             email=email,
