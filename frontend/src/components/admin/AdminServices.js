@@ -196,15 +196,15 @@ function AdminServices() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingService ? 'Редактировать услугу' : 'Добавить услугу'}
+              {editingService ? 'Редагувати послугу' : 'Додати послугу'}
             </DialogTitle>
             <DialogDescription>
-              Заполните информацию об услуге
+              Заповніть інформацію про послугу
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="name">Название *</Label>
+              <Label htmlFor="name">Назва *</Label>
               <Input
                 id="name"
                 required
@@ -214,7 +214,7 @@ function AdminServices() {
               />
             </div>
             <div>
-              <Label htmlFor="description">Описание *</Label>
+              <Label htmlFor="description">Опис *</Label>
               <Textarea
                 id="description"
                 required
@@ -225,7 +225,7 @@ function AdminServices() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="duration">Длительность (мин) *</Label>
+                <Label htmlFor="duration">Тривалість (хв) *</Label>
                 <Input
                   id="duration"
                   type="number"
@@ -236,7 +236,7 @@ function AdminServices() {
                 />
               </div>
               <div>
-                <Label htmlFor="price">Цена (₽) *</Label>
+                <Label htmlFor="price">Ціна (₴) *</Label>
                 <Input
                   id="price"
                   type="number"
@@ -248,7 +248,7 @@ function AdminServices() {
               </div>
             </div>
             <div>
-              <Label htmlFor="image_url">URL изображения</Label>
+              <Label htmlFor="image_url">URL зображення</Label>
               <Input
                 id="image_url"
                 value={formData.image_url}
@@ -259,10 +259,10 @@ function AdminServices() {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                Отмена
+                Скасувати
               </Button>
               <Button type="submit" className="bg-[#D4A5A5] hover:bg-[#9E829C] text-white" data-testid="service-save-button">
-                Сохранить
+                Зберегти
               </Button>
             </DialogFooter>
           </form>
