@@ -45,10 +45,10 @@ function AdminBookings() {
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success('Статус обновлен');
+      toast.success('Статус оновлено');
       fetchBookings();
     } catch (error) {
-      toast.error('Ошибка обновления статуса');
+      toast.error('Помилка оновлення статусу');
     }
   };
 
