@@ -203,6 +203,7 @@ class WorkScheduleCreate(BaseModel):
 class Client(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    master_id: str
     name: str
     phone: str
     email: Optional[EmailStr] = None
