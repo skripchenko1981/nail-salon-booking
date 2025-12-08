@@ -16,7 +16,6 @@ import phonenumbers
 import hashlib
 from telegram_bot import telegram_bot
 from sms_service import sms_service
-from google_calendar_service import google_calendar_service
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
