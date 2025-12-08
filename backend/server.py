@@ -166,6 +166,7 @@ class BookingUpdate(BaseModel):
     status: Optional[str] = None
     notes: Optional[str] = None
     cancellation_reason: Optional[str] = None
+    duration_minutes: Optional[int] = None
 
 class BookingCancelRequest(BaseModel):
     cancellation_reason: Optional[str] = None
