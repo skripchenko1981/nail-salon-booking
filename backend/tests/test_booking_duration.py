@@ -381,12 +381,45 @@ class BookingDurationTester:
         for slot in updated_slots:
             slot_analysis[slot['time']] = slot['available']
         
+        # We need to get the actual booking time from the created booking
+        # For now, let's check if we can get the booking details
+        if not self.created_booking_id:
+            print("❌ No booking ID available for analysis")
+            return False
+        
+        # Get the actual booking to see its time
+        booking_response = self.run_test(
+            "Get Booking for Analysis",
+            "GET",
+            f"bookings/{self.created_booking_id}",
+            200
+        )
+        
+        if not booking_response:
+            print("❌ Cannot get booking details")
+            return False
+        
+        booking_time = booking_response.get('time', '')
+        booking_duration = booking_response.get('duration_minutes', 90)
+        
+        # Calculate expected slots based on actual booking
+        from datetime import datetime, timedelta
+        booking_start = datetime.strptime(booking_time, "%H:%M")
+        booking_end = booking_start + timedelta(minutes=booking_duration)
+        
+        slot1 = booking_start.strftime("%H:%M")
+        slot2 = (booking_start + timedelta(minutes=30)).strftime("%H:%M")
+        slot3 = (booking_start + timedelta(minutes=60)).strftime("%H:%M")
+        slot4 = booking_end.strftime("%H:%M")
+        
+        print(f"   Booking: {booking_time} for {booking_duration} minutes (ends at {slot4})")
+        
         # Test expectations after 90-minute duration
         test_cases = [
-            ("10:00", False, "should be unavailable (booking start)"),
-            ("10:30", False, "should be unavailable (within 90-minute booking)"),
-            ("11:00", False, "should be unavailable (within 90-minute booking)"),
-            ("11:30", True, "should be available (after 90-minute booking ends)")
+            (slot1, False, "should be unavailable (booking start)"),
+            (slot2, False, "should be unavailable (within 90-minute booking)"),
+            (slot3, False, "should be unavailable (within 90-minute booking)"),
+            (slot4, True, "should be available (after 90-minute booking ends)")
         ]
         
         all_passed = True
