@@ -341,8 +341,8 @@ function BookingPage() {
             </div>
           )}
 
-          {/* Step 3: Time Selection */}
-          {step === 3 && (
+          {/* Step 4: Time Selection */}
+          {step === 4 && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Оберіть час</h2>
