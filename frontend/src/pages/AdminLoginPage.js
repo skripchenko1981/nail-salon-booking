@@ -23,10 +23,10 @@ function AdminLoginPage() {
       const response = await axios.post(`${API}/admin/login`, credentials);
       localStorage.setItem('admin_token', response.data.token);
       localStorage.setItem('admin_username', response.data.username);
-      toast.success('Добро пожаловать!');
+      toast.success('Ласкаво просимо!');
       navigate('/admin/dashboard');
     } catch (error) {
-      toast.error('Неверные учетные данные');
+      toast.error('Невірні облікові дані');
     } finally {
       setLoading(false);
     }
@@ -44,7 +44,7 @@ function AdminLoginPage() {
           data-testid="back-to-home-button"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          На главную
+          На головну
         </Button>
 
         <div className="bg-white rounded-3xl p-8 lg:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-rose-200/50">
@@ -53,14 +53,14 @@ function AdminLoginPage() {
               <Lock className="h-8 w-8 text-[#D4A5A5]" />
             </div>
             <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
-              Вход для администратора
+              Вхід для адміністратора
             </h1>
-            <p className="text-gray-600 mt-2 text-sm">Войдите для управления системой</p>
+            <p className="text-gray-600 mt-2 text-sm">Увійдіть для управління системою</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="username">Имя пользователя</Label>
+              <Label htmlFor="username">Ім'я користувача</Label>
               <Input
                 id="username"
                 required
@@ -90,12 +90,12 @@ function AdminLoginPage() {
               className="w-full bg-[#D4A5A5] hover:bg-[#9E829C] text-white py-6 rounded-full text-base shadow-lg hover:shadow-xl active:scale-95 transition-all"
               data-testid="admin-login-button"
             >
-              {loading ? 'Вход...' : 'Войти'}
+              {loading ? 'Вхід...' : 'Увійти'}
             </Button>
           </form>
 
           <div className="mt-6 text-center text-sm text-gray-500">
-            <p>По умолчанию: admin / admin123</p>
+            <p>За замовчуванням: admin / admin123</p>
           </div>
         </div>
       </div>
