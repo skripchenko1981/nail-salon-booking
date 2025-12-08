@@ -39,6 +39,7 @@ function BookingPage() {
 
   useEffect(() => {
     fetchServices();
+    fetchMasters();
   }, []);
 
   useEffect(() => {
