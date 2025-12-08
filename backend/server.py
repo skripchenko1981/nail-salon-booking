@@ -709,6 +709,28 @@ async def update_reminder_settings(settings: ReminderSettings, _: str = Depends(
     )
     return settings
 
+# ============ SITE SETTINGS ============
+
+@api_router.get("/settings", response_model=SiteSettings)
+async def get_site_settings():
+    """Публічні налаштування сайту"""
+    settings = await db.site_settings.find_one({"id": "site_settings"}, {"_id": 0})
+    if not settings:
+        default_settings = SiteSettings()
+        await db.site_settings.insert_one(default_settings.model_dump())
+        return default_settings
+    return SiteSettings(**settings)
+
+@api_router.put("/admin/settings", response_model=SiteSettings)
+async def update_site_settings(settings: SiteSettings, _: str = Depends(verify_token)):
+    """Оновлення налаштувань сайту (тільки адмін)"""
+    await db.site_settings.update_one(
+        {"id": "site_settings"},
+        {"$set": settings.model_dump()},
+        upsert=True
+    )
+    return settings
+
 # Include router
 app.include_router(api_router)
 
