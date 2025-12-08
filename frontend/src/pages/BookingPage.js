@@ -57,6 +57,18 @@ function BookingPage() {
     }
   };
 
+  const fetchMasters = async () => {
+    try {
+      const response = await axios.get(`${API}/masters`);
+      // Фільтруємо тільки активних майстрів
+      setMasters(response.data.filter(m => m.is_active));
+    } catch (error) {
+      console.error('Помилка завантаження майстрів:', error);
+      // Якщо не вдалось завантажити - використовуємо admin за замовчуванням
+      setMasters([{ id: 'admin', name: 'Майстер', is_active: true }]);
+    }
+  };
+
   const fetchTimeSlots = async () => {
     try {
       const response = await axios.get(`${API}/timeslots/${formData.date}?service_id=${formData.service_id}&master_id=admin`);
