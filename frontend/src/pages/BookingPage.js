@@ -380,8 +380,8 @@ function BookingPage() {
             </div>
           )}
 
-          {/* Step 4: Contact Details */}
-          {step === 4 && (
+          {/* Step 5: Client Information */}
+          {step === 5 && (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Ваші контакти</h2>
