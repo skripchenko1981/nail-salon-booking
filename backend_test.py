@@ -275,7 +275,8 @@ class NailSalonAPITester:
                 "Cancel Booking",
                 "PUT",
                 f"bookings/{booking_id}/cancel",
-                200
+                200,
+                data={"cancellation_reason": "Test cancellation"}
             )
             
             return True
