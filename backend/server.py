@@ -466,11 +466,8 @@ async def delete_service(service_id: str, user: Dict = Depends(verify_master_or_
 # ============ SCHEDULE ROUTES ============
 
 @api_router.get("/schedule", response_model=List[WorkSchedule])
-async def get_schedule(master_id: str, user: Optional[Dict] = Depends(verify_master_or_admin)):
+async def get_schedule(master_id: str = "admin"):
     """Отримати розклад майстра"""
-    # Майстер може бачити тільки свій розклад
-    if user and user["role"] == "master" and user["user_id"] != master_id:
-        raise HTTPException(status_code=403, detail="Can only view your own schedule")
     
     schedules = await db.work_schedule.find({"master_id": master_id}, {"_id": 0}).to_list(7)
     existing_days = {s["day_of_week"] for s in schedules}
