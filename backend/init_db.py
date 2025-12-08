@@ -9,15 +9,15 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime, timezone
 import os
 from uuid import uuid4
-import bcrypt
+import hashlib
 
 MONGO_URL = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
 DB_NAME = os.environ.get("DB_NAME", "test_database")
 
 
 def hash_password(password: str) -> str:
-    """Хешувати пароль"""
-    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    """Хешувати пароль (використовуємо SHA256 як в server.py)"""
+    return hashlib.sha256(password.encode()).hexdigest()
 
 
 async def init_database():
