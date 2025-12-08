@@ -43,10 +43,10 @@ function BookingPage() {
   }, []);
 
   useEffect(() => {
-    if (formData.service_id && formData.date) {
+    if (formData.date && formData.service_id && formData.master_id) {
       fetchTimeSlots();
     }
-  }, [formData.service_id, formData.date]);
+  }, [formData.date, formData.service_id, formData.master_id]);
 
   const fetchServices = async () => {
     try {
