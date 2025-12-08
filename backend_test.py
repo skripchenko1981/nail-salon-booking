@@ -476,6 +476,7 @@ class NailSalonAPITester:
         self.test_services_api()
         self.test_schedule_api()
         self.test_booking_flow()
+        self.test_6_month_booking_limit()
         self.test_admin_operations()
         self.test_error_cases()
         
