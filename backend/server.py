@@ -121,6 +121,28 @@ class MasterLoginResponse(BaseModel):
     token: str
     master: Dict
 
+# ============ VACATION MODELS ============
+
+class Vacation(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    master_id: str
+    start_date: str  # YYYY-MM-DD
+    end_date: str    # YYYY-MM-DD
+    reason: Optional[str] = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class VacationCreate(BaseModel):
+    master_id: str
+    start_date: str
+    end_date: str
+    reason: Optional[str] = None
+
+class VacationUpdate(BaseModel):
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    reason: Optional[str] = None
+
 # ============ SERVICE MODELS ============
 
 class Service(BaseModel):
