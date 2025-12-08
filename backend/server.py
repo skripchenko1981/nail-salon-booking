@@ -682,7 +682,7 @@ async def get_available_timeslots(date: str, service_id: str, master_id: str):
         raise HTTPException(status_code=400, detail="Invalid date format")
     
     # Перевірити чи дата не більше ніж 6 місяців вперед
-    max_date = datetime.now(timezone.utc) + timedelta(days=180)
+    max_date = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=180)
     if date_obj > max_date:
         raise HTTPException(status_code=400, detail="Cannot book more than 6 months in advance")
     
