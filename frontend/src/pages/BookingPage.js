@@ -185,7 +185,7 @@ function BookingPage() {
         {/* Progress Bar */}
         <div className="mb-12">
           <div className="flex gap-2">
-            {[1, 2, 3, 4].map((i) => (
+            {[1, 2, 3, 4, 5].map((i) => (
               <div 
                 key={i} 
                 className={`h-2 flex-1 rounded-full transition-all ${
