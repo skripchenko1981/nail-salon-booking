@@ -800,10 +800,10 @@ async def master_login(credentials: MasterLogin):
     
     return MasterLoginResponse(token=token, master=master_data)
 
-@api_router.get("/masters", response_model=List[MasterResponse])
-async def get_masters(_: Dict = Depends(verify_admin)):
-    """Отримати список всіх майстрів (тільки адмін)"""
-    masters = await db.masters.find({}, {"_id": 0, "password_hash": 0}).to_list(100)
+@api_router.get("/masters", response_model=List[Master])
+async def get_masters():
+    """Отримати список активних майстрів (публічний endpoint)"""
+    masters = await db.masters.find({"is_active": True}, {"_id": 0, "password_hash": 0}).to_list(100)
     return masters
 
 @api_router.post("/masters", response_model=MasterResponse)
