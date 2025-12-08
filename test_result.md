@@ -270,9 +270,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Telegram notifications for admin on new booking"
-    - "Telegram notifications for admin on booking cancellation"
-    - "Site Settings API - admin update"
+    - "Admin panel Ukrainian localization"
+    - "Site Settings functionality"
+    - "Main page Ukrainian localization"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
