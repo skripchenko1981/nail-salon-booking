@@ -480,7 +480,7 @@ class NailSalonAPITester:
             # 3. Check that created master is in the list
             master_found = False
             for master in masters_list:
-                if master.get('email') == 'test.master@example.com':
+                if master.get('email') == unique_email:
                     master_found = True
                     print(f"   ✅ Created master found in list: {master.get('name')}")
                     break
