@@ -216,33 +216,63 @@ function BookingPage() {
                 <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Оберіть дату</h2>
                 <p className="text-gray-600">Коли вам зручно?</p>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {getNextDays(180).map((day) => {
-                  const dateStr = format(day, 'yyyy-MM-dd');
-                  const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
-                  return (
-                    <button
-                      key={dateStr}
-                      onClick={() => handleDateSelect(dateStr)}
-                      className="p-6 border-2 border-rose-200/50 rounded-2xl hover:border-[#D4A5A5] hover:shadow-lg transition-all active:scale-98 text-center group"
-                      data-testid={`date-option-${dateStr}`}
-                    >
-                      <div className="text-xs text-gray-500 uppercase tracking-widest mb-2">
-                        {format(day, 'EEEE', { locale: uk })}
-                      </div>
-                      <div className="text-2xl font-bold group-hover:text-[#D4A5A5] transition-colors" style={{ fontFamily: 'Playfair Display, serif' }}>
-                        {format(day, 'd')}
-                      </div>
-                      <div className="text-sm text-gray-600 mt-1">
-                        {format(day, 'MMMM', { locale: uk })}
-                      </div>
-                      {isToday && (
-                        <div className="text-xs text-[#D4A5A5] font-semibold mt-2">Сьогодні</div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+              
+              {/* Розділення дат по місяцях */}
+              {(() => {
+                const days = getNextDays(180);
+                const monthsMap = new Map();
+                
+                // Групуємо дати по місяцях
+                days.forEach(day => {
+                  const monthKey = format(day, 'yyyy-MM');
+                  if (!monthsMap.has(monthKey)) {
+                    monthsMap.set(monthKey, []);
+                  }
+                  monthsMap.get(monthKey).push(day);
+                });
+                
+                return Array.from(monthsMap.entries()).map(([monthKey, monthDays]) => (
+                  <div key={monthKey} className="space-y-4">
+                    {/* Заголовок місяця */}
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1 h-px bg-rose-200"></div>
+                      <h3 className="text-xl font-semibold text-[#9E829C]" style={{ fontFamily: 'Playfair Display, serif' }}>
+                        {format(monthDays[0], 'LLLL yyyy', { locale: uk })}
+                      </h3>
+                      <div className="flex-1 h-px bg-rose-200"></div>
+                    </div>
+                    
+                    {/* Дати місяця */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {monthDays.map((day) => {
+                        const dateStr = format(day, 'yyyy-MM-dd');
+                        const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+                        return (
+                          <button
+                            key={dateStr}
+                            onClick={() => handleDateSelect(dateStr)}
+                            className="p-6 border-2 border-rose-200/50 rounded-2xl hover:border-[#D4A5A5] hover:shadow-lg transition-all active:scale-98 text-center group"
+                            data-testid={`date-option-${dateStr}`}
+                          >
+                            <div className="text-xs text-gray-500 uppercase tracking-widest mb-2">
+                              {format(day, 'EEEE', { locale: uk })}
+                            </div>
+                            <div className="text-2xl font-bold group-hover:text-[#D4A5A5] transition-colors" style={{ fontFamily: 'Playfair Display, serif' }}>
+                              {format(day, 'd')}
+                            </div>
+                            <div className="text-sm text-gray-600 mt-1">
+                              {format(day, 'MMMM', { locale: uk })}
+                            </div>
+                            {isToday && (
+                              <div className="text-xs text-[#D4A5A5] font-semibold mt-2">Сьогодні</div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ));
+              })()}
             </div>
           )}
 
