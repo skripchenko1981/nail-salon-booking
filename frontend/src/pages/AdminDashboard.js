@@ -120,6 +120,7 @@ function AdminDashboard() {
             <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="/dashboard" element={<AdminOverview />} />
             <Route path="/bookings" element={<AdminBookings />} />
+            <Route path="/clients" element={<AdminClients />} />
             <Route path="/services" element={<AdminServices />} />
             <Route path="/schedule" element={<AdminSchedule />} />
           </Routes>
