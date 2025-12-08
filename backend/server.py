@@ -210,6 +210,7 @@ class Booking(BaseModel):
     notes: Optional[str] = None
 
 class BookingCreate(BaseModel):
+    master_id: str
     client_name: str
     client_phone: str
     client_email: Optional[EmailStr] = None
