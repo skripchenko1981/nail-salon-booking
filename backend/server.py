@@ -833,6 +833,23 @@ async def create_master(master: MasterCreate, _: Dict = Depends(verify_admin)):
     doc = master_obj.model_dump()
     await db.masters.insert_one(doc)
     
+    # Створити графік роботи за замовчуванням (Пн-Пт 09:00-18:00)
+    master_id = doc["id"]
+    default_schedule = []
+    for day in range(7):
+        schedule_entry = {
+            "id": str(uuid.uuid4()),
+            "master_id": master_id,
+            "day_of_week": day,
+            "start_time": "09:00",
+            "end_time": "18:00",
+            "is_working": day < 5  # Працює Пн-Пт
+        }
+        default_schedule.append(schedule_entry)
+    
+    if default_schedule:
+        await db.work_schedule.insert_many(default_schedule)
+    
     # Прибрати password_hash з відповіді
     return MasterResponse(**{k: v for k, v in doc.items() if k != "password_hash"})
 
