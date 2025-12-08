@@ -307,12 +307,12 @@ class AdminNotificationsTester:
             return False
             
         service = services_data[0]
-        tomorrow = (datetime.now() + timedelta(days=2)).strftime('%Y-%m-%d')
+        tomorrow = (datetime.now() + timedelta(days=3)).strftime('%Y-%m-%d')
         
         booking_data = {
             "service_id": service['id'],
             "date": tomorrow,
-            "time": "15:00",
+            "time": "16:00",
             "client_name": "Марія Адмінтест",
             "client_phone": "+380987654321",
             "client_email": "maria.admin@example.com",
