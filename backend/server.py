@@ -699,12 +699,12 @@ async def get_available_timeslots(date: str, service_id: str, master_id: str):
         "day_of_week": day_of_week
     }, {"_id": 0})
     
-    logger.info(f"Schedule lookup: master_id={master_id}, day_of_week={day_of_week}, found={schedule is not None}")
+    print(f"[TIMESLOTS DEBUG] master_id={master_id}, day={day_of_week}, schedule_found={schedule is not None}")
     if schedule:
-        logger.info(f"Schedule: is_working={schedule.get('is_working')}, {schedule.get('start_time')}-{schedule.get('end_time')}")
+        print(f"[TIMESLOTS DEBUG] is_working={schedule.get('is_working')}, time={schedule.get('start_time')}-{schedule.get('end_time')}")
     
     if not schedule or not schedule.get("is_working", False):
-        logger.info(f"Returning empty - no schedule or not working")
+        print(f"[TIMESLOTS DEBUG] Returning empty slots")
         return []
     
     start_time = schedule.get("start_time", "09:00")
