@@ -74,7 +74,7 @@ function AdminVacations() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('admin_token');
+    const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
 
     try {
       if (editingVacation) {
