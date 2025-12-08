@@ -1,5 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Manrope:wght@300;400;500&display=swap');
 
+:root {
+  --primary-color: #D4A5A5;
+  --secondary-color: #9E829C;
+  --accent-color: #F3EBEB;
+}
+
 * {
   margin: 0;
   padding: 0;
