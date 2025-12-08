@@ -833,7 +833,7 @@ async def get_my_profile(user: Dict = Depends(verify_master_or_admin)):
         raise HTTPException(status_code=404, detail="Master not found")
     return MasterResponse(**master)
 
-@api_router.put("/masters/{master_id}", response_model=Master)
+@api_router.put("/masters/{master_id}", response_model=MasterResponse)
 async def update_master(master_id: str, master: MasterUpdate, user: Dict = Depends(verify_master_or_admin)):
     """Оновити майстра"""
     # Майстер може редагувати тільки себе, адмін - всіх
@@ -849,7 +849,7 @@ async def update_master(master_id: str, master: MasterUpdate, user: Dict = Depen
         raise HTTPException(status_code=404, detail="Master not found")
     
     updated_master = await db.masters.find_one({"id": master_id}, {"_id": 0, "password_hash": 0})
-    return Master(**updated_master)
+    return MasterResponse(**updated_master)
 
 @api_router.put("/masters/{master_id}/password")
 async def update_master_password(master_id: str, password_update: MasterPasswordUpdate, 
