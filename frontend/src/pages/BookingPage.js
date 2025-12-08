@@ -216,7 +216,7 @@ function BookingPage() {
                 <p className="text-gray-600">Коли вам зручно?</p>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {getNextDays(14).map((day) => {
+                {getNextDays(180).map((day) => {
                   const dateStr = format(day, 'yyyy-MM-dd');
                   const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
                   return (
