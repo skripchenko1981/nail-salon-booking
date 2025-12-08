@@ -80,19 +80,19 @@ function AdminServices() {
           formData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        toast.success('Услуга обновлена');
+        toast.success('Послугу оновлено');
       } else {
         await axios.post(
           `${API}/services`,
           formData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        toast.success('Услуга создана');
+        toast.success('Послугу створено');
       }
       setDialogOpen(false);
       fetchServices();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Ошибка при сохранении');
+      toast.error(error.response?.data?.detail || 'Помилка при збереженні');
     }
   };
 
