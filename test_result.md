@@ -74,11 +74,14 @@ backend:
     file: "/app/backend/server.py, /app/frontend/src/components/admin/*"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Fixed AdminVacations.js to use current master_id. Backend correctly filters by master_id from JWT token."
+      - working: true
+        agent: "testing"
+        comment: "✅ КОМПЛЕКСНЕ ТЕСТУВАННЯ MULTI-MASTER СИСТЕМИ ЗАВЕРШЕНО УСПІШНО. Протестовано згідно з українським завданням користувача: 1) Автентифікація майстрів - обидва майстри (Олена Коваль, Марія Петренко) успішно входять з різними токенами; 2) Ізоляція даних - послуги, записи, клієнти, відпустки, розклад повністю ізольовані між майстрами; 3) Операції майстрів - створення послуг працює з правильною ізоляцією; 4) Потік бронювання - робочі години 09:00-18:00, 18 слотів по 30 хв, створення записів працює коректно. Використано правильний endpoint /api/masters/{master_id}/services для ізоляції послуг. Всі 36 тестів пройшли успішно (100% success rate). Система multi-master повністю функціональна з правильною ізоляцією даних."
 
   - task: "Timeslots API with master and service filtering"
     implemented: true
