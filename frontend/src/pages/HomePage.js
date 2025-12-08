@@ -47,6 +47,13 @@ function HomePage() {
               Мої записи
             </button>
             <button 
+              onClick={() => navigate('/master/login')} 
+              className="text-sm hover:text-[#D4A5A5] transition-colors"
+              data-testid="nav-master-login"
+            >
+              Вхід для майстра
+            </button>
+            <button 
               onClick={() => navigate('/admin/login')} 
               className="text-xs text-gray-400 hover:text-[#9E829C] transition-colors"
               data-testid="nav-admin-login"
