@@ -38,6 +38,7 @@ function AdminDashboard() {
     { path: '/admin/clients', icon: Users, label: 'Клієнти', testId: 'nav-clients' },
     { path: '/admin/services', icon: Package, label: 'Послуги', testId: 'nav-services' },
     { path: '/admin/schedule', icon: Settings, label: 'Розклад', testId: 'nav-schedule' },
+    { path: '/admin/settings', icon: Settings, label: 'Налаштування', testId: 'nav-settings' },
   ];
 
   if (!token) return null;
