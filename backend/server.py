@@ -383,8 +383,18 @@ async def update_client_stats(client_id: str, booking_price: int, status: str):
 # ============ SERVICE ROUTES ============
 
 @api_router.get("/services", response_model=List[Service])
-async def get_services():
-    services = await db.services.find({"active": True}, {"_id": 0}).to_list(100)
+async def get_services(master_id: Optional[str] = None):
+    """Отримати послуги (опціонально по майстру)"""
+    query = {"active": True}
+    if master_id:
+        query["master_id"] = master_id
+    services = await db.services.find(query, {"_id": 0}).to_list(100)
+    return services
+
+@api_router.get("/masters/{master_id}/services", response_model=List[Service])
+async def get_master_services(master_id: str):
+    """Отримати послуги конкретного майстра"""
+    services = await db.services.find({"master_id": master_id, "active": True}, {"_id": 0}).to_list(100)
     return services
 
 @api_router.post("/services", response_model=Service)
