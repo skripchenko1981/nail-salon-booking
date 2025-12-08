@@ -640,7 +640,8 @@ class NailSalonAPITester:
 
 def main():
     tester = NailSalonAPITester()
-    success = tester.run_all_tests()
+    # Run focused master system test as requested
+    success = tester.run_master_system_test()
     return 0 if success else 1
 
 if __name__ == "__main__":
