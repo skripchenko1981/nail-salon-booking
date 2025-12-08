@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Тестування Telegram сповіщень для адміна та Site Settings API"
+user_problem_statement: "Тестування нової функціональності врахування тривалості при бронюванні"
 
 backend:
   - task: "Telegram notifications for admin on new booking"
