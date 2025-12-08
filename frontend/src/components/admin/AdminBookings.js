@@ -38,12 +38,13 @@ function AdminBookings() {
 
   const fetchBookings = async () => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
       const response = await axios.get(`${API}/admin/bookings`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setBookings(response.data);
     } catch (error) {
+      console.error('Booking fetch error:', error);
       toast.error('Помилка завантаження записів');
     } finally {
       setLoading(false);
