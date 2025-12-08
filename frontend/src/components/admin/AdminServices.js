@@ -97,22 +97,22 @@ function AdminServices() {
   };
 
   const handleDelete = async (serviceId) => {
-    if (!window.confirm('Вы уверены, что хотите удалить эту услугу?')) return;
+    if (!window.confirm('Ви впевнені, що хочете видалити цю послугу?')) return;
     
     const token = localStorage.getItem('admin_token');
     try {
       await axios.delete(`${API}/services/${serviceId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success('Услуга удалена');
+      toast.success('Послугу видалено');
       fetchServices();
     } catch (error) {
-      toast.error('Ошибка при удалении');
+      toast.error('Помилка при видаленні');
     }
   };
 
   if (loading) {
-    return <div className="text-center py-12">Загрузка...</div>;
+    return <div className="text-center py-12">Завантаження...</div>;
   }
 
   return (
@@ -120,9 +120,9 @@ function AdminServices() {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-4xl font-bold tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
-            Услуги
+            Послуги
           </h1>
-          <p className="text-gray-600 mt-2">Управление услугами и ценами</p>
+          <p className="text-gray-600 mt-2">Керування послугами та цінами</p>
         </div>
         <Button 
           onClick={() => handleOpenDialog()} 
@@ -130,7 +130,7 @@ function AdminServices() {
           data-testid="add-service-button"
         >
           <Plus className="mr-2 h-4 w-4" />
-          Добавить услугу
+          Додати послугу
         </Button>
       </div>
 
