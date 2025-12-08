@@ -158,11 +158,11 @@ function AdminServices() {
               <div className="flex items-center gap-4 text-sm text-gray-500 pt-2">
                 <span className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
-                  {service.duration_minutes} мин
+                  {service.duration_minutes} хв
                 </span>
                 <span className="flex items-center gap-1 font-bold text-[#D4A5A5]" style={{ fontFamily: 'Playfair Display, serif' }}>
                   <DollarSign className="h-4 w-4" />
-                  {service.price} ₽
+                  {service.price} ₴
                 </span>
               </div>
               <div className="flex gap-2 pt-4 border-t border-rose-200/50">
@@ -174,7 +174,7 @@ function AdminServices() {
                   data-testid={`edit-service-${service.id}`}
                 >
                   <Edit className="h-4 w-4 mr-1" />
-                  Редактировать
+                  Редагувати
                 </Button>
                 <Button 
                   onClick={() => handleDelete(service.id)} 
