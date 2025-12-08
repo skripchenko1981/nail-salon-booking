@@ -18,12 +18,15 @@ function BookingPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [services, setServices] = useState([]);
+  const [masters, setMasters] = useState([]);
   const [timeSlots, setTimeSlots] = useState([]);
   const [loading, setLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     service_id: '',
     service_name: '',
+    master_id: '',
+    master_name: '',
     date: '',
     time: '',
     client_name: '',
