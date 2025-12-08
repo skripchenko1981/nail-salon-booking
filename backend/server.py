@@ -591,7 +591,7 @@ async def update_booking_status(booking_id: str, update: BookingUpdate,
         if new_status == "completed":
             await update_client_stats(booking["client_id"], booking["price"], "completed")
         
-        # Відправити повідомлення (SMS або Telegram)
+        # Відправити повідомлення клієнту (SMS або Telegram)
         if background_tasks:
             if new_status == "confirmed":
                 if booking.get("telegram_id"):
@@ -632,6 +632,21 @@ async def update_booking_status(booking_id: str, update: BookingUpdate,
                         booking["time"],
                         booking["client_phone"],
                         update.cancellation_reason
+                    )
+                
+                # Сповістити адміна про скасування (тільки якщо скасував клієнт через адмін-панель)
+                admin_telegram_id = os.environ.get('ADMIN_TELEGRAM_ID')
+                if admin_telegram_id:
+                    background_tasks.add_task(
+                        telegram_bot.notify_admin_booking_cancelled,
+                        booking["client_name"],
+                        booking["client_phone"],
+                        booking["service_name"],
+                        booking["date"],
+                        booking["time"],
+                        booking["price"],
+                        update.cancellation_reason,
+                        admin_telegram_id
                     )
     
     updated_booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
