@@ -191,6 +191,7 @@ class ClientStats(BaseModel):
 class Booking(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    master_id: str
     client_id: str
     client_name: str
     client_phone: str
