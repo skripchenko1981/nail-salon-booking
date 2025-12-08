@@ -469,7 +469,7 @@ async def cancel_booking(booking_id: str, cancel_req: BookingCancelRequest,
     # Оновити статистику клієнта
     await update_client_stats(booking["client_id"], booking["price"], "cancelled")
     
-    # Відправити повідомлення про скасування (SMS або Telegram)
+    # Відправити повідомлення клієнту про скасування (SMS або Telegram)
     if booking.get("telegram_id"):
         background_tasks.add_task(
             telegram_bot.send_booking_cancelled,
@@ -489,6 +489,21 @@ async def cancel_booking(booking_id: str, cancel_req: BookingCancelRequest,
             booking["time"],
             booking["client_phone"],
             cancel_req.cancellation_reason
+        )
+    
+    # Відправити повідомлення адміну про скасування
+    admin_telegram_id = os.environ.get('ADMIN_TELEGRAM_ID')
+    if admin_telegram_id:
+        background_tasks.add_task(
+            telegram_bot.notify_admin_booking_cancelled,
+            booking["client_name"],
+            booking["client_phone"],
+            booking["service_name"],
+            booking["date"],
+            booking["time"],
+            booking["price"],
+            cancel_req.cancellation_reason,
+            admin_telegram_id
         )
     
     return {"message": "Booking cancelled successfully"}
