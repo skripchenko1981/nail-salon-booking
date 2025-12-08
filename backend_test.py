@@ -571,6 +571,37 @@ class NailSalonAPITester:
             401
         )
 
+    def run_master_system_test(self):
+        """Run focused master system test as requested"""
+        print("🚀 Starting Master System API Test")
+        print(f"Base URL: {self.base_url}")
+        
+        # Test admin login first
+        if not self.test_admin_login():
+            print("❌ Admin login failed - cannot proceed with master tests")
+            return False
+        
+        # Run master system test
+        self.test_master_system()
+        
+        # Print summary
+        print("\n" + "="*50)
+        print("MASTER SYSTEM TEST SUMMARY")
+        print("="*50)
+        print(f"Tests run: {self.tests_run}")
+        print(f"Tests passed: {self.tests_passed}")
+        print(f"Tests failed: {self.tests_run - self.tests_passed}")
+        print(f"Success rate: {(self.tests_passed/self.tests_run)*100:.1f}%")
+        
+        # Print failed tests
+        failed_tests = [t for t in self.test_results if not t['success']]
+        if failed_tests:
+            print("\n❌ FAILED TESTS:")
+            for test in failed_tests:
+                print(f"   - {test['test']}: {test['details']}")
+        
+        return self.tests_passed == self.tests_run
+
     def run_all_tests(self):
         """Run all tests"""
         print("🚀 Starting Nail Salon API Tests")
@@ -585,6 +616,7 @@ class NailSalonAPITester:
         self.test_schedule_api()
         self.test_booking_flow()
         self.test_6_month_booking_limit()
+        self.test_master_system()
         self.test_admin_operations()
         self.test_error_cases()
         
