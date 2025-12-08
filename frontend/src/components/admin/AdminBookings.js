@@ -180,7 +180,7 @@ function AdminBookings() {
                     </div>
                     <div className="flex items-center gap-2 text-gray-600">
                       <Clock className="h-4 w-4 text-[#D4A5A5]" />
-                      <span>{booking.time}</span>
+                      <span>{booking.time} ({booking.duration_minutes} хв)</span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-600">
                       <User className="h-4 w-4 text-[#D4A5A5]" />
