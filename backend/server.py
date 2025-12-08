@@ -669,7 +669,8 @@ async def cancel_booking(booking_id: str, cancel_req: BookingCancelRequest,
 # ============ TIMESLOTS ============
 
 @api_router.get("/timeslots/{date}", response_model=List[TimeSlot])
-async def get_available_timeslots(date: str, service_id: str):
+async def get_available_timeslots(date: str, service_id: str, master_id: str):
+    """Отримати доступні слоти для майстра на певну дату"""
     service = await db.services.find_one({"id": service_id}, {"_id": 0})
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
@@ -680,16 +681,40 @@ async def get_available_timeslots(date: str, service_id: str):
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format")
     
-    schedule = await db.work_schedule.find_one({"day_of_week": day_of_week}, {"_id": 0})
+    # Перевірити чи дата не більше ніж 6 місяців вперед
+    max_date = datetime.now(timezone.utc) + timedelta(days=180)
+    if date_obj > max_date:
+        raise HTTPException(status_code=400, detail="Cannot book more than 6 months in advance")
+    
+    # Перевірити чи майстер у відпустці в цей день
+    vacations = await db.vacations.find({
+        "master_id": master_id,
+        "start_date": {"$lte": date},
+        "end_date": {"$gte": date}
+    }).to_list(10)
+    
+    if vacations:
+        return []  # Майстер у відпустці - немає доступних слотів
+    
+    # Отримати розклад майстра
+    schedule = await db.work_schedule.find_one({
+        "master_id": master_id,
+        "day_of_week": day_of_week
+    }, {"_id": 0})
+    
     if not schedule or not schedule.get("is_working", False):
         return []
     
     start_time = schedule.get("start_time", "09:00")
     end_time = schedule.get("end_time", "18:00")
     
-    # Отримати всі підтверджені та очікуючі записи на цю дату
+    # Отримати всі підтверджені та очікуючі записи майстра на цю дату
     bookings = await db.bookings.find(
-        {"date": date, "status": {"$in": ["pending", "confirmed"]}},
+        {
+            "master_id": master_id,
+            "date": date, 
+            "status": {"$in": ["pending", "confirmed"]}
+        },
         {"_id": 0}
     ).to_list(100)
     
