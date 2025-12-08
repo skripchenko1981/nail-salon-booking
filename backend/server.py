@@ -66,9 +66,67 @@ def validate_ukrainian_phone(phone: str) -> str:
 
 # ============ MODELS ============
 
+# ============ MASTER MODELS ============
+
+class Master(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    email: EmailStr
+    phone: str
+    password_hash: str
+    role: str = "master"  # "admin" or "master"
+    bio: Optional[str] = None
+    photo_url: Optional[str] = None
+    is_active: bool = True
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class MasterCreate(BaseModel):
+    name: str
+    email: EmailStr
+    phone: str
+    password: str
+    bio: Optional[str] = None
+    photo_url: Optional[str] = None
+    
+    @field_validator('phone')
+    @classmethod
+    def validate_phone(cls, v):
+        return validate_ukrainian_phone(v)
+
+class MasterUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+    bio: Optional[str] = None
+    photo_url: Optional[str] = None
+    is_active: Optional[bool] = None
+    
+    @field_validator('phone')
+    @classmethod
+    def validate_phone(cls, v):
+        if v:
+            return validate_ukrainian_phone(v)
+        return v
+
+class MasterPasswordUpdate(BaseModel):
+    current_password: str
+    new_password: str
+
+class MasterLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class MasterLoginResponse(BaseModel):
+    token: str
+    master: Dict
+
+# ============ SERVICE MODELS ============
+
 class Service(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    master_id: str
     name: str
     description: str
     duration_minutes: int
