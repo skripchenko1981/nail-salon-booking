@@ -249,6 +249,54 @@ backend:
           agent: "testing"
           comment: "✅ GET /api/admin/bookings повертає всі записи. PUT /api/admin/bookings/{id} оновлює статуси. Статистика працює."
 
+  - task: "Vacation CRUD operations"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Всі CRUD операції з відпустками працюють коректно: POST /api/vacations створює відпустку, GET /api/vacations отримує список, PUT /api/vacations/{id} оновлює, DELETE /api/vacations/{id} видаляє. Валідація дат працює правильно - перевіряє формат дат та запобігає створенню відпусток з некоректним порядком дат."
+
+  - task: "Timeslots with vacation consideration"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ GET /api/timeslots/{date} коректно враховує відпустки майстра. Під час відпустки повертає порожній масив слотів (майстер недоступний). Після закінчення відпустки слоти знову стають доступними. Логіка перевірки відпусток інтегрована правильно."
+
+  - task: "6-month booking limit"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Обмеження бронювання на 6 місяців (180 днів) працює коректно. Спроба отримати слоти на дату понад 180 днів повертає помилку 400 з повідомленням 'Cannot book more than 6 months in advance'. Дати в межах 6 місяців обробляються нормально."
+
+  - task: "Vacation validation rules"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Валідація відпусток працює правильно: неправильний формат дати повертає помилку 400, дата закінчення раніше дати початку також повертає помилку 400. Система запобігає створенню некоректних відпусток."
+
 frontend:
   - task: "Duration display in admin bookings list"
     implemented: true
