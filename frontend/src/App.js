@@ -7,6 +7,8 @@ import BookingPage from './pages/BookingPage';
 import MyBookingsPage from './pages/MyBookingsPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminDashboard from './pages/AdminDashboard';
+import MasterLoginPage from './pages/MasterLoginPage';
+import MasterDashboard from './pages/MasterDashboard';
 import './App.css';
 
 function App() {
