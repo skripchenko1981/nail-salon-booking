@@ -1,76 +1,61 @@
 version: '3.8'
 
 services:
-  mongodb:
-    image: mongo:7.0
-    container_name: nail-salon-mongodb
+  mongo:
+    image: mongo:6
+    container_name: beauty-mongo
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-password123}
     volumes:
-      - mongodb_data:/data/db
-      - mongodb_config:/data/configdb
+      - beauty_mongo_data:/data/db
     networks:
-      - nail-salon-network
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - nextcloud_app-network
 
-  backend:
+  beauty-backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: nail-salon-backend
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: beauty-backend
     restart: unless-stopped
     environment:
-      MONGO_URL: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password123}@mongodb:27017/
-      DB_NAME: ${DB_NAME:-nail_salon}
-      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      MONGO_URL: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password123}@mongo:27017/
+      DB_NAME: ${DB_NAME:-beauty_salon}
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://beauty-alena.pp.ua}
       JWT_SECRET: ${JWT_SECRET:-change-this-secret-in-production}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
-    ports:
-      - "8001:8001"
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_PHONE_NUMBER: ${TWILIO_PHONE_NUMBER:-}
+    expose:
+      - "8000"
     depends_on:
-      mongodb:
-        condition: service_healthy
+      - mongo
     networks:
-      - nail-salon-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/api/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - nextcloud_app-network
+    command: uvicorn server:app --host 0.0.0.0 --port 8000
 
-  frontend:
+  beauty-frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend/Dockerfile
       args:
-        REACT_APP_BACKEND_URL: ${REACT_APP_BACKEND_URL:-http://localhost:8001}
-    container_name: nail-salon-frontend
+        REACT_APP_BACKEND_URL: ${REACT_APP_BACKEND_URL:-https://beauty-alena.pp.ua}
+    container_name: beauty-frontend
     restart: unless-stopped
-    ports:
-      - "${FRONTEND_PORT:-3000}:80"
+    expose:
+      - "80"
     depends_on:
-      - backend
+      - beauty-backend
     networks:
-      - nail-salon-network
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - nextcloud_app-network
 
 volumes:
-  mongodb_data:
-    driver: local
-  mongodb_config:
-    driver: local
+  beauty_mongo_data:
 
 networks:
-  nail-salon-network:
-    driver: bridge
+  nextcloud_app-network:
+    external: true
