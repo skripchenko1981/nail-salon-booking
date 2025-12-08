@@ -49,6 +49,9 @@ function AdminVacations() {
   };
 
   const handleOpenDialog = (vacation = null) => {
+    const masterData = JSON.parse(localStorage.getItem('master_data') || '{"id": "admin"}');
+    const masterId = masterData.id;
+    
     if (vacation) {
       setEditingVacation(vacation);
       setFormData({
@@ -60,7 +63,7 @@ function AdminVacations() {
     } else {
       setEditingVacation(null);
       setFormData({
-        master_id: 'admin',  // Тимчасово використовуємо admin
+        master_id: masterId,
         start_date: '',
         end_date: '',
         reason: ''
