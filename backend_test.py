@@ -924,9 +924,8 @@ class NailSalonAPITester:
                 updated_master1_services = self.run_test(
                     "Master 1 Updated Services",
                     "GET",
-                    "services",
-                    200,
-                    headers=master1_headers
+                    f"masters/{master1_id}/services",
+                    200
                 )
                 
                 if updated_master1_services:
@@ -940,9 +939,8 @@ class NailSalonAPITester:
                 updated_master2_services = self.run_test(
                     "Master 2 Updated Services",
                     "GET", 
-                    "services",
-                    200,
-                    headers=master2_headers
+                    f"masters/{master2_id}/services",
+                    200
                 )
                 
                 if updated_master2_services:
