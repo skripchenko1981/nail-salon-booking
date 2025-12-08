@@ -298,20 +298,34 @@ def create_token(username: str, role: str = "admin", user_id: Optional[str] = No
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
-def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
+def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict:
     try:
         token = credentials.credentials
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
+        role = payload.get("role", "admin")
+        user_id = payload.get("user_id")
         if username is None:
             raise HTTPException(status_code=401, detail="Invalid token")
-        return username
+        return {"username": username, "role": role, "user_id": user_id}
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
     except Exception:
         raise HTTPException(status_code=401, detail="Unauthorized")
+
+def verify_admin(user: Dict = Depends(verify_token)) -> Dict:
+    """Перевірити, що користувач є адміном"""
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return user
+
+def verify_master_or_admin(user: Dict = Depends(verify_token)) -> Dict:
+    """Перевірити, що користувач є майстром або адміном"""
+    if user["role"] not in ["admin", "master"]:
+        raise HTTPException(status_code=403, detail="Master or admin access required")
+    return user
 
 # ============ CLIENT HELPERS ============
 
