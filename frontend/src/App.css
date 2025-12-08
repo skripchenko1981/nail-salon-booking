@@ -48,16 +48,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 ::-webkit-scrollbar-track {
-  background: #F3EBEB;
+  background: var(--accent-color);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D4A5A5;
+  background: var(--primary-color);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9E829C;
+  background: var(--secondary-color);
 }
 
 /* Smooth transitions */
