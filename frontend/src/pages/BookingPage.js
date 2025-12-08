@@ -257,38 +257,34 @@ function BookingPage() {
             </div>
           )}
 
-          {/* Step 2: Master Selection */}
+          {/* Step 2: Service Selection */}
           {step === 2 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Оберіть майстра</h2>
-                <p className="text-gray-600">До кого б ви хотіли записатись?</p>
+                <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Оберіть послугу</h2>
+                <p className="text-gray-600">Що вас цікавить?</p>
               </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                {masters.map((master) => (
+              <div className="grid gap-4">
+                {services.map((service) => (
                   <button
-                    key={master.id}
-                    onClick={() => handleMasterSelect(master)}
+                    key={service.id}
+                    onClick={() => handleServiceSelect(service)}
                     className="text-left p-6 border-2 border-rose-200/50 rounded-2xl hover:border-[#D4A5A5] hover:shadow-lg transition-all active:scale-98 group"
-                    data-testid={`master-option-${master.id}`}
+                    data-testid={`service-option-${service.id}`}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-full bg-[#F3EBEB] flex items-center justify-center">
-                        {master.photo_url ? (
-                          <img src={master.photo_url} alt={master.name} className="w-full h-full rounded-full object-cover" />
-                        ) : (
-                          <span className="text-2xl font-bold text-[#D4A5A5]">
-                            {master.name.charAt(0)}
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-2 flex-1">
+                        <h3 className="text-xl font-semibold group-hover:text-[#D4A5A5] transition-colors">{service.name}</h3>
+                        <p className="text-sm text-gray-600">{service.description}</p>
+                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            {service.duration_minutes} хв
                           </span>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-xl font-semibold group-hover:text-[#D4A5A5] transition-colors">
-                          {master.name}
-                        </h3>
-                        {master.bio && (
-                          <p className="text-sm text-gray-600 mt-1">{master.bio}</p>
-                        )}
+                          <span className="text-lg font-bold text-[#D4A5A5]" style={{ fontFamily: 'Playfair Display, serif' }}>
+                            {service.price} ₴
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </button>
