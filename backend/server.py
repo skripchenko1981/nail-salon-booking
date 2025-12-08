@@ -1145,8 +1145,11 @@ async def get_all_clients(user: Dict = Depends(verify_master_or_admin)):
     return clients
 
 @api_router.get("/admin/clients/stats", response_model=ClientStats)
-async def get_client_stats(_: str = Depends(verify_token)):
-    all_clients = await db.clients.find({}, {"_id": 0}).to_list(10000)
+async def get_client_stats(user: Dict = Depends(verify_master_or_admin)):
+    """Отримати статистику клієнтів (кожен майстер бачить тільки своїх)"""
+    # Кожен користувач бачить тільки своїх клієнтів
+    query = {"master_id": user["user_id"]}
+    all_clients = await db.clients.find(query, {"_id": 0}).to_list(10000)
     
     total_clients = len(all_clients)
     
