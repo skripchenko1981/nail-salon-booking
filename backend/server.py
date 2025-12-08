@@ -812,7 +812,7 @@ async def master_login(credentials: MasterLogin):
     
     return MasterLoginResponse(token=token, master=master_data)
 
-@api_router.get("/masters", response_model=List[Master])
+@api_router.get("/masters", response_model=List[MasterPublic])
 async def get_masters():
     """Отримати список активних майстрів (публічний endpoint)"""
     masters = await db.masters.find({"is_active": True}, {"_id": 0, "password_hash": 0}).to_list(100)
