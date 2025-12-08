@@ -16,7 +16,7 @@ function AdminOverview() {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
       const response = await axios.get(`${API}/admin/stats`, {
         headers: { Authorization: `Bearer ${token}` }
       });
