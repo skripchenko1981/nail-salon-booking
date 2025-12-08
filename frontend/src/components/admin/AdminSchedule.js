@@ -40,12 +40,15 @@ function AdminSchedule() {
   };
 
   const handleSave = async (daySchedule) => {
-    const token = localStorage.getItem('admin_token');
+    const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
+    const masterData = JSON.parse(localStorage.getItem('master_data') || '{"id": "admin"}');
+    const masterId = masterData.id;
+    
     try {
       await axios.post(
         `${API}/schedule`,
         {
-          master_id: "admin",
+          master_id: masterId,
           day_of_week: daySchedule.day_of_week,
           start_time: daySchedule.start_time,
           end_time: daySchedule.end_time,
