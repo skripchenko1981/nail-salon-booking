@@ -24,7 +24,7 @@ function AdminVacations() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingVacation, setEditingVacation] = useState(null);
   const [formData, setFormData] = useState({
-    master_id: 'admin',  // Тимчасово використовуємо admin як master_id
+    master_id: '',
     start_date: '',
     end_date: '',
     reason: ''
