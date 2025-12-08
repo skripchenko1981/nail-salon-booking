@@ -94,12 +94,12 @@ function BookingPage() {
 
   const handleDateSelect = (date) => {
     setFormData({ ...formData, date });
-    setStep(3);
+    setStep(4);
   };
 
   const handleTimeSelect = (time) => {
     setFormData({ ...formData, time });
-    setStep(4);
+    setStep(5);
   };
 
   const handlePhoneChange = (e) => {
