@@ -133,6 +133,18 @@ class MasterLoginResponse(BaseModel):
     token: str
     master: Dict
 
+class MasterPublic(BaseModel):
+    """Публічна інформація про майстра (без password_hash)"""
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name: str
+    email: EmailStr
+    phone: str
+    role: str = "master"
+    bio: Optional[str] = None
+    photo_url: Optional[str] = None
+    is_active: bool = True
+
 # ============ VACATION MODELS ============
 
 class Vacation(BaseModel):
