@@ -746,22 +746,20 @@ class NailSalonAPITester:
         # 4. Test Data Isolation - Services
         print("\n🔒 4. ТЕСТУВАННЯ ІЗОЛЯЦІЇ ДАНИХ - ПОСЛУГИ")
         
-        # Get Master 1 services
+        # Get Master 1 services using correct endpoint
         master1_services = self.run_test(
             "Master 1 Services",
             "GET",
-            "services",
-            200,
-            headers=master1_headers
+            f"masters/{master1_id}/services",
+            200
         )
         
-        # Get Master 2 services  
+        # Get Master 2 services using correct endpoint
         master2_services = self.run_test(
             "Master 2 Services", 
             "GET",
-            "services",
-            200,
-            headers=master2_headers
+            f"masters/{master2_id}/services",
+            200
         )
         
         if master1_services and master2_services:
