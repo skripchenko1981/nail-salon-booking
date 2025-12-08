@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Тестування нової функціональності врахування тривалості при бронюванні"
+user_problem_statement: "Тестування нової функціональності відпусток та бронювання на 6 місяців"
 
 backend:
   - task: "Timeslots with duration consideration"
