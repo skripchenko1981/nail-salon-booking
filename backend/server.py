@@ -81,6 +81,18 @@ class Master(BaseModel):
     is_active: bool = True
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
+class MasterResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name: str
+    email: EmailStr
+    phone: str
+    role: str = "master"
+    bio: Optional[str] = None
+    photo_url: Optional[str] = None
+    is_active: bool = True
+    created_at: str
+
 class MasterCreate(BaseModel):
     name: str
     email: EmailStr
