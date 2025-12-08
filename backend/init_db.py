@@ -80,13 +80,13 @@ async def init_database():
             await db.masters.insert_one(master)
             print(f"  ✅ Створено майстра: {master['name']} (email: {master['email']})")
         else:
-            # Оновлюємо існуючого майстра, щоб він став активним
-            await db.masters.update_one(
+            # Оновлюємо існуючого майстра повністю (включаючи пароль)
+            master["id"] = existing["id"]  # Зберігаємо існуючий ID
+            await db.masters.replace_one(
                 {"email": master["email"]},
-                {"$set": {"is_active": True}}
+                master
             )
-            master["id"] = existing["id"]  # Використовуємо існуючий ID
-            print(f"  ♻️  Активовано майстра: {master['name']}")
+            print(f"  ♻️  Оновлено майстра: {master['name']}")
     
     # Отримуємо ID майстрів
     master1_id = masters_data[0]["id"]
