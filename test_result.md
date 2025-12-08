@@ -488,6 +488,18 @@ frontend:
           agent: "testing"
           comment: "✅ Функціонал налаштувань сайту працює коректно. Зміна primary_color на #FF6B9D успішно збережена. Повідомлення про успішне збереження з'являється українською мовою. Кольори застосовуються динамічно після збереження та зберігаються після оновлення сторінки."
 
+  - task: "Master booking confirmation with time adjustment"
+    implemented: true
+    working: true
+    file: "AdminBookings.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Функція підтвердження запису з коригуванням часу в панелі майстра працює повністю коректно. Протестовано повний workflow: логін майстра (olena@example.com), навігація до записів, відкриття діалогу коригування для запису зі статусом 'Очікує', зміна тривалості з 60 на 75 хвилин, збереження змін. Результат: успішне повідомлення 'Запис підтверджено з оновленою тривалістю', статус змінився на 'Підтверджено', тривалість оновилася до '11:00 (75 хв)'. Всі UI елементи та API інтеграція працюють без помилок."
+
   - task: "Main page Ukrainian localization"
     implemented: true
     working: true
