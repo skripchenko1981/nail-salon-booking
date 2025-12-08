@@ -277,11 +277,23 @@ class Stats(BaseModel):
     total_revenue: int
     today_bookings: int
 
+# ============ PASSWORD HELPERS ============
+
+def hash_password(password: str) -> str:
+    """Хешувати пароль"""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def verify_password(password: str, password_hash: str) -> bool:
+    """Перевірити пароль"""
+    return hash_password(password) == password_hash
+
 # ============ AUTH HELPERS ============
 
-def create_token(username: str) -> str:
+def create_token(username: str, role: str = "admin", user_id: Optional[str] = None) -> str:
     payload = {
         "sub": username,
+        "role": role,
+        "user_id": user_id,
         "exp": datetime.now(timezone.utc) + timedelta(days=7)
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
