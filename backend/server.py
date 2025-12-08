@@ -429,10 +429,16 @@ async def update_service(service_id: str, service: ServiceUpdate, user: Dict = D
     return Service(**updated_service)
 
 @api_router.delete("/services/{service_id}")
-async def delete_service(service_id: str, _: str = Depends(verify_token)):
-    result = await db.services.update_one({"id": service_id}, {"$set": {"active": False}})
-    if result.matched_count == 0:
+async def delete_service(service_id: str, user: Dict = Depends(verify_master_or_admin)):
+    """Видалити послугу"""
+    existing_service = await db.services.find_one({"id": service_id}, {"_id": 0})
+    if not existing_service:
         raise HTTPException(status_code=404, detail="Service not found")
+    
+    if user["role"] == "master" and existing_service["master_id"] != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Can only delete your own services")
+    
+    result = await db.services.update_one({"id": service_id}, {"$set": {"active": False}})
     return {"message": "Service deleted"}
 
 # ============ SCHEDULE ROUTES ============
