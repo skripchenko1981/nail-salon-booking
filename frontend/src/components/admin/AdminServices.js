@@ -40,7 +40,7 @@ function AdminServices() {
       const response = await axios.get(`${API}/services`);
       setServices(response.data);
     } catch (error) {
-      toast.error('Ошибка загрузки услуг');
+      toast.error('Помилка завантаження послуг');
     } finally {
       setLoading(false);
     }
