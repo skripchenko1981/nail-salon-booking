@@ -206,22 +206,34 @@ function AdminBookings() {
                   )}
                 </div>
 
-                <div className="lg:w-48">
-                  <label className="text-xs text-gray-500 mb-2 block">Змінити статус</label>
-                  <Select 
-                    value={booking.status} 
-                    onValueChange={(value) => handleStatusChange(booking.id, value)}
-                  >
-                    <SelectTrigger data-testid={`status-select-${booking.id}`}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Очікує</SelectItem>
-                      <SelectItem value="confirmed">Підтвердити</SelectItem>
-                      <SelectItem value="completed">Завершити</SelectItem>
-                      <SelectItem value="cancelled">Скасувати</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="lg:w-64 space-y-2">
+                  {booking.status === 'pending' && (
+                    <Button
+                      onClick={() => handleOpenEditDialog(booking)}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white"
+                      data-testid={`confirm-with-duration-${booking.id}`}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Підтвердити з коригуванням
+                    </Button>
+                  )}
+                  <div>
+                    <label className="text-xs text-gray-500 mb-2 block">Змінити статус</label>
+                    <Select 
+                      value={booking.status} 
+                      onValueChange={(value) => handleStatusChange(booking.id, value)}
+                    >
+                      <SelectTrigger data-testid={`status-select-${booking.id}`}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Очікує</SelectItem>
+                        <SelectItem value="confirmed">Підтвердити</SelectItem>
+                        <SelectItem value="completed">Завершити</SelectItem>
+                        <SelectItem value="cancelled">Скасувати</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
             </div>
