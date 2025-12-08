@@ -20,6 +20,7 @@ function AdminDashboard() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const token = localStorage.getItem('admin_token');
+  const [isAdmin, setIsAdmin] = useState(true);
 
   // Protect admin routes
   useEffect(() => {
