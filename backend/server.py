@@ -1193,9 +1193,21 @@ async def get_client(client_id: str, user: Dict = Depends(verify_master_or_admin
     return Client(**client)
 
 @api_router.get("/admin/clients/{client_id}/bookings", response_model=List[Booking])
-async def get_client_bookings_admin(client_id: str, _: str = Depends(verify_token)):
+async def get_client_bookings_admin(client_id: str, user: Dict = Depends(verify_master_or_admin)):
+    """Отримати записи клієнта (кожен майстер бачить тільки своїх клієнтів)"""
+    # Перевірити, що клієнт належить цьому майстру
+    client = await db.clients.find_one({
+        "id": client_id,
+        "master_id": user["user_id"]
+    }, {"_id": 0})
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    
     bookings = await db.bookings.find(
-        {"client_id": client_id},
+        {
+            "client_id": client_id,
+            "master_id": user["user_id"]
+        },
         {"_id": 0}
     ).sort("date", -1).to_list(100)
     return bookings
