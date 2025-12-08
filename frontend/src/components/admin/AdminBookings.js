@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 import { Calendar, Clock, Phone, Mail, User, Edit } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -10,6 +12,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../ui/dialog';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -18,6 +28,9 @@ function AdminBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('all');
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingBooking, setEditingBooking] = useState(null);
+  const [editDuration, setEditDuration] = useState(60);
 
   useEffect(() => {
     fetchBookings();
