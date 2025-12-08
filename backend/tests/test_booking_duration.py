@@ -178,8 +178,8 @@ class BookingDurationTester:
         print(f"   Using first available slot: {target_time}")
         print(f"   Available slots: {[slot['time'] for slot in available_slots[:5]]}")  # Show first 5
         
-        # Step 2: Create booking at 10:00 (should occupy 10:00-11:00)
-        print("\n--- Step 2: Create booking at 10:00 ---")
+        # Step 2: Create booking at target time (should occupy target_time to target_time+60min)
+        print(f"\n--- Step 2: Create booking at {target_time} ---")
         booking_data = {
             "service_id": self.created_service_id,
             "date": tomorrow,
