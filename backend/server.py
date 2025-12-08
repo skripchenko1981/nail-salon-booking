@@ -795,7 +795,7 @@ async def get_masters(_: Dict = Depends(verify_admin)):
     masters = await db.masters.find({}, {"_id": 0, "password_hash": 0}).to_list(100)
     return masters
 
-@api_router.post("/masters", response_model=Master)
+@api_router.post("/masters", response_model=MasterResponse)
 async def create_master(master: MasterCreate, _: Dict = Depends(verify_admin)):
     """Створити нового майстра (тільки адмін)"""
     # Перевірити, чи email вже існує
@@ -811,7 +811,7 @@ async def create_master(master: MasterCreate, _: Dict = Depends(verify_admin)):
     await db.masters.insert_one(doc)
     
     # Прибрати password_hash з відповіді
-    return Master(**{k: v for k, v in doc.items() if k != "password_hash"})
+    return MasterResponse(**{k: v for k, v in doc.items() if k != "password_hash"})
 
 @api_router.get("/masters/{master_id}", response_model=Master)
 async def get_master(master_id: str, user: Dict = Depends(verify_master_or_admin)):
