@@ -8,7 +8,7 @@ import sys
 from datetime import datetime, timedelta
 
 class SixMonthBookingTester:
-    def __init__(self, base_url="https://nail-studio-20.preview.emergentagent.com"):
+    def __init__(self, base_url="https://mani-pedi-portal.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_passed = 0

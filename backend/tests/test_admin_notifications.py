@@ -16,7 +16,7 @@ sys.path.append('/app/backend')
 class AdminNotificationsTester:
     def __init__(self):
         # Використовуємо URL з frontend/.env
-        self.base_url = "https://nail-studio-20.preview.emergentagent.com"
+        self.base_url = "https://mani-pedi-portal.preview.emergentagent.com"
         self.api_url = f"{self.base_url}/api"
         self.admin_token = None
         self.test_results = []
