@@ -32,6 +32,19 @@ async def init_database():
     await db.services.delete_many({"master_id": "admin"})
     await db.work_schedule.delete_many({"master_id": {"$exists": False}})
     
+    # Видаляємо старих майстрів які не мають email з example.com (тестові)
+    test_masters = await db.masters.find({"email": {"$not": {"$regex": "example.com"}}}, {"_id": 0}).to_list(100)
+    for master in test_masters:
+        master_id = master.get("id")
+        # Видаляємо всі дані цього майстра
+        await db.services.delete_many({"master_id": master_id})
+        await db.work_schedule.delete_many({"master_id": master_id})
+        await db.bookings.delete_many({"master_id": master_id})
+        await db.clients.delete_many({"master_id": master_id})
+        await db.vacations.delete_many({"master_id": master_id})
+        await db.masters.delete_one({"id": master_id})
+        print(f"  🗑️  Видалено старого майстра: {master.get('name')}")
+    
     print("✅ Старі дані очищені")
     
     # Створюємо тестових майстрів
