@@ -65,6 +65,33 @@ function AdminBookings() {
     }
   };
 
+  const handleOpenEditDialog = (booking) => {
+    setEditingBooking(booking);
+    setEditDuration(booking.duration_minutes);
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveBookingChanges = async () => {
+    if (!editingBooking) return;
+    
+    try {
+      const token = localStorage.getItem('admin_token');
+      await axios.put(
+        `${API}/admin/bookings/${editingBooking.id}`,
+        { 
+          duration_minutes: editDuration,
+          status: 'confirmed'
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success('Запис підтверджено з оновленою тривалістю');
+      setEditDialogOpen(false);
+      fetchBookings();
+    } catch (error) {
+      toast.error('Помилка оновлення запису');
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
