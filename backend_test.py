@@ -424,6 +424,114 @@ class NailSalonAPITester:
             print("   ❌ Failed to create booking for 100 days ahead")
             return False
 
+    def test_master_system(self):
+        """Test master system functionality as requested"""
+        print("\n" + "="*50)
+        print("TESTING MASTER SYSTEM FUNCTIONALITY")
+        print("="*50)
+        
+        if not self.admin_token:
+            print("❌ Cannot test master system - no admin token")
+            return False
+        
+        auth_headers = {'Authorization': f'Bearer {self.admin_token}'}
+        
+        # 1. Create a master
+        master_data = {
+            "name": "Тестовий Майстер",
+            "email": "test.master@example.com",
+            "phone": "+380501111111",
+            "password": "test123"
+        }
+        
+        created_master = self.run_test(
+            "Create Master",
+            "POST",
+            "masters",
+            200,
+            data=master_data,
+            headers=auth_headers
+        )
+        
+        if not created_master or 'id' not in created_master:
+            print("❌ Failed to create master - cannot continue with master tests")
+            return False
+        
+        master_id = created_master['id']
+        print(f"   Created master ID: {master_id}")
+        
+        # 2. Get list of masters
+        masters_list = self.run_test(
+            "Get Masters List",
+            "GET",
+            "masters",
+            200,
+            headers=auth_headers
+        )
+        
+        if masters_list:
+            print(f"   Found {len(masters_list)} masters in the system")
+            
+            # 3. Check that created master is in the list
+            master_found = False
+            for master in masters_list:
+                if master.get('email') == 'test.master@example.com':
+                    master_found = True
+                    print(f"   ✅ Created master found in list: {master.get('name')}")
+                    break
+            
+            if not master_found:
+                self.log_test("Master in List Check", False, "Created master not found in masters list")
+            else:
+                self.log_test("Master in List Check", True, "Created master found in masters list")
+        
+        # 4. Try to login as the created master
+        master_login_data = {
+            "email": "test.master@example.com",
+            "password": "test123"
+        }
+        
+        master_login_response = self.run_test(
+            "Master Login",
+            "POST",
+            "masters/login",
+            200,
+            data=master_login_data
+        )
+        
+        if master_login_response and 'token' in master_login_response:
+            master_token = master_login_response['token']
+            print(f"   ✅ Master login successful, token obtained: {master_token[:20]}...")
+            
+            # 5. Test booking filtering with new authorization
+            master_auth_headers = {'Authorization': f'Bearer {master_token}'}
+            
+            # Get bookings as master (should only see own bookings)
+            master_bookings = self.run_test(
+                "Get Bookings as Master",
+                "GET",
+                "admin/bookings",
+                200,
+                headers=master_auth_headers
+            )
+            
+            if master_bookings is not None:
+                print(f"   ✅ Master can access bookings API, found {len(master_bookings)} bookings")
+            
+            # Get bookings as admin (should see all bookings)
+            admin_bookings = self.run_test(
+                "Get Bookings as Admin",
+                "GET",
+                "admin/bookings",
+                200,
+                headers=auth_headers
+            )
+            
+            if admin_bookings is not None:
+                print(f"   ✅ Admin can access bookings API, found {len(admin_bookings)} bookings")
+        
+        return True
+
     def test_error_cases(self):
         """Test error handling"""
         print("\n" + "="*50)
