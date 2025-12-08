@@ -214,17 +214,53 @@ backend:
           comment: "✅ GET /api/admin/bookings повертає всі записи. PUT /api/admin/bookings/{id} оновлює статуси. Статистика працює."
 
 frontend:
-  - task: "Frontend integration testing"
-    implemented: false
-    working: "NA"
-    file: "N/A"
+  - task: "Admin panel Ukrainian localization"
+    implemented: true
+    working: true
+    file: "AdminDashboard.js, AdminSettings.js, AdminBookings.js, AdminServices.js, AdminSchedule.js"
     stuck_count: 0
-    priority: "low"
+    priority: "high"
     needs_retesting: false
     status_history:
-        - working: "NA"
+        - working: true
           agent: "testing"
-          comment: "Frontend тестування не проводилося згідно з інструкціями. Фокус на backend API."
+          comment: "✅ Повна українська локалізація адмін-панелі протестована успішно. Всі розділи (Огляд, Записи, Послуги, Розклад, Налаштування) відображають українські тексти. Статуси записів перекладені (Очікує, Підтверджено, Завершено, Скасовано). Валюта відображається як ₴."
+
+  - task: "Site Settings functionality"
+    implemented: true
+    working: true
+    file: "AdminSettings.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Функціонал налаштувань сайту працює коректно. Зміна primary_color на #FF6B9D успішно збережена. Повідомлення про успішне збереження з'являється українською мовою. Кольори застосовуються динамічно після збереження та зберігаються після оновлення сторінки."
+
+  - task: "Main page Ukrainian localization"
+    implemented: true
+    working: true
+    file: "HomePage.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Головна сторінка повністю локалізована українською мовою. Всі тексти відображаються коректно: заголовки, описи, навігація, контактна інформація, футер. Валюта послуг відображається як ₴. Дизайн коректний, сторінка завантажується без помилок."
+
+  - task: "Admin authentication"
+    implemented: true
+    working: true
+    file: "AdminLoginPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Автентифікація адміністратора працює з обліковими даними admin/admin123. Сторінка входу відображає українські тексти. Успішний вхід перенаправляє на адмін-панель."
 
 metadata:
   created_by: "testing_agent"
