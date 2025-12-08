@@ -105,6 +105,42 @@
 user_problem_statement: "Тестування нової функціональності врахування тривалості при бронюванні"
 
 backend:
+  - task: "Timeslots with duration consideration"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ GET /api/timeslots/{date} коректно враховує тривалість існуючих записів. Тест створив 60-хвилинну послугу, запис на 10:30-11:30, і підтвердив що слоти 10:30 та 11:00 недоступні (конфлікт), а 11:30 доступний (після закінчення запису). Логіка перевірки перетину часових інтервалів працює правильно."
+
+  - task: "Booking duration update via admin API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ PUT /api/admin/bookings/{id} успішно оновлює поле duration_minutes. Тест оновив тривалість запису з 60 до 90 хвилин через BookingUpdate модель. Зміни зберігаються в базі даних і відображаються при повторному отриманні запису."
+
+  - task: "Updated timeslots after duration change"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Бонусний тест: після оновлення тривалості запису до 90 хвилин, GET /api/timeslots/{date} коректно відображає нові недоступні слоти. Запис 10:30-12:00 (90 хв) блокує слоти 10:30, 11:00, 11:30, а 12:00 стає доступним. Система динамічно перераховує доступність слотів."
+
   - task: "Telegram notifications for admin on new booking"
     implemented: true
     working: true
