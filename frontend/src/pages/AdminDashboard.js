@@ -128,7 +128,7 @@ function AdminDashboard() {
       <main className="flex-1 overflow-auto">
         <div className="p-6 lg:p-12">
           <Routes>
-            <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="/" element={<Navigate to="/admin/masters" replace />} />
             <Route path="/dashboard" element={<AdminOverview />} />
             <Route path="/bookings" element={<AdminBookings />} />
             <Route path="/clients" element={<AdminClients />} />
