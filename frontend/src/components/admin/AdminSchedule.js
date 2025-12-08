@@ -30,7 +30,9 @@ function AdminSchedule() {
 
   const fetchSchedule = async () => {
     try {
-      const response = await axios.get(`${API}/schedule?master_id=admin`);
+      const masterData = JSON.parse(localStorage.getItem('master_data') || '{"id": "admin"}');
+      const masterId = masterData.id;
+      const response = await axios.get(`${API}/schedule?master_id=${masterId}`);
       setSchedule(response.data);
     } catch (error) {
       toast.error('Помилка завантаження розкладу');
