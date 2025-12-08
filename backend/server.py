@@ -813,7 +813,7 @@ async def create_master(master: MasterCreate, _: Dict = Depends(verify_admin)):
     # Прибрати password_hash з відповіді
     return MasterResponse(**{k: v for k, v in doc.items() if k != "password_hash"})
 
-@api_router.get("/masters/{master_id}", response_model=Master)
+@api_router.get("/masters/{master_id}", response_model=MasterResponse)
 async def get_master(master_id: str, user: Dict = Depends(verify_master_or_admin)):
     """Отримати майстра по ID"""
     # Майстер може бачити тільки себе, адмін - всіх
@@ -823,7 +823,7 @@ async def get_master(master_id: str, user: Dict = Depends(verify_master_or_admin
     master = await db.masters.find_one({"id": master_id}, {"_id": 0, "password_hash": 0})
     if not master:
         raise HTTPException(status_code=404, detail="Master not found")
-    return Master(**master)
+    return MasterResponse(**master)
 
 @api_router.get("/masters/me/profile", response_model=Master)
 async def get_my_profile(user: Dict = Depends(verify_master_or_admin)):
