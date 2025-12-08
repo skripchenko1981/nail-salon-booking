@@ -176,6 +176,21 @@ class ReminderSettings(BaseModel):
     default_hours_before: int = 24
     enabled: bool = True
 
+class SiteSettings(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = "site_settings"
+    site_name: str = "Nail Studio"
+    site_description: str = "Професійний догляд за вашими руками та ногами"
+    primary_color: str = "#D4A5A5"
+    secondary_color: str = "#9E829C"
+    accent_color: str = "#F3EBEB"
+    phone: str = "+380 99 123 45 67"
+    email: str = "info@beauty-alena.pp.ua"
+    address: str = "Київ, вул. Прикладна, 1"
+    instagram: Optional[str] = None
+    facebook: Optional[str] = None
+    working_hours: str = "Пн-Сб: 9:00-18:00"
+
 class TimeSlot(BaseModel):
     time: str
     available: bool
