@@ -790,7 +790,7 @@ async def admin_login(credentials: AdminLogin):
     if credentials.username != ADMIN_USERNAME or credentials.password != ADMIN_PASSWORD:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    token = create_token(credentials.username)
+    token = create_token(credentials.username, "admin", "admin")
     return AdminLoginResponse(token=token, username=credentials.username)
 
 @api_router.get("/admin/bookings", response_model=List[Booking])
