@@ -390,9 +390,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Duration display in admin bookings list"
-    - "Duration adjustment dialog functionality"
-    - "Timeslot blocking based on duration"
+    - "Vacation CRUD operations"
+    - "Timeslots with vacation consideration"
+    - "6-month booking limit"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
