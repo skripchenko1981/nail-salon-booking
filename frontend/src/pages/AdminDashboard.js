@@ -35,16 +35,20 @@ function AdminDashboard() {
     navigate('/admin/login');
   };
 
-  const menuItems = [
-    { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Огляд', testId: 'nav-dashboard' },
-    { path: '/admin/bookings', icon: Calendar, label: 'Записи', testId: 'nav-bookings' },
-    { path: '/admin/clients', icon: Users, label: 'Клієнти', testId: 'nav-clients' },
-    { path: '/admin/services', icon: Package, label: 'Послуги', testId: 'nav-services' },
-    { path: '/admin/schedule', icon: Settings, label: 'Розклад', testId: 'nav-schedule' },
-    { path: '/admin/masters', icon: Users, label: 'Майстри', testId: 'nav-masters' },
-    { path: '/admin/vacations', icon: Calendar, label: 'Відпустки', testId: 'nav-vacations' },
-    { path: '/admin/settings', icon: Settings, label: 'Налаштування', testId: 'nav-settings' },
-  ];
+  // Адмін бачить тільки управління майстрами та налаштування
+  const menuItems = isAdmin 
+    ? [
+        { path: '/admin/masters', icon: Users, label: 'Майстри', testId: 'nav-masters' },
+        { path: '/admin/settings', icon: Settings, label: 'Налаштування сайту', testId: 'nav-settings' },
+      ]
+    : [
+        { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Огляд', testId: 'nav-dashboard' },
+        { path: '/admin/bookings', icon: Calendar, label: 'Записи', testId: 'nav-bookings' },
+        { path: '/admin/clients', icon: Users, label: 'Клієнти', testId: 'nav-clients' },
+        { path: '/admin/services', icon: Package, label: 'Послуги', testId: 'nav-services' },
+        { path: '/admin/schedule', icon: Settings, label: 'Розклад', testId: 'nav-schedule' },
+        { path: '/admin/vacations', icon: Calendar, label: 'Відпустки', testId: 'nav-vacations' },
+      ];
 
   if (!token) return null;
 
