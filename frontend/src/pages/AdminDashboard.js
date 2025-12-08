@@ -109,7 +109,7 @@ function AdminDashboard() {
               data-testid="logout-button"
             >
               <LogOut className="mr-3 h-5 w-5" />
-              Выйти
+              Вийти
             </Button>
           </div>
         </div>
