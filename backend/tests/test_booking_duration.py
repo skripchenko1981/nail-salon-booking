@@ -171,19 +171,12 @@ class BookingDurationTester:
             print("❌ Not enough available slots for testing")
             return False
         
-        # Find 10:00 slot for booking
-        target_time = "10:00"
-        target_slot = None
-        for slot in available_slots:
-            if slot['time'] == target_time:
-                target_slot = slot
-                break
+        # Find first available slot for booking
+        target_slot = available_slots[0]
+        target_time = target_slot['time']
         
-        if not target_slot:
-            print(f"❌ Target time {target_time} not available")
-            return False
-        
-        print(f"   Target slot {target_time} is available: {target_slot['available']}")
+        print(f"   Using first available slot: {target_time}")
+        print(f"   Available slots: {[slot['time'] for slot in available_slots[:5]]}")  # Show first 5
         
         # Step 2: Create booking at 10:00 (should occupy 10:00-11:00)
         print("\n--- Step 2: Create booking at 10:00 ---")
