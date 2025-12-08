@@ -104,7 +104,7 @@ function AdminServices() {
   const handleDelete = async (serviceId) => {
     if (!window.confirm('Ви впевнені, що хочете видалити цю послугу?')) return;
     
-    const token = localStorage.getItem('admin_token');
+    const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
     try {
       await axios.delete(`${API}/services/${serviceId}`, {
         headers: { Authorization: `Bearer ${token}` }
