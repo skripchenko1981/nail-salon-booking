@@ -825,13 +825,13 @@ async def get_master(master_id: str, user: Dict = Depends(verify_master_or_admin
         raise HTTPException(status_code=404, detail="Master not found")
     return MasterResponse(**master)
 
-@api_router.get("/masters/me/profile", response_model=Master)
+@api_router.get("/masters/me/profile", response_model=MasterResponse)
 async def get_my_profile(user: Dict = Depends(verify_master_or_admin)):
     """Отримати свій профіль"""
     master = await db.masters.find_one({"id": user["user_id"]}, {"_id": 0, "password_hash": 0})
     if not master:
         raise HTTPException(status_code=404, detail="Master not found")
-    return Master(**master)
+    return MasterResponse(**master)
 
 @api_router.put("/masters/{master_id}", response_model=Master)
 async def update_master(master_id: str, master: MasterUpdate, user: Dict = Depends(verify_master_or_admin)):
