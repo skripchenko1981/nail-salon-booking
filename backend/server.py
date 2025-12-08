@@ -529,22 +529,48 @@ async def get_available_timeslots(date: str, service_id: str):
     start_time = schedule.get("start_time", "09:00")
     end_time = schedule.get("end_time", "18:00")
     
-    time_slots = []
-    current_time = datetime.strptime(start_time, "%H:%M").time()
-    end_time_obj = datetime.strptime(end_time, "%H:%M").time()
-    
+    # Отримати всі підтверджені та очікуючі записи на цю дату
     bookings = await db.bookings.find(
         {"date": date, "status": {"$in": ["pending", "confirmed"]}},
         {"_id": 0}
     ).to_list(100)
-    booked_times = {b["time"] for b in bookings}
+    
+    # Функція для перевірки, чи слот доступний
+    def is_slot_available(slot_time_str: str, service_duration: int) -> bool:
+        slot_start = datetime.strptime(slot_time_str, "%H:%M")
+        slot_end = slot_start + timedelta(minutes=service_duration)
+        
+        for booking in bookings:
+            booking_start = datetime.strptime(booking["time"], "%H:%M")
+            booking_end = booking_start + timedelta(minutes=booking["duration_minutes"])
+            
+            # Перевірка перетину часових інтервалів
+            if not (slot_end <= booking_start or slot_start >= booking_end):
+                return False
+        
+        return True
+    
+    # Генерувати часові слоти
+    time_slots = []
+    current_time = datetime.strptime(start_time, "%H:%M").time()
+    end_time_obj = datetime.strptime(end_time, "%H:%M").time()
     
     while current_time < end_time_obj:
         time_str = current_time.strftime("%H:%M")
+        
+        # Перевірити, чи достатньо часу для цієї послуги до закриття
+        slot_datetime = datetime.combine(date_obj, current_time)
+        end_datetime = datetime.combine(date_obj, end_time_obj)
+        time_until_close = (end_datetime - slot_datetime).total_seconds() / 60
+        
+        available = (time_until_close >= service["duration_minutes"] and 
+                    is_slot_available(time_str, service["duration_minutes"]))
+        
         time_slots.append(TimeSlot(
             time=time_str,
-            available=time_str not in booked_times
+            available=available
         ))
+        
         current_datetime = datetime.combine(datetime.today(), current_time)
         current_datetime += timedelta(minutes=30)
         current_time = current_datetime.time()
