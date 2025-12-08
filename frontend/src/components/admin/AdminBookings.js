@@ -129,7 +129,7 @@ function AdminBookings() {
                       </div>
                     </div>
                     <p className="text-2xl font-bold text-[#D4A5A5]" style={{ fontFamily: 'Playfair Display, serif' }}>
-                      {booking.price} ₽
+                      {booking.price} ₴
                     </p>
                   </div>
 
