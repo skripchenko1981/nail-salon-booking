@@ -444,12 +444,18 @@ async def delete_service(service_id: str, user: Dict = Depends(verify_master_or_
 # ============ SCHEDULE ROUTES ============
 
 @api_router.get("/schedule", response_model=List[WorkSchedule])
-async def get_schedule():
-    schedules = await db.work_schedule.find({}, {"_id": 0}).to_list(7)
+async def get_schedule(master_id: str, user: Optional[Dict] = Depends(verify_master_or_admin)):
+    """Отримати розклад майстра"""
+    # Майстер може бачити тільки свій розклад
+    if user and user["role"] == "master" and user["user_id"] != master_id:
+        raise HTTPException(status_code=403, detail="Can only view your own schedule")
+    
+    schedules = await db.work_schedule.find({"master_id": master_id}, {"_id": 0}).to_list(7)
     existing_days = {s["day_of_week"] for s in schedules}
     for day in range(7):
         if day not in existing_days:
             default = WorkSchedule(
+                master_id=master_id,
                 day_of_week=day,
                 start_time="09:00",
                 end_time="18:00",
@@ -460,14 +466,26 @@ async def get_schedule():
     return schedules
 
 @api_router.post("/schedule", response_model=WorkSchedule)
-async def create_or_update_schedule(schedule: WorkScheduleCreate, _: str = Depends(verify_token)):
-    existing = await db.work_schedule.find_one({"day_of_week": schedule.day_of_week}, {"_id": 0})
+async def create_or_update_schedule(schedule: WorkScheduleCreate, user: Dict = Depends(verify_master_or_admin)):
+    """Створити або оновити розклад"""
+    # Майстер може редагувати тільки свій розклад
+    if user["role"] == "master" and schedule.master_id != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Can only edit your own schedule")
+    
+    existing = await db.work_schedule.find_one({
+        "master_id": schedule.master_id, 
+        "day_of_week": schedule.day_of_week
+    }, {"_id": 0})
+    
     if existing:
         await db.work_schedule.update_one(
-            {"day_of_week": schedule.day_of_week},
+            {"master_id": schedule.master_id, "day_of_week": schedule.day_of_week},
             {"$set": schedule.model_dump()}
         )
-        updated = await db.work_schedule.find_one({"day_of_week": schedule.day_of_week}, {"_id": 0})
+        updated = await db.work_schedule.find_one({
+            "master_id": schedule.master_id,
+            "day_of_week": schedule.day_of_week
+        }, {"_id": 0})
         return WorkSchedule(**updated)
     else:
         schedule_obj = WorkSchedule(**schedule.model_dump())
