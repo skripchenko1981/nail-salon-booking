@@ -1006,7 +1006,7 @@ async def get_admin_bookings(user: Dict = Depends(verify_master_or_admin), maste
 
 @api_router.put("/admin/bookings/{booking_id}", response_model=Booking)
 async def update_booking_status(booking_id: str, update: BookingUpdate, 
-                                _: str = Depends(verify_token), 
+                                user: Dict = Depends(verify_master_or_admin), 
                                 background_tasks: BackgroundTasks = None):
     booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
     if not booking:
