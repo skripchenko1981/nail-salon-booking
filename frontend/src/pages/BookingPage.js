@@ -8,7 +8,8 @@ import { ArrowLeft, Calendar as CalendarIcon, Clock, Check } from 'lucide-react'
 import { toast } from 'sonner';
 import axios from 'axios';
 import { format, addDays, startOfDay } from 'date-fns';
-import { ru } from 'date-fns/locale';
+import { uk } from 'date-fns/locale';
+import { validateUkrainianPhone, formatPhoneForDisplay } from '../utils/phoneValidator';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -28,6 +29,8 @@ function BookingPage() {
     client_name: '',
     client_phone: '',
     client_email: '',
+    telegram_id: '',
+    reminder_hours: 24,
     notes: ''
   });
 
@@ -46,7 +49,7 @@ function BookingPage() {
       const response = await axios.get(`${API}/services`);
       setServices(response.data);
     } catch (error) {
-      toast.error('Ошибка загрузки услуг');
+      toast.error('Помилка завантаження послуг');
     }
   };
 
@@ -55,7 +58,7 @@ function BookingPage() {
       const response = await axios.get(`${API}/timeslots/${formData.date}?service_id=${formData.service_id}`);
       setTimeSlots(response.data);
     } catch (error) {
-      toast.error('Ошибка загрузки доступного времени');
+      toast.error('Помилка завантаження доступного часу');
     }
   };
 
@@ -74,8 +77,26 @@ function BookingPage() {
     setStep(4);
   };
 
+  const handlePhoneChange = (e) => {
+    let value = e.target.value;
+    
+    // Автоматично додаємо +380 якщо користувач почав вводити
+    if (value.length === 1 && value !== '+') {
+      value = '+380' + value;
+    }
+    
+    setFormData({ ...formData, client_phone: value });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Валідація телефону
+    if (!validateUkrainianPhone(formData.client_phone)) {
+      toast.error('Невірний формат телефону. Використовуйте формат: +380XXXXXXXXX');
+      return;
+    }
+    
     setLoading(true);
     
     try {
@@ -86,16 +107,18 @@ function BookingPage() {
         client_name: formData.client_name,
         client_phone: formData.client_phone,
         client_email: formData.client_email || undefined,
+        telegram_id: formData.telegram_id || undefined,
+        reminder_hours: parseInt(formData.reminder_hours),
         notes: formData.notes || undefined
       };
       
       await axios.post(`${API}/bookings`, bookingData);
-      toast.success('Запись успешно создана!', {
-        description: 'Мы свяжемся с вами для подтверждения'
+      toast.success('Запис успішно створено!', {
+        description: 'Ми зв\'яжемося з вами для підтвердження'
       });
       setTimeout(() => navigate('/'), 2000);
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Ошибка при создании записи');
+      toast.error(error.response?.data?.detail || 'Помилка при створенні запису');
     } finally {
       setLoading(false);
     }
@@ -128,9 +151,9 @@ function BookingPage() {
             Назад
           </Button>
           <h1 className="text-4xl lg:text-5xl font-bold tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
-            Онлайн-запись
+            Онлайн-запис
           </h1>
-          <p className="text-gray-600 mt-2">Шаг {step} из 4</p>
+          <p className="text-gray-600 mt-2">Крок {step} з 4</p>
         </div>
 
         {/* Progress Bar */}
@@ -153,8 +176,8 @@ function BookingPage() {
           {step === 1 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Выберите услугу</h2>
-                <p className="text-gray-600">Что вас интересует?</p>
+                <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Оберіть послугу</h2>
+                <p className="text-gray-600">Що вас цікавить?</p>
               </div>
               <div className="grid gap-4">
                 {services.map((service) => (
@@ -171,10 +194,10 @@ function BookingPage() {
                         <div className="flex items-center gap-4 text-sm text-gray-500">
                           <span className="flex items-center gap-1">
                             <Clock className="h-4 w-4" />
-                            {service.duration_minutes} мин
+                            {service.duration_minutes} хв
                           </span>
                           <span className="text-lg font-bold text-[#D4A5A5]" style={{ fontFamily: 'Playfair Display, serif' }}>
-                            {service.price} ₽
+                            {service.price} ₴
                           </span>
                         </div>
                       </div>
@@ -189,8 +212,8 @@ function BookingPage() {
           {step === 2 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Выберите дату</h2>
-                <p className="text-gray-600">Когда вам удобно?</p>
+                <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Оберіть дату</h2>
+                <p className="text-gray-600">Коли вам зручно?</p>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {getNextDays(14).map((day) => {
@@ -204,16 +227,16 @@ function BookingPage() {
                       data-testid={`date-option-${dateStr}`}
                     >
                       <div className="text-xs text-gray-500 uppercase tracking-widest mb-2">
-                        {format(day, 'EEEE', { locale: ru })}
+                        {format(day, 'EEEE', { locale: uk })}
                       </div>
                       <div className="text-2xl font-bold group-hover:text-[#D4A5A5] transition-colors" style={{ fontFamily: 'Playfair Display, serif' }}>
                         {format(day, 'd')}
                       </div>
                       <div className="text-sm text-gray-600 mt-1">
-                        {format(day, 'MMMM', { locale: ru })}
+                        {format(day, 'MMMM', { locale: uk })}
                       </div>
                       {isToday && (
-                        <div className="text-xs text-[#D4A5A5] font-semibold mt-2">Сегодня</div>
+                        <div className="text-xs text-[#D4A5A5] font-semibold mt-2">Сьогодні</div>
                       )}
                     </button>
                   );
@@ -226,17 +249,17 @@ function BookingPage() {
           {step === 3 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Выберите время</h2>
-                <p className="text-gray-600">Доступные слоты на {formData.date}</p>
+                <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Оберіть час</h2>
+                <p className="text-gray-600">Доступні слоти на {formData.date}</p>
               </div>
               {timeSlots.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-gray-500">На эту дату нет доступных слотов</p>
+                  <p className="text-gray-500">На цю дату немає доступних слотів</p>
                   <Button 
                     onClick={() => setStep(2)} 
                     className="mt-4 bg-[#D4A5A5] hover:bg-[#9E829C] text-white"
                   >
-                    Выбрать другую дату
+                    Обрати іншу дату
                   </Button>
                 </div>
               ) : (
@@ -265,15 +288,15 @@ function BookingPage() {
           {step === 4 && (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Ваши контакты</h2>
-                <p className="text-gray-600">Мы свяжемся с вами для подтверждения</p>
+                <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Ваші контакти</h2>
+                <p className="text-gray-600">Ми зв'яжемося з вами для підтвердження</p>
               </div>
 
               {/* Booking Summary */}
               <div className="bg-[#F3EBEB] p-6 rounded-2xl space-y-2">
-                <h3 className="font-semibold text-lg mb-3" style={{ fontFamily: 'Playfair Display, serif' }}>Детали записи</h3>
+                <h3 className="font-semibold text-lg mb-3" style={{ fontFamily: 'Playfair Display, serif' }}>Деталі запису</h3>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Услуга:</span>
+                  <span className="text-gray-600">Послуга:</span>
                   <span className="font-medium">{formData.service_name}</span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -281,14 +304,14 @@ function BookingPage() {
                   <span className="font-medium">{formData.date}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Время:</span>
+                  <span className="text-gray-600">Час:</span>
                   <span className="font-medium">{formData.time}</span>
                 </div>
                 {selectedService && (
                   <div className="flex justify-between text-sm pt-2 border-t border-rose-200/50">
-                    <span className="text-gray-600">Стоимость:</span>
+                    <span className="text-gray-600">Вартість:</span>
                     <span className="font-bold text-lg text-[#D4A5A5]" style={{ fontFamily: 'Playfair Display, serif' }}>
-                      {selectedService.price} ₽
+                      {selectedService.price} ₴
                     </span>
                   </div>
                 )}
@@ -296,13 +319,13 @@ function BookingPage() {
 
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="client_name">Имя *</Label>
+                  <Label htmlFor="client_name">Ім'я *</Label>
                   <Input
                     id="client_name"
                     required
                     value={formData.client_name}
                     onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
-                    placeholder="Ваше имя"
+                    placeholder="Ваше ім'я"
                     className="mt-1 border-rose-200/50 focus:ring-rose-300"
                     data-testid="input-client-name"
                   />
@@ -313,14 +336,15 @@ function BookingPage() {
                     id="client_phone"
                     required
                     value={formData.client_phone}
-                    onChange={(e) => setFormData({ ...formData, client_phone: e.target.value })}
-                    placeholder="+7 (999) 123-45-67"
+                    onChange={handlePhoneChange}
+                    placeholder="+380 XX XXX XX XX"
                     className="mt-1 border-rose-200/50 focus:ring-rose-300"
                     data-testid="input-client-phone"
                   />
+                  <p className="text-xs text-gray-500 mt-1">Формат: +380XXXXXXXXX</p>
                 </div>
                 <div>
-                  <Label htmlFor="client_email">Email (опционально)</Label>
+                  <Label htmlFor="client_email">Email (опціонально)</Label>
                   <Input
                     id="client_email"
                     type="email"
@@ -332,12 +356,42 @@ function BookingPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="notes">Пожелания (опционально)</Label>
+                  <Label htmlFor="telegram_id">Telegram ID (опціонально)</Label>
+                  <Input
+                    id="telegram_id"
+                    value={formData.telegram_id}
+                    onChange={(e) => setFormData({ ...formData, telegram_id: e.target.value })}
+                    placeholder="@username або chat_id"
+                    className="mt-1 border-rose-200/50 focus:ring-rose-300"
+                    data-testid="input-telegram-id"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Для отримання нагадувань у Telegram</p>
+                </div>
+                <div>
+                  <Label htmlFor="reminder_hours">Нагадати за</Label>
+                  <select
+                    id="reminder_hours"
+                    value={formData.reminder_hours}
+                    onChange={(e) => setFormData({ ...formData, reminder_hours: e.target.value })}
+                    className="mt-1 w-full p-2 border border-rose-200/50 rounded-lg focus:ring-2 focus:ring-rose-300"
+                    data-testid="select-reminder-hours"
+                  >
+                    <option value="1">1 годину</option>
+                    <option value="2">2 години</option>
+                    <option value="3">3 години</option>
+                    <option value="6">6 годин</option>
+                    <option value="12">12 годин</option>
+                    <option value="24">24 години (1 день)</option>
+                    <option value="48">48 годин (2 дні)</option>
+                  </select>
+                </div>
+                <div>
+                  <Label htmlFor="notes">Побажання (опціонально)</Label>
                   <Textarea
                     id="notes"
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    placeholder="Есть особые пожелания?"
+                    placeholder="Є особливі побажання?"
                     className="mt-1 border-rose-200/50 focus:ring-rose-300 min-h-24"
                     data-testid="input-notes"
                   />
@@ -350,10 +404,10 @@ function BookingPage() {
                 className="w-full bg-[#D4A5A5] hover:bg-[#9E829C] text-white py-6 rounded-full text-lg shadow-lg hover:shadow-xl active:scale-95 transition-all"
                 data-testid="submit-booking-button"
               >
-                {loading ? 'Создание записи...' : (
+                {loading ? 'Створення запису...' : (
                   <>
                     <Check className="mr-2 h-5 w-5" />
-                    Подтвердить запись
+                    Підтвердити запис
                   </>
                 )}
               </Button>
