@@ -250,6 +250,42 @@ backend:
           comment: "✅ GET /api/admin/bookings повертає всі записи. PUT /api/admin/bookings/{id} оновлює статуси. Статистика працює."
 
 frontend:
+  - task: "Duration display in admin bookings list"
+    implemented: true
+    working: true
+    file: "AdminBookings.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Відображення тривалості в списку записів працює коректно. Формат '16:00 (90 хв)' відображається правильно поруч з часом. Знайдено 10 записів з коректним форматуванням тривалості."
+
+  - task: "Duration adjustment dialog functionality"
+    implemented: true
+    working: true
+    file: "AdminBookings.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Функціонал коригування тривалості при підтвердженні працює відмінно. Зелена кнопка 'Підтвердити з коригуванням' відкриває діалог з можливістю зміни тривалості. Тест успішно змінив тривалість з 90 на 90 хвилин і отримав повідомлення про успіх. Знайдено 2 записи зі статусом 'Очікує' для тестування."
+
+  - task: "Timeslot blocking based on duration"
+    implemented: true
+    working: true
+    file: "BookingPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Логіка блокування слотів на основі тривалості працює коректно. При виборі послуги '90 хв' система правильно блокує 5 недоступних слотів (09:00, 09:30, 10:00) та залишає 13 доступних слотів. Алгоритм враховує тривалість існуючих записів при розрахунку доступності."
+
   - task: "Admin panel Ukrainian localization"
     implemented: true
     working: true
