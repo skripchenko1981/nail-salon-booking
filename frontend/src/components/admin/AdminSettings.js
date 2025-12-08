@@ -6,11 +6,13 @@ import { Textarea } from '../ui/textarea';
 import { Save, Eye } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { useSettings } from '../../context/SettingsContext';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 function AdminSettings() {
+  const { refreshSettings } = useSettings();
   const [settings, setSettings] = useState({
     site_name: '',
     site_description: '',
