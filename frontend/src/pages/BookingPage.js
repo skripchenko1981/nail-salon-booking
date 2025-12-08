@@ -371,7 +371,7 @@ function BookingPage() {
                 <div className="text-center py-12">
                   <p className="text-gray-500">На цю дату немає доступних слотів</p>
                   <Button 
-                    onClick={() => setStep(2)} 
+                    onClick={() => setStep(3)} 
                     className="mt-4 bg-[#D4A5A5] hover:bg-[#9E829C] text-white"
                   >
                     Обрати іншу дату
