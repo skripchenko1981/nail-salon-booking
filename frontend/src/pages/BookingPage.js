@@ -365,7 +365,10 @@ function BookingPage() {
                     className="mt-1 border-rose-200/50 focus:ring-rose-300"
                     data-testid="input-telegram-id"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Для отримання нагадувань у Telegram</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    📱 Нагадування приходитимуть по SMS на ваш номер телефону<br/>
+                    💬 Telegram - додатково, якщо бажаєте дублювати в месенджер
+                  </p>
                 </div>
                 <div>
                   <Label htmlFor="reminder_hours">Нагадати за</Label>
