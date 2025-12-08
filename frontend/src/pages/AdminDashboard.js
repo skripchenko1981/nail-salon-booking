@@ -32,10 +32,11 @@ function AdminDashboard() {
   };
 
   const menuItems = [
-    { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Обзор', testId: 'nav-dashboard' },
+    { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Огляд', testId: 'nav-dashboard' },
     { path: '/admin/bookings', icon: Calendar, label: 'Записи', testId: 'nav-bookings' },
-    { path: '/admin/services', icon: Package, label: 'Услуги', testId: 'nav-services' },
-    { path: '/admin/schedule', icon: Settings, label: 'Расписание', testId: 'nav-schedule' },
+    { path: '/admin/clients', icon: Users, label: 'Клієнти', testId: 'nav-clients' },
+    { path: '/admin/services', icon: Package, label: 'Послуги', testId: 'nav-services' },
+    { path: '/admin/schedule', icon: Settings, label: 'Розклад', testId: 'nav-schedule' },
   ];
 
   if (!token) return null;
