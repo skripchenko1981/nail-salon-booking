@@ -48,6 +48,94 @@
 ##   run_ui: false
 ##
 ## test_plan:
+
+#====================================================================================================
+# END - Testing Protocol
+#====================================================================================================
+
+user_problem_statement: "Multi-master booking system for manicure/pedicure salon with isolated data per master"
+
+backend:
+  - task: "Multi-master authentication"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Fixed password hashing in init_db.py to use SHA256. Master login now working correctly."
+
+  - task: "Data isolation per master (services, schedule, bookings, clients, vacations)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py, /app/frontend/src/components/admin/*"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Fixed AdminVacations.js to use current master_id. Backend correctly filters by master_id from JWT token."
+
+  - task: "Timeslots API with master and service filtering"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Tested with curl - returns 18 timeslots for valid master/service/date combination"
+
+frontend:
+  - task: "Master selection in booking flow"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/BookingPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Tested with screenshot tool - displays 2 active masters"
+
+  - task: "Service filtering by selected master"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/BookingPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "fetchMasterServices() correctly called on master selection, shows 3 services"
+
+  - task: "Complete booking flow (Master -> Service -> Date -> Time -> Contact form)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/BookingPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Tested with screenshot tool - full flow works: selected master, service, date, time, reached contact form"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
 ##   current_focus:
 ##     - "Task name 1"
 ##     - "Task name 2"
