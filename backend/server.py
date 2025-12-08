@@ -397,7 +397,7 @@ async def create_booking(booking: BookingCreate, background_tasks: BackgroundTas
     doc = booking_obj.model_dump()
     await db.bookings.insert_one(doc)
     
-    # Відправити повідомлення (SMS або Telegram)
+    # Відправити повідомлення клієнту (SMS або Telegram)
     if booking.telegram_id:
         # Якщо є Telegram ID - відправити в Telegram
         background_tasks.add_task(
@@ -417,6 +417,20 @@ async def create_booking(booking: BookingCreate, background_tasks: BackgroundTas
             booking.date,
             booking.time,
             booking.client_phone
+        )
+    
+    # Відправити повідомлення адміну про новий запис
+    admin_telegram_id = os.environ.get('ADMIN_TELEGRAM_ID')
+    if admin_telegram_id:
+        background_tasks.add_task(
+            telegram_bot.notify_admin_new_booking,
+            booking.client_name,
+            booking.client_phone,
+            service["name"],
+            booking.date,
+            booking.time,
+            service["price"],
+            admin_telegram_id
         )
     
     return booking_obj
