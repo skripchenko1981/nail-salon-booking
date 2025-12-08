@@ -227,11 +227,26 @@ class BookingDurationTester:
         
         print(f"   Total slots returned: {len(updated_slots)}")
         
+        # Calculate expected time slots based on actual booking time
+        from datetime import datetime, timedelta
+        booking_start = datetime.strptime(target_time, "%H:%M")
+        booking_end = booking_start + timedelta(minutes=60)
+        
+        # Find next 30-minute slot after booking start
+        next_slot_time = booking_start + timedelta(minutes=30)
+        end_slot_time = booking_end
+        
+        target_time_str = target_time
+        next_slot_str = next_slot_time.strftime("%H:%M")
+        end_slot_str = end_slot_time.strftime("%H:%M")
+        
+        print(f"   Booking occupies: {target_time_str} - {end_slot_str}")
+        
         # Test expectations
         test_cases = [
-            ("10:00", False, "should be unavailable (exact booking time)"),
-            ("10:30", False, "should be unavailable (conflicts with 10:00-11:00 booking)"),
-            ("11:00", True, "should be available (after booking ends)")
+            (target_time_str, False, f"should be unavailable (exact booking time)"),
+            (next_slot_str, False, f"should be unavailable (conflicts with {target_time_str}-{end_slot_str} booking)"),
+            (end_slot_str, True, f"should be available (after booking ends at {end_slot_str})")
         ]
         
         all_passed = True
