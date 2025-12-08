@@ -668,6 +668,118 @@ async def get_available_timeslots(date: str, service_id: str):
     
     return time_slots
 
+# ============ MASTER ROUTES ============
+
+@api_router.post("/masters/login", response_model=MasterLoginResponse)
+async def master_login(credentials: MasterLogin):
+    """Вхід для майстра"""
+    master = await db.masters.find_one({"email": credentials.email}, {"_id": 0})
+    
+    if not master or not verify_password(credentials.password, master["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    if not master.get("is_active", True):
+        raise HTTPException(status_code=403, detail="Account is disabled")
+    
+    token = create_token(master["email"], "master", master["id"])
+    
+    # Прибрати password_hash з відповіді
+    master_data = {k: v for k, v in master.items() if k != "password_hash"}
+    
+    return MasterLoginResponse(token=token, master=master_data)
+
+@api_router.get("/masters", response_model=List[Master])
+async def get_masters(_: Dict = Depends(verify_admin)):
+    """Отримати список всіх майстрів (тільки адмін)"""
+    masters = await db.masters.find({}, {"_id": 0, "password_hash": 0}).to_list(100)
+    return masters
+
+@api_router.post("/masters", response_model=Master)
+async def create_master(master: MasterCreate, _: Dict = Depends(verify_admin)):
+    """Створити нового майстра (тільки адмін)"""
+    # Перевірити, чи email вже існує
+    existing = await db.masters.find_one({"email": master.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    master_obj = Master(
+        **master.model_dump(exclude={"password"}),
+        password_hash=hash_password(master.password)
+    )
+    doc = master_obj.model_dump()
+    await db.masters.insert_one(doc)
+    
+    # Прибрати password_hash з відповіді
+    return Master(**{k: v for k, v in doc.items() if k != "password_hash"})
+
+@api_router.get("/masters/{master_id}", response_model=Master)
+async def get_master(master_id: str, user: Dict = Depends(verify_master_or_admin)):
+    """Отримати майстра по ID"""
+    # Майстер може бачити тільки себе, адмін - всіх
+    if user["role"] == "master" and user["user_id"] != master_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    master = await db.masters.find_one({"id": master_id}, {"_id": 0, "password_hash": 0})
+    if not master:
+        raise HTTPException(status_code=404, detail="Master not found")
+    return Master(**master)
+
+@api_router.get("/masters/me/profile", response_model=Master)
+async def get_my_profile(user: Dict = Depends(verify_master_or_admin)):
+    """Отримати свій профіль"""
+    master = await db.masters.find_one({"id": user["user_id"]}, {"_id": 0, "password_hash": 0})
+    if not master:
+        raise HTTPException(status_code=404, detail="Master not found")
+    return Master(**master)
+
+@api_router.put("/masters/{master_id}", response_model=Master)
+async def update_master(master_id: str, master: MasterUpdate, user: Dict = Depends(verify_master_or_admin)):
+    """Оновити майстра"""
+    # Майстер може редагувати тільки себе, адмін - всіх
+    if user["role"] == "master" and user["user_id"] != master_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    update_data = {k: v for k, v in master.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    result = await db.masters.update_one({"id": master_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Master not found")
+    
+    updated_master = await db.masters.find_one({"id": master_id}, {"_id": 0, "password_hash": 0})
+    return Master(**updated_master)
+
+@api_router.put("/masters/{master_id}/password")
+async def update_master_password(master_id: str, password_update: MasterPasswordUpdate, 
+                                 user: Dict = Depends(verify_master_or_admin)):
+    """Оновити пароль майстра"""
+    # Майстер може змінити тільки свій пароль
+    if user["role"] == "master" and user["user_id"] != master_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    master = await db.masters.find_one({"id": master_id}, {"_id": 0})
+    if not master:
+        raise HTTPException(status_code=404, detail="Master not found")
+    
+    # Перевірити поточний пароль (тільки для майстра, адмін може змінити без перевірки)
+    if user["role"] == "master":
+        if not verify_password(password_update.current_password, master["password_hash"]):
+            raise HTTPException(status_code=401, detail="Current password is incorrect")
+    
+    new_password_hash = hash_password(password_update.new_password)
+    await db.masters.update_one({"id": master_id}, {"$set": {"password_hash": new_password_hash}})
+    
+    return {"message": "Password updated successfully"}
+
+@api_router.delete("/masters/{master_id}")
+async def delete_master(master_id: str, _: Dict = Depends(verify_admin)):
+    """Видалити майстра (деактивувати)"""
+    result = await db.masters.update_one({"id": master_id}, {"$set": {"is_active": False}})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Master not found")
+    return {"message": "Master deactivated"}
+
 # ============ ADMIN ROUTES ============
 
 @api_router.post("/admin/login", response_model=AdminLoginResponse)
