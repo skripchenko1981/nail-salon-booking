@@ -342,9 +342,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Timeslots with duration consideration"
-    - "Booking duration update via admin API"
-    - "Updated timeslots after duration change"
+    - "Duration display in admin bookings list"
+    - "Duration adjustment dialog functionality"
+    - "Timeslot blocking based on duration"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
