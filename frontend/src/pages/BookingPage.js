@@ -78,6 +78,15 @@ function BookingPage() {
     }
   };
 
+  const fetchMasterServices = async (masterId) => {
+    try {
+      const response = await axios.get(`${API}/masters/${masterId}/services`);
+      setServices(response.data);
+    } catch (error) {
+      toast.error('Помилка завантаження послуг майстра');
+    }
+  };
+
   const handleMasterSelect = (master) => {
     setFormData({
       ...formData,
