@@ -49,9 +49,13 @@ function AdminServices() {
   };
 
   const handleOpenDialog = (service = null) => {
+    const masterData = JSON.parse(localStorage.getItem('master_data') || '{"id": "admin"}');
+    const masterId = masterData.id;
+    
     if (service) {
       setEditingService(service);
       setFormData({
+        master_id: masterId,  // Завжди використовуємо поточного майстра
         name: service.name,
         description: service.description,
         duration_minutes: service.duration_minutes,
@@ -61,6 +65,7 @@ function AdminServices() {
     } else {
       setEditingService(null);
       setFormData({
+        master_id: masterId,
         name: '',
         description: '',
         duration_minutes: 60,
