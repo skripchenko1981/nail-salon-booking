@@ -979,15 +979,20 @@ class NailSalonAPITester:
                     self.log_test("Робочі години 09:00-18:00", False, f"Тільки {len(working_hours_slots)} слотів")
                 
                 if available_slots:
+                    # Use a different time slot to avoid conflicts
+                    import time
+                    timestamp = int(time.time())
+                    unique_phone = f"+38050{timestamp % 10000000:07d}"
+                    
                     # Create test booking
                     booking_data = {
                         "master_id": master1_id,
                         "service_id": service_id,
                         "date": tomorrow,
-                        "time": available_slots[0]['time'],
-                        "client_name": "Тест Клієнт Майстра 1",
-                        "client_phone": "+380501234567",
-                        "client_email": "test.client1@example.com"
+                        "time": available_slots[-1]['time'],  # Use last available slot
+                        "client_name": f"Тест Клієнт {timestamp}",
+                        "client_phone": unique_phone,
+                        "client_email": f"test.client.{timestamp}@example.com"
                     }
                     
                     created_booking = self.run_test(
