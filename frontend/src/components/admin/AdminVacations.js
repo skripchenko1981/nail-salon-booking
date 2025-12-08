@@ -102,7 +102,7 @@ function AdminVacations() {
   const handleDelete = async (vacationId) => {
     if (!window.confirm('Ви впевнені, що хочете видалити цю відпустку?')) return;
 
-    const token = localStorage.getItem('admin_token');
+    const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
     try {
       await axios.delete(`${API}/vacations/${vacationId}`, {
         headers: { Authorization: `Bearer ${token}` }
