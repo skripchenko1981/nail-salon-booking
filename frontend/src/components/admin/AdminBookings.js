@@ -76,7 +76,7 @@ function AdminBookings() {
     if (!editingBooking) return;
     
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
       await axios.put(
         `${API}/admin/bookings/${editingBooking.id}`,
         { 
@@ -89,7 +89,8 @@ function AdminBookings() {
       setEditDialogOpen(false);
       fetchBookings();
     } catch (error) {
-      toast.error('Помилка оновлення запису');
+      console.error('Booking update error:', error);
+      toast.error(error.response?.data?.detail || 'Помилка оновлення запису');
     }
   };
 
