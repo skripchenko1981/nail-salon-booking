@@ -300,6 +300,42 @@ backend:
           agent: "testing"
           comment: "✅ Валідація відпусток працює правильно: неправильний формат дати повертає помилку 400, дата закінчення раніше дати початку також повертає помилку 400. Система запобігає створенню некоректних відпусток."
 
+  - task: "Master CRUD operations"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ CRUD операції майстрів працюють коректно. POST /api/masters успішно створює майстра з даними (name: 'Тестовий Майстер', email: унікальний, phone: '+380501111111', password: 'test123'). GET /api/masters повертає список майстрів (знайдено 2 майстри). Створений майстер присутній у списку. Авторизація адміна працює правильно."
+
+  - task: "Master authentication"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Автентифікація майстра працює коректно. POST /api/masters/login з обліковими даними створеного майстра успішно повертає JWT токен. Майстер може авторизуватися та отримувати доступ до API."
+
+  - task: "Master booking access control"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ Контроль доступу до записів працює правильно. Майстер може отримувати доступ до GET /api/admin/bookings з власним токеном (знайдено 0 записів для нового майстра). Система правильно фільтрує записи за master_id для ролі майстра."
+
 frontend:
   - task: "Duration display in admin bookings list"
     implemented: true
