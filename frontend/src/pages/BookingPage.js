@@ -78,16 +78,26 @@ function BookingPage() {
     }
   };
 
-  const handleServiceSelect = (service) => {
-    setFormData({ ...formData, service_id: service.id, service_name: service.name });
-    setStep(2);
-  };
-
   const handleMasterSelect = (master) => {
     setFormData({
       ...formData,
       master_id: master.id,
-      master_name: master.name
+      master_name: master.name,
+      service_id: '',  // Скидаємо обрану послугу
+      service_name: ''
+    });
+    setStep(2);
+    // Завантажити послуги цього майстра
+    fetchMasterServices(master.id);
+  };
+
+  const handleServiceSelect = (service) => {
+    setFormData({
+      ...formData,
+      service_id: service.id,
+      service_name: service.name,
+      duration_minutes: service.duration_minutes,
+      price: service.price
     });
     setStep(3);
   };
