@@ -1126,10 +1126,9 @@ async def get_stats(user: Dict = Depends(verify_master_or_admin)):
 
 @api_router.get("/admin/clients", response_model=List[Client])
 async def get_all_clients(user: Dict = Depends(verify_master_or_admin)):
-    """Отримати клієнтів (майстер бачить тільки своїх)"""
-    query = {}
-    if user["role"] == "master":
-        query["master_id"] = user["user_id"]
+    """Отримати клієнтів (кожен майстер бачить тільки своїх)"""
+    # Кожен користувач бачить тільки своїх клієнтів
+    query = {"master_id": user["user_id"]}
     
     clients = await db.clients.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
     return clients
