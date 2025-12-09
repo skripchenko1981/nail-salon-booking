@@ -264,6 +264,81 @@ function AdminSettings() {
           </div>
         </div>
 
+        {/* Контактна інформація для довідки */}
+        <div className="bg-white rounded-2xl p-6 border border-rose-200/50">
+          <h3 className="text-xl font-semibold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
+            Контактна інформація
+          </h3>
+          <div className="bg-amber-50 p-4 rounded-lg mb-4">
+            <p className="text-sm text-amber-800">
+              ℹ️ Контакти зберігаються для вашої довідки та можуть використовуватися для інтеграцій (наприклад, для відправки SMS або email клієнтам)
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="phone">Телефон</Label>
+              <Input
+                id="phone"
+                value={settings.phone || ''}
+                onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
+                placeholder="+380 99 123 45 67"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={settings.email || ''}
+                onChange={(e) => setSettings({ ...settings, email: e.target.value })}
+                placeholder="info@nailstudio.ua"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="address">Адреса</Label>
+              <Input
+                id="address"
+                value={settings.address || ''}
+                onChange={(e) => setSettings({ ...settings, address: e.target.value })}
+                placeholder="м. Київ, вул. Прикладна, 1"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="working_hours">Графік роботи</Label>
+              <Input
+                id="working_hours"
+                value={settings.working_hours || ''}
+                onChange={(e) => setSettings({ ...settings, working_hours: e.target.value })}
+                placeholder="Пн-Сб: 9:00-18:00"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="instagram">Instagram</Label>
+              <Input
+                id="instagram"
+                value={settings.instagram || ''}
+                onChange={(e) => setSettings({ ...settings, instagram: e.target.value })}
+                placeholder="@nailstudio_ua"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="facebook">Facebook</Label>
+              <Input
+                id="facebook"
+                value={settings.facebook || ''}
+                onChange={(e) => setSettings({ ...settings, facebook: e.target.value })}
+                placeholder="https://facebook.com/page"
+                className="mt-1"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Вибір теми */}
         <div className="bg-white rounded-2xl p-6 border border-rose-200/50">
           <h3 className="text-xl font-semibold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
