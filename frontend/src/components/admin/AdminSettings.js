@@ -26,7 +26,17 @@ function AdminSettings() {
     address: '',
     instagram: '',
     facebook: '',
-    working_hours: ''
+    working_hours: '',
+    // Контент головної сторінки
+    hero_title: '',
+    hero_subtitle: '',
+    hero_button_text: '',
+    services_title: '',
+    services_subtitle: '',
+    why_us_title: '',
+    why_us_reason_1: '',
+    why_us_reason_2: '',
+    why_us_reason_3: ''
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
