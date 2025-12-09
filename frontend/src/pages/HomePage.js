@@ -33,6 +33,15 @@ function HomePage() {
     }
   };
 
+  const fetchSettings = async () => {
+    try {
+      const response = await axios.get(`${API}/settings`);
+      setSettings(response.data);
+    } catch (error) {
+      console.error('Помилка завантаження налаштувань:', error);
+    }
+  };
+
   const serviceImages = [
     'https://images.pexels.com/photos/5128123/pexels-photo-5128123.jpeg',
     'https://images.unsplash.com/photo-1727199433272-70fdb94c8430',
