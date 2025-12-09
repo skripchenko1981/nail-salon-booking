@@ -68,10 +68,11 @@ function AdminSettings() {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Налаштування збережено!', {
-        description: 'Кольори застосовано автоматично'
+        description: 'Зміни застосовано на сайті'
       });
-      // Оновити налаштування в контексті
+      // Оновити налаштування та тему в контексті
       refreshSettings();
+      refreshTheme();
     } catch (error) {
       toast.error('Помилка збереження налаштувань');
     } finally {
