@@ -165,10 +165,15 @@ function HomePage() {
       <section className="py-24 px-6 bg-white">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-16 space-y-4">
-            <p className="text-xs uppercase tracking-widest text-[#9E829C] font-medium">Наші послуги</p>
+            <p className="text-xs uppercase tracking-widest font-medium" style={{ color: themeColors.secondary }}>ПОСЛУГИ</p>
             <h3 className="text-4xl lg:text-5xl font-bold tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
-              Що ми пропонуємо
+              {settings.services_title || 'Наші послуги'}
             </h3>
+            {settings.services_subtitle && (
+              <p className="text-gray-600 max-w-2xl mx-auto">
+                {settings.services_subtitle}
+              </p>
+            )}
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.map((service, index) => (
