@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Users, Package, Settings, LogOut, User } from 'lucide-react';
+import { LayoutDashboard, Calendar, Users, Package, Settings, LogOut, User, Image } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import AdminOverview from '../components/admin/AdminOverview';
 import AdminBookings from '../components/admin/AdminBookings';
