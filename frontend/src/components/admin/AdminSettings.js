@@ -14,6 +14,7 @@ const API = `${BACKEND_URL}/api`;
 
 function AdminSettings() {
   const { refreshSettings } = useSettings();
+  const { refreshTheme } = useTheme();
   const [settings, setSettings] = useState({
     site_name: '',
     site_description: '',
