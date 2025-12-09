@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { Calendar, Clock, Sparkles, Phone, Mail, MapPin } from 'lucide-react';
+import { Calendar, Clock, Sparkles, Phone, Mail, MapPin, Instagram, Facebook } from 'lucide-react';
 import axios from 'axios';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -10,9 +10,18 @@ const API = `${BACKEND_URL}/api`;
 function HomePage() {
   const navigate = useNavigate();
   const [services, setServices] = useState([]);
+  const [settings, setSettings] = useState({
+    phone: '',
+    email: '',
+    address: '',
+    instagram: '',
+    facebook: '',
+    working_hours: ''
+  });
 
   useEffect(() => {
     fetchServices();
+    fetchSettings();
   }, []);
 
   const fetchServices = async () => {
