@@ -1301,6 +1301,46 @@ async def update_site_settings(settings: SiteSettings, _: str = Depends(verify_t
     )
     return settings
 
+# ============ GALLERY ============
+
+@api_router.get("/gallery", response_model=List[GalleryImage])
+async def get_gallery_images():
+    """Отримати всі активні фото з галереї (публічний доступ)"""
+    images = await db.gallery.find({"is_active": True}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return images
+
+@api_router.get("/admin/gallery", response_model=List[GalleryImage])
+async def get_all_gallery_images(user: Dict = Depends(verify_master_or_admin)):
+    """Отримати всі фото з галереї для адміна/майстра"""
+    images = await db.gallery.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return images
+
+@api_router.post("/admin/gallery", response_model=GalleryImage)
+async def create_gallery_image(image_data: GalleryImageCreate, user: Dict = Depends(verify_master_or_admin)):
+    """Додати фото в галерею"""
+    image = GalleryImage(**image_data.model_dump())
+    await db.gallery.insert_one(image.model_dump())
+    return image
+
+@api_router.delete("/admin/gallery/{image_id}")
+async def delete_gallery_image(image_id: str, user: Dict = Depends(verify_master_or_admin)):
+    """Видалити фото з галереї"""
+    result = await db.gallery.delete_one({"id": image_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Image not found")
+    return {"success": True, "message": "Image deleted"}
+
+@api_router.put("/admin/gallery/{image_id}")
+async def update_gallery_image(image_id: str, is_active: bool, user: Dict = Depends(verify_master_or_admin)):
+    """Активувати/деактивувати фото"""
+    result = await db.gallery.update_one(
+        {"id": image_id},
+        {"$set": {"is_active": is_active}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Image not found")
+    return {"success": True, "message": "Image updated"}
+
 # Include router
 app.include_router(api_router)
 
