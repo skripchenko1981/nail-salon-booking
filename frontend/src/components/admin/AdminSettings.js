@@ -16,6 +16,7 @@ function AdminSettings() {
   const [settings, setSettings] = useState({
     site_name: '',
     site_description: '',
+    theme: 'classic',
     primary_color: '#D4A5A5',
     secondary_color: '#9E829C',
     accent_color: '#F3EBEB',
