@@ -293,6 +293,7 @@ class SiteSettings(BaseModel):
     id: str = "site_settings"
     site_name: str = "Nail Studio"
     site_description: str = "Професійний догляд за вашими руками та ногами"
+    about_text: str = "Професійна студія манікюру та педикюру з командою досвідчених майстрів. Ми створюємо красу та піклуємося про здоров'я ваших нігтів."
     theme: str = "classic"  # classic, winter, spring, summer, autumn
     primary_color: str = "#D4A5A5"
     secondary_color: str = "#9E829C"
