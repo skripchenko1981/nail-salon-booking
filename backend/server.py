@@ -305,6 +305,22 @@ class SiteSettings(BaseModel):
     facebook: Optional[str] = None
     working_hours: str = "Пн-Сб: 9:00-18:00"
 
+class GalleryImage(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    image_url: str
+    master_id: Optional[str] = None  # Якщо None - загальне фото
+    master_name: Optional[str] = None
+    description: Optional[str] = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    is_active: bool = True
+
+class GalleryImageCreate(BaseModel):
+    image_url: str
+    master_id: Optional[str] = None
+    master_name: Optional[str] = None
+    description: Optional[str] = None
+
 class TimeSlot(BaseModel):
     time: str
     available: bool
