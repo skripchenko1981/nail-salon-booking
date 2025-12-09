@@ -268,10 +268,11 @@ function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
             {/* Про студію */}
             <div>
-              <h3 className="text-2xl font-bold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>Nail Studio</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Професійна студія манікюру та педикюру з командою досвідчених майстрів. 
-                Ми створюємо красу та піклуємося про здоров'я ваших нігтів.
+              <h3 className="text-2xl font-bold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
+                {settings.site_name || 'Nail Studio'}
+              </h3>
+              <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+                {settings.about_text || 'Професійна студія манікюру та педикюру з командою досвідчених майстрів. Ми створюємо красу та піклуємося про здоров\'я ваших нігтів.'}
               </p>
             </div>
 
