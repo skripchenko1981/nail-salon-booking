@@ -107,23 +107,23 @@ function HomePage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8 animate-fade-in">
               <div className="space-y-4">
-                <p className="text-xs uppercase tracking-widest text-[#9E829C] font-medium">Професійний догляд</p>
+                <p className="text-xs uppercase tracking-widest font-medium" style={{ color: themeColors.secondary }}>Професійний догляд</p>
                 <h2 className="text-5xl lg:text-6xl font-bold tracking-tight leading-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
-                  Краса ваших
-                  <span className="block text-[#D4A5A5]">рук і ніг</span>
+                  {settings.hero_title || 'Ваша краса - наша пристрасть'}
                 </h2>
                 <p className="text-lg text-gray-600 leading-relaxed max-w-xl">
-                  Довірте турботу про свої нігті професіоналу. Якісний манікюр і педикюр в затишній атмосфері.
+                  {settings.hero_subtitle || 'Професійний манікюр та педикюр у затишній атмосфері'}
                 </p>
               </div>
               <div className="flex gap-4">
                 <Button 
                   onClick={() => navigate('/booking')} 
-                  className="bg-[#D4A5A5] hover:bg-[#9E829C] text-white px-8 py-6 rounded-full text-base shadow-lg hover:shadow-xl active:scale-95 transition-all"
+                  className="text-white px-8 py-6 rounded-full text-base shadow-lg hover:shadow-xl active:scale-95 transition-all"
+                  style={{ backgroundColor: themeColors.primary }}
                   data-testid="hero-book-button"
                 >
                   <Calendar className="mr-2 h-5 w-5" />
-                  Записатися онлайн
+                  {settings.hero_button_text || 'Записатися онлайн'}
                 </Button>
               </div>
               <div className="flex gap-8 pt-4">
