@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Calendar, Clock, Sparkles, Phone, Mail, MapPin, Instagram, Facebook } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -9,6 +10,7 @@ const API = `${BACKEND_URL}/api`;
 
 function HomePage() {
   const navigate = useNavigate();
+  const { themeColors } = useTheme();
   const [services, setServices] = useState([]);
   const [settings, setSettings] = useState({
     site_name: 'Nail Studio',
@@ -18,7 +20,16 @@ function HomePage() {
     address: '',
     instagram: '',
     facebook: '',
-    working_hours: ''
+    working_hours: '',
+    hero_title: 'Ваша краса - наша пристрасть',
+    hero_subtitle: 'Професійний манікюр та педикюр',
+    hero_button_text: 'Записатися онлайн',
+    services_title: 'Наші послуги',
+    services_subtitle: 'Ми пропонуємо широкий спектр послуг',
+    why_us_title: 'Чому обирають нас?',
+    why_us_reason_1: 'Досвідчені майстри',
+    why_us_reason_2: 'Якісні матеріали',
+    why_us_reason_3: 'Стерильність та безпека'
   });
 
   useEffect(() => {
