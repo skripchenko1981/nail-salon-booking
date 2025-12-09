@@ -323,78 +323,20 @@ function HomePage() {
 
       {/* Footer */}
       <footer className="py-16 px-6 bg-gradient-to-b from-white border-t" style={{ backgroundColor: themeColors.accent, borderColor: themeColors.border }}>
-        <div className="container mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
-            {/* Про студію */}
-            <div>
-              <h3 className="text-2xl font-bold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
-                {settings.site_name || 'Nail Studio'}
-              </h3>
-              <p className="text-gray-600 leading-relaxed whitespace-pre-line">
-                {settings.about_text || 'Професійна студія манікюру та педикюру з командою досвідчених майстрів. Ми створюємо красу та піклуємося про здоров\'я ваших нігтів.'}
-              </p>
-            </div>
-
-            {/* Контакти */}
-            <div>
-              <h4 className="text-lg font-semibold mb-4 text-gray-900">Контакти</h4>
-              <div className="space-y-3">
-                {settings.phone && (
-                  <a href={`tel:${settings.phone}`} className="flex items-center gap-3 text-gray-600 hover:text-[#D4A5A5] transition-colors">
-                    <Phone className="h-5 w-5" />
-                    <span>{settings.phone}</span>
-                  </a>
-                )}
-                {settings.email && (
-                  <a href={`mailto:${settings.email}`} className="flex items-center gap-3 text-gray-600 hover:text-[#D4A5A5] transition-colors">
-                    <Mail className="h-5 w-5" />
-                    <span>{settings.email}</span>
-                  </a>
-                )}
-                {settings.address && (
-                  <div className="flex items-center gap-3 text-gray-600">
-                    <MapPin className="h-5 w-5" />
-                    <span>{settings.address}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Графік та соц мережі */}
-            <div>
-              <h4 className="text-lg font-semibold mb-4 text-gray-900">Графік роботи</h4>
-              {settings.working_hours && (
-                <p className="text-gray-600 mb-6 whitespace-pre-line">{settings.working_hours}</p>
-              )}
-              
-              <div className="flex gap-4 mt-6">
-                {settings.instagram && (
-                  <a 
-                    href={settings.instagram.startsWith('http') ? settings.instagram : `https://instagram.com/${settings.instagram}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center text-white hover:scale-110 transition-transform"
-                  >
-                    <Instagram className="h-5 w-5" />
-                  </a>
-                )}
-                {settings.facebook && (
-                  <a 
-                    href={settings.facebook.startsWith('http') ? settings.facebook : `https://facebook.com/${settings.facebook}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-[#1877F2] flex items-center justify-center text-white hover:scale-110 transition-transform"
-                  >
-                    <Facebook className="h-5 w-5" />
-                  </a>
-                )}
-              </div>
-            </div>
+        <div className="container mx-auto max-w-4xl text-center">
+          {/* Про студію */}
+          <div className="mb-8">
+            <h3 className="text-3xl font-bold mb-6" style={{ fontFamily: 'Playfair Display, serif', color: themeColors.primary }}>
+              {settings.site_name || 'Nail Studio'}
+            </h3>
+            <p className="text-gray-600 leading-relaxed text-lg whitespace-pre-line max-w-2xl mx-auto">
+              {settings.about_text || 'Професійна студія манікюру та педикюру з командою досвідчених майстрів. Ми створюємо красу та піклуємося про здоров\'я ваших нігтів.'}
+            </p>
           </div>
 
           {/* Copyright */}
-          <div className="pt-8 border-t border-rose-200/50 text-center">
-            <p className="text-gray-500 text-sm">© 2025 Nail Studio. Всі права захищені</p>
+          <div className="pt-8 border-t text-center" style={{ borderColor: themeColors.border }}>
+            <p className="text-gray-500 text-sm">© 2025 {settings.site_name || 'Nail Studio'}. Всі права захищені</p>
           </div>
         </div>
       </footer>
