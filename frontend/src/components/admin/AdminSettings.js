@@ -112,6 +112,35 @@ function AdminSettings() {
           </div>
         </div>
 
+        {/* Вибір теми */}
+        <div className="bg-white rounded-2xl p-6 border border-rose-200/50">
+          <h3 className="text-xl font-semibold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
+            Тематичне оформлення
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="theme">Оберіть тему</Label>
+              <select
+                id="theme"
+                value={settings.theme}
+                onChange={(e) => setSettings({ ...settings, theme: e.target.value })}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#D4A5A5]"
+              >
+                <option value="classic">🎨 Класична (цілорічно)</option>
+                <option value="winter">❄️ Новорічна (грудень-січень)</option>
+                <option value="spring">🌸 Весняна (березень-травень)</option>
+                <option value="summer">☀️ Літня (червень-серпень)</option>
+                <option value="autumn">🍂 Осіння (вересень-листопад)</option>
+              </select>
+            </div>
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-lg">
+              <p className="text-sm text-gray-600">
+                💡 <strong>Підказка:</strong> Обрана тема автоматично змінить кольорову схему, фонові зображення та додасть тематичні декоративні елементи на всіх сторінках сайту.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Кольори */}
         <div className="bg-white rounded-2xl p-6 border border-rose-200/50">
           <h3 className="text-xl font-semibold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
