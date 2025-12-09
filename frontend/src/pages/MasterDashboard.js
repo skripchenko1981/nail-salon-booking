@@ -118,6 +118,7 @@ function MasterDashboard() {
             <Route path="/services" element={<AdminServices />} />
             <Route path="/schedule" element={<AdminSchedule />} />
             <Route path="/vacations" element={<AdminVacations />} />
+            <Route path="/gallery" element={<AdminGallery />} />
           </Routes>
         </main>
       </div>
