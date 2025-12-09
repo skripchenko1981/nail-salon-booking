@@ -135,6 +135,132 @@ function AdminSettings() {
           </div>
         </div>
 
+        {/* Контент головної сторінки */}
+        <div className="bg-white rounded-2xl p-6 border border-rose-200/50">
+          <h3 className="text-xl font-semibold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
+            Контент головної сторінки
+          </h3>
+          <div className="space-y-4">
+            <div className="bg-blue-50 p-4 rounded-lg mb-4">
+              <p className="text-sm text-blue-800">
+                💡 Тут ви можете змінити всі тексти на головній сторінці сайту
+              </p>
+            </div>
+            
+            {/* Hero секція */}
+            <div className="border-l-4 border-[#D4A5A5] pl-4">
+              <h4 className="font-semibold mb-3 text-gray-700">Головний банер (Hero)</h4>
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="hero_title">Заголовок</Label>
+                  <Input
+                    id="hero_title"
+                    value={settings.hero_title || ''}
+                    onChange={(e) => setSettings({ ...settings, hero_title: e.target.value })}
+                    placeholder="Ваша краса - наша пристрасть"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="hero_subtitle">Підзаголовок</Label>
+                  <Input
+                    id="hero_subtitle"
+                    value={settings.hero_subtitle || ''}
+                    onChange={(e) => setSettings({ ...settings, hero_subtitle: e.target.value })}
+                    placeholder="Професійний манікюр та педикюр"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="hero_button_text">Текст кнопки</Label>
+                  <Input
+                    id="hero_button_text"
+                    value={settings.hero_button_text || ''}
+                    onChange={(e) => setSettings({ ...settings, hero_button_text: e.target.value })}
+                    placeholder="Записатися онлайн"
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Секція послуг */}
+            <div className="border-l-4 border-[#D4A5A5] pl-4">
+              <h4 className="font-semibold mb-3 text-gray-700">Секція "Послуги"</h4>
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="services_title">Заголовок</Label>
+                  <Input
+                    id="services_title"
+                    value={settings.services_title || ''}
+                    onChange={(e) => setSettings({ ...settings, services_title: e.target.value })}
+                    placeholder="Наші послуги"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="services_subtitle">Підзаголовок</Label>
+                  <Textarea
+                    id="services_subtitle"
+                    value={settings.services_subtitle || ''}
+                    onChange={(e) => setSettings({ ...settings, services_subtitle: e.target.value })}
+                    placeholder="Ми пропонуємо широкий спектр послуг..."
+                    className="mt-1"
+                    rows={2}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Секція "Чому ми" */}
+            <div className="border-l-4 border-[#D4A5A5] pl-4">
+              <h4 className="font-semibold mb-3 text-gray-700">Секція "Чому обирають нас?"</h4>
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="why_us_title">Заголовок</Label>
+                  <Input
+                    id="why_us_title"
+                    value={settings.why_us_title || ''}
+                    onChange={(e) => setSettings({ ...settings, why_us_title: e.target.value })}
+                    placeholder="Чому обирають нас?"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="why_us_reason_1">Причина 1</Label>
+                  <Input
+                    id="why_us_reason_1"
+                    value={settings.why_us_reason_1 || ''}
+                    onChange={(e) => setSettings({ ...settings, why_us_reason_1: e.target.value })}
+                    placeholder="Досвідчені майстри"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="why_us_reason_2">Причина 2</Label>
+                  <Input
+                    id="why_us_reason_2"
+                    value={settings.why_us_reason_2 || ''}
+                    onChange={(e) => setSettings({ ...settings, why_us_reason_2: e.target.value })}
+                    placeholder="Якісні матеріали"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="why_us_reason_3">Причина 3</Label>
+                  <Input
+                    id="why_us_reason_3"
+                    value={settings.why_us_reason_3 || ''}
+                    onChange={(e) => setSettings({ ...settings, why_us_reason_3: e.target.value })}
+                    placeholder="Стерильність та безпека"
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Вибір теми */}
         <div className="bg-white rounded-2xl p-6 border border-rose-200/50">
           <h3 className="text-xl font-semibold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
