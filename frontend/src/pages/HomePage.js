@@ -11,6 +11,8 @@ function HomePage() {
   const navigate = useNavigate();
   const [services, setServices] = useState([]);
   const [settings, setSettings] = useState({
+    site_name: 'Nail Studio',
+    about_text: '',
     phone: '',
     email: '',
     address: '',
