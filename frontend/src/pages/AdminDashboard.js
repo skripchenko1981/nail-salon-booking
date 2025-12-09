@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { LayoutDashboard, Calendar, Settings, Package, LogOut, Menu, X, Users } from 'lucide-react';
+import { LayoutDashboard, Calendar, Settings, Package, LogOut, Menu, X, Users, Image } from 'lucide-react';
 import AdminOverview from '../components/admin/AdminOverview';
 import AdminBookings from '../components/admin/AdminBookings';
 import AdminServices from '../components/admin/AdminServices';
@@ -10,6 +10,7 @@ import AdminClients from '../components/admin/AdminClients';
 import AdminSettings from '../components/admin/AdminSettings';
 import AdminVacations from '../components/admin/AdminVacations';
 import AdminMasters from '../components/admin/AdminMasters';
+import AdminGallery from '../components/admin/AdminGallery';
 import axios from 'axios';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
