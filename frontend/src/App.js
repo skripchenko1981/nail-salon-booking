@@ -5,6 +5,7 @@ import { SettingsProvider } from './context/SettingsContext';
 import HomePage from './pages/HomePage';
 import BookingPage from './pages/BookingPage';
 import MyBookingsPage from './pages/MyBookingsPage';
+import PortfolioPage from './pages/PortfolioPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminDashboard from './pages/AdminDashboard';
 import MasterLoginPage from './pages/MasterLoginPage';
