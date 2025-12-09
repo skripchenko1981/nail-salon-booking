@@ -304,6 +304,16 @@ class SiteSettings(BaseModel):
     instagram: Optional[str] = None
     facebook: Optional[str] = None
     working_hours: str = "Пн-Сб: 9:00-18:00"
+    # Контент головної сторінки
+    hero_title: str = "Ваша краса - наша пристрасть"
+    hero_subtitle: str = "Професійний манікюр та педикюр у затишній атмосфері"
+    hero_button_text: str = "Записатися онлайн"
+    services_title: str = "Наші послуги"
+    services_subtitle: str = "Ми пропонуємо широкий спектр послуг для догляду за вашими руками та ногами"
+    why_us_title: str = "Чому обирають нас?"
+    why_us_reason_1: str = "Досвідчені майстри з сертифікатами"
+    why_us_reason_2: str = "Якісні матеріали преміум-класу"
+    why_us_reason_3: str = "Стерильність та безпека"
 
 class GalleryImage(BaseModel):
     model_config = ConfigDict(extra="ignore")
