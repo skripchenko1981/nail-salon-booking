@@ -109,6 +109,18 @@ function AdminSettings() {
                 data-testid="input-site-description"
               />
             </div>
+            <div>
+              <Label htmlFor="about_text">Про нас (у футері)</Label>
+              <Textarea
+                id="about_text"
+                value={settings.about_text || ''}
+                onChange={(e) => setSettings({ ...settings, about_text: e.target.value })}
+                placeholder="Професійна студія манікюру та педикюру з командою досвідчених майстрів..."
+                className="mt-1"
+                rows={4}
+                data-testid="input-about-text"
+              />
+            </div>
           </div>
         </div>
 
