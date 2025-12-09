@@ -60,6 +60,12 @@ function HomePage() {
           <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>Nail Studio</h1>
           <div className="flex gap-4 items-center">
             <button 
+              onClick={() => navigate('/portfolio')} 
+              className="text-sm hover:text-[#D4A5A5] transition-colors"
+            >
+              Портфоліо
+            </button>
+            <button 
               onClick={() => navigate('/my-bookings')} 
               className="text-sm hover:text-[#D4A5A5] transition-colors"
               data-testid="nav-my-bookings"
