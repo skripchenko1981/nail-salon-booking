@@ -284,8 +284,45 @@ function HomePage() {
         </div>
       </section>
 
+      {/* Why Choose Us Section */}
+      <section className="py-24 px-6 bg-white">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-16">
+            <h3 className="text-4xl lg:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
+              {settings.why_us_title || 'Чому обирають нас?'}
+            </h3>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center p-8 rounded-2xl hover:shadow-lg transition-shadow" style={{ backgroundColor: themeColors.accent }}>
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: themeColors.primary }}>
+                <Sparkles className="h-8 w-8 text-white" />
+              </div>
+              <h4 className="text-xl font-semibold mb-3">
+                {settings.why_us_reason_1 || 'Досвідчені майстри'}
+              </h4>
+            </div>
+            <div className="text-center p-8 rounded-2xl hover:shadow-lg transition-shadow" style={{ backgroundColor: themeColors.accent }}>
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: themeColors.primary }}>
+                <Sparkles className="h-8 w-8 text-white" />
+              </div>
+              <h4 className="text-xl font-semibold mb-3">
+                {settings.why_us_reason_2 || 'Якісні матеріали'}
+              </h4>
+            </div>
+            <div className="text-center p-8 rounded-2xl hover:shadow-lg transition-shadow" style={{ backgroundColor: themeColors.accent }}>
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: themeColors.primary }}>
+                <Sparkles className="h-8 w-8 text-white" />
+              </div>
+              <h4 className="text-xl font-semibold mb-3">
+                {settings.why_us_reason_3 || 'Стерильність та безпека'}
+              </h4>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer className="py-16 px-6 bg-gradient-to-b from-white to-[#F3EBEB] border-t border-rose-200/50">
+      <footer className="py-16 px-6 bg-gradient-to-b from-white border-t" style={{ backgroundColor: themeColors.accent, borderColor: themeColors.border }}>
         <div className="container mx-auto max-w-7xl">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
             {/* Про студію */}
