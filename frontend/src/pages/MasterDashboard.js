@@ -8,6 +8,7 @@ import AdminServices from '../components/admin/AdminServices';
 import AdminSchedule from '../components/admin/AdminSchedule';
 import AdminClients from '../components/admin/AdminClients';
 import AdminVacations from '../components/admin/AdminVacations';
+import AdminGallery from '../components/admin/AdminGallery';
 
 function MasterDashboard() {
   const navigate = useNavigate();
