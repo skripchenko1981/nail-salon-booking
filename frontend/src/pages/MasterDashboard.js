@@ -39,6 +39,7 @@ function MasterDashboard() {
     { path: '/master/services', icon: Package, label: 'Послуги', testId: 'nav-services' },
     { path: '/master/schedule', icon: Settings, label: 'Розклад', testId: 'nav-schedule' },
     { path: '/master/vacations', icon: Calendar, label: 'Відпустки', testId: 'nav-vacations' },
+    { path: '/master/gallery', icon: Image, label: 'Галерея', testId: 'nav-gallery' },
   ];
 
   return (
