@@ -106,17 +106,45 @@ function AdminMasters() {
   };
 
   const handleDelete = async (masterId) => {
-    if (!window.confirm('Ви впевнені, що хочете видалити цього майстра?')) return;
+    const master = masters.find(m => m.id === masterId);
+    const masterName = master?.name || 'цього майстра';
+    
+    if (!window.confirm(
+      `⚠️ УВАГА! Ви впевнені, що хочете видалити майстра "${masterName}"?\n\n` +
+      `Це також видалить:\n` +
+      `• Всі послуги майстра\n` +
+      `• Весь графік роботи\n` +
+      `• Всі бронювання\n` +
+      `• Всі відпустки\n` +
+      `• Всіх клієнтів\n` +
+      `• Всі фото в галереї\n\n` +
+      `Цю дію НЕ МОЖНА скасувати!`
+    )) return;
 
     const token = localStorage.getItem('admin_token');
     try {
-      await axios.delete(`${API}/masters/${masterId}`, {
+      const response = await axios.delete(`${API}/masters/${masterId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success('Майстра видалено');
+      
+      // Показати детальну інформацію про видалення
+      const deleted = response.data.deleted;
+      let details = [];
+      if (deleted.services > 0) details.push(`${deleted.services} послуг`);
+      if (deleted.schedule > 0) details.push(`${deleted.schedule} записів графіку`);
+      if (deleted.bookings > 0) details.push(`${deleted.bookings} бронювань`);
+      if (deleted.vacations > 0) details.push(`${deleted.vacations} відпусток`);
+      if (deleted.clients > 0) details.push(`${deleted.clients} клієнтів`);
+      if (deleted.gallery > 0) details.push(`${deleted.gallery} фото`);
+      
+      const detailsText = details.length > 0 ? ` та ${details.join(', ')}` : '';
+      toast.success(`Майстра "${masterName}"${detailsText} видалено`, {
+        duration: 5000
+      });
+      
       fetchMasters();
     } catch (error) {
-      toast.error('Помилка при видаленні');
+      toast.error(error.response?.data?.detail || 'Помилка при видаленні');
     }
   };
 
