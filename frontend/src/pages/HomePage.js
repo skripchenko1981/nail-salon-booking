@@ -249,41 +249,6 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section className="py-24 px-6 bg-[#FDFCFB]">
-        <div className="container mx-auto max-w-4xl">
-          <div className="text-center mb-12 space-y-4">
-            <p className="text-xs uppercase tracking-widest text-[#9E829C] font-medium">Контакти</p>
-            <h3 className="text-4xl lg:text-5xl font-bold tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
-              Зв'яжіться з нами
-            </h3>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white p-8 rounded-2xl border border-rose-200/50 text-center space-y-3 hover:shadow-lg transition-all">
-              <div className="bg-[#F3EBEB] w-16 h-16 rounded-full flex items-center justify-center mx-auto">
-                <Phone className="h-8 w-8 text-[#D4A5A5]" />
-              </div>
-              <p className="font-semibold">Телефон</p>
-              <p className="text-gray-600">+380 99 123 45 67</p>
-            </div>
-            <div className="bg-white p-8 rounded-2xl border border-rose-200/50 text-center space-y-3 hover:shadow-lg transition-all">
-              <div className="bg-[#F3EBEB] w-16 h-16 rounded-full flex items-center justify-center mx-auto">
-                <Mail className="h-8 w-8 text-[#D4A5A5]" />
-              </div>
-              <p className="font-semibold">Email</p>
-              <p className="text-gray-600">info@nailstudio.ua</p>
-            </div>
-            <div className="bg-white p-8 rounded-2xl border border-rose-200/50 text-center space-y-3 hover:shadow-lg transition-all">
-              <div className="bg-[#F3EBEB] w-16 h-16 rounded-full flex items-center justify-center mx-auto">
-                <MapPin className="h-8 w-8 text-[#D4A5A5]" />
-              </div>
-              <p className="font-semibold">Адреса</p>
-              <p className="text-gray-600">Київ, вул. Прикладна, 1</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Why Choose Us Section */}
       <section className="py-24 px-6 bg-white">
         <div className="container mx-auto max-w-7xl">
