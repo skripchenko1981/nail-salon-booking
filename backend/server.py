@@ -943,11 +943,52 @@ async def update_master_password(master_id: str, password_update: MasterPassword
 
 @api_router.delete("/masters/{master_id}")
 async def delete_master(master_id: str, _: Dict = Depends(verify_admin)):
-    """Видалити майстра (деактивувати)"""
-    result = await db.masters.update_one({"id": master_id}, {"$set": {"is_active": False}})
-    if result.matched_count == 0:
+    """Видалити майстра та всі його дані"""
+    # Перевірити, чи існує майстер
+    master = await db.masters.find_one({"id": master_id})
+    if not master:
         raise HTTPException(status_code=404, detail="Master not found")
-    return {"message": "Master deactivated"}
+    
+    master_name = master.get("name", "Unknown")
+    
+    # Каскадне видалення всіх даних майстра
+    try:
+        # Видалити послуги
+        services_result = await db.services.delete_many({"master_id": master_id})
+        
+        # Видалити графік роботи
+        schedule_result = await db.work_schedule.delete_many({"master_id": master_id})
+        
+        # Видалити відпустки
+        vacations_result = await db.vacations.delete_many({"master_id": master_id})
+        
+        # Видалити бронювання
+        bookings_result = await db.bookings.delete_many({"master_id": master_id})
+        
+        # Видалити клієнтів
+        clients_result = await db.clients.delete_many({"master_id": master_id})
+        
+        # Видалити фото з галереї
+        gallery_result = await db.gallery.delete_many({"master_id": master_id})
+        
+        # Видалити самого майстра
+        master_result = await db.masters.delete_one({"id": master_id})
+        
+        return {
+            "message": f"Master '{master_name}' and all associated data deleted successfully",
+            "deleted": {
+                "services": services_result.deleted_count,
+                "schedule": schedule_result.deleted_count,
+                "vacations": vacations_result.deleted_count,
+                "bookings": bookings_result.deleted_count,
+                "clients": clients_result.deleted_count,
+                "gallery": gallery_result.deleted_count,
+                "master": master_result.deleted_count
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting master data: {str(e)}")
 
 # ============ VACATION ROUTES ============
 
