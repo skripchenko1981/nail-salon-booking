@@ -933,6 +933,8 @@ async def update_master_password(master_id: str, password_update: MasterPassword
     
     # Перевірити поточний пароль (тільки для майстра, адмін може змінити без перевірки)
     if user["role"] == "master":
+        if not password_update.current_password:
+            raise HTTPException(status_code=400, detail="Current password is required for masters")
         if not verify_password(password_update.current_password, master["password_hash"]):
             raise HTTPException(status_code=401, detail="Current password is incorrect")
     
