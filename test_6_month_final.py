@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 def test_6_month_booking():
     """Тест бронювання на 6 місяців згідно з завданням"""
-    base_url = "https://mani-pedi-portal.preview.emergentagent.com/api"
+    base_url = "https://stylist-scheduler-12.preview.emergentagent.com/api"
     
     print("🚀 ШВИДКИЙ ТЕСТ БРОНЮВАННЯ НА 6 МІСЯЦІВ")
     print("=" * 60)
@@ -159,7 +159,7 @@ def test_6_month_booking():
 
 def test_6_month_limit():
     """Додатковий тест для перевірки обмеження 6 місяців"""
-    base_url = "https://mani-pedi-portal.preview.emergentagent.com/api"
+    base_url = "https://stylist-scheduler-12.preview.emergentagent.com/api"
     
     print("\n🔒 Додатковий тест: Перевірка обмеження 6 місяців")
     
@@ -210,7 +210,7 @@ def test_6_month_limit():
 def main():
     """Головна функція"""
     print("Тестування функціональності бронювання на 6 місяців")
-    print("Backend URL: https://mani-pedi-portal.preview.emergentagent.com/api")
+    print("Backend URL: https://stylist-scheduler-12.preview.emergentagent.com/api")
     
     # Основний тест
     main_test_passed = test_6_month_booking()
