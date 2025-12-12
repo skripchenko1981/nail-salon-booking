@@ -81,14 +81,25 @@ function AdminMasters() {
 
     try {
       if (editingMaster) {
+        // Оновити основні дані майстра
         const updateData = { ...formData };
-        if (!updateData.password) delete updateData.password;
+        delete updateData.password; // Видалити пароль з основних даних
         
         await axios.put(
           `${API}/masters/${editingMaster.id}`,
           updateData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        
+        // Якщо введено новий пароль, оновити його окремо
+        if (formData.password && formData.password.trim() !== '') {
+          await axios.put(
+            `${API}/masters/${editingMaster.id}/password`,
+            { new_password: formData.password },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        }
+        
         toast.success('Майстра оновлено');
       } else {
         await axios.post(
