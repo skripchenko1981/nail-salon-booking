@@ -122,7 +122,7 @@ class MasterUpdate(BaseModel):
         return v
 
 class MasterPasswordUpdate(BaseModel):
-    current_password: str
+    current_password: Optional[str] = None
     new_password: str
 
 class MasterLogin(BaseModel):
