@@ -319,7 +319,8 @@ class SiteSettings(BaseModel):
 class GalleryImage(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    image_url: str
+    image_url: str  # Presigned URL для доступу
+    file_key: str  # Ключ файлу в S3
     master_id: Optional[str] = None  # Якщо None - загальне фото
     master_name: Optional[str] = None
     description: Optional[str] = None
