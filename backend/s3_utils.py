@@ -4,6 +4,12 @@ from botocore.client import Config
 from botocore.exceptions import ClientError
 import uuid
 from datetime import datetime
+from dotenv import load_dotenv
+from pathlib import Path
+
+# Завантажити .env
+ROOT_DIR = Path(__file__).parent
+load_dotenv(ROOT_DIR / '.env')
 
 # Конфігурація S3
 S3_ENDPOINT = os.environ.get('S3_ENDPOINT')
@@ -11,6 +17,9 @@ S3_ACCESS_KEY = os.environ.get('S3_ACCESS_KEY')
 S3_SECRET_KEY = os.environ.get('S3_SECRET_KEY')
 S3_BUCKET = os.environ.get('S3_BUCKET')
 S3_REGION = os.environ.get('S3_REGION', 'hel1')
+
+# Дебаг (видалити пізніше)
+print(f"S3 Config loaded: endpoint={S3_ENDPOINT}, bucket={S3_BUCKET}, region={S3_REGION}")
 
 # Ініціалізація S3 клієнта
 s3_client = boto3.client(
