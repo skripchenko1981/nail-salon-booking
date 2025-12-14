@@ -28,6 +28,7 @@ function AdminBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('all');
+  const [selectedDate, setSelectedDate] = useState('');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingBooking, setEditingBooking] = useState(null);
   const [editDuration, setEditDuration] = useState(60);
