@@ -14,10 +14,10 @@ function AdminGallery() {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    image_url: '',
-    description: ''
-  });
+  const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [description, setDescription] = useState('');
 
   useEffect(() => {
     fetchImages();
@@ -37,26 +37,75 @@ function AdminGallery() {
     }
   };
 
-  const handleAdd = async (e) => {
-    e.preventDefault();
-    
-    if (!formData.image_url) {
-      toast.error('Додайте посилання на фото');
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Перевірка типу файлу
+    if (!file.type.startsWith('image/')) {
+      toast.error('Будь ласка, виберіть файл зображення');
       return;
     }
 
+    // Перевірка розміру (макс 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Розмір файлу не повинен перевищувати 10MB');
+      return;
+    }
+
+    setSelectedFile(file);
+    
+    // Створити preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    
+    if (!selectedFile) {
+      toast.error('Виберіть файл для завантаження');
+      return;
+    }
+
+    setUploading(true);
+
     try {
       const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
+      
+      // Створити FormData
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      if (description) {
+        formData.append('description', description);
+      }
+
       await axios.post(`${API}/admin/gallery`, formData, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
       });
-      toast.success('Фото додано!');
+      
+      toast.success('Фото успішно завантажено!');
       setDialogOpen(false);
-      setFormData({ image_url: '', description: '' });
+      resetForm();
       fetchImages();
     } catch (error) {
-      toast.error('Помилка додавання фото');
+      console.error('Upload error:', error);
+      toast.error(error.response?.data?.detail || 'Помилка завантаження фото');
+    } finally {
+      setUploading(false);
     }
+  };
+
+  const resetForm = () => {
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setDescription('');
   };
 
   const handleToggleActive = async (imageId, currentStatus) => {
