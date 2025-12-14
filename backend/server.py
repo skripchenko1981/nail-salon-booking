@@ -1415,8 +1415,9 @@ async def create_gallery_image(
         if master:
             master_name = master.get("name")
     
+    image_id = str(uuid.uuid4())
     image = {
-        "id": str(uuid.uuid4()),
+        "id": image_id,
         "image_url": "",  # Буде генеруватися динамічно
         "file_key": file_key,
         "master_id": master_id,
@@ -1428,10 +1429,13 @@ async def create_gallery_image(
     
     await db.gallery.insert_one(image)
     
-    # Генерувати presigned URL для відповіді
-    image['image_url'] = generate_presigned_url(file_key, expiration=3600)
+    # Отримати збережений запис без _id
+    saved_image = await db.gallery.find_one({"id": image_id}, {"_id": 0})
     
-    return image
+    # Генерувати presigned URL для відповіді
+    saved_image['image_url'] = generate_presigned_url(file_key, expiration=3600)
+    
+    return saved_image
 
 @api_router.delete("/admin/gallery/{image_id}")
 async def delete_gallery_image(image_id: str, user: Dict = Depends(verify_master_or_admin)):
