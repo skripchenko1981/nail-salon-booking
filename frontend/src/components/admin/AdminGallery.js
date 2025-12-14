@@ -242,63 +242,71 @@ function AdminGallery() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full">
             <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
-              Додати фото
+              Завантажити фото
             </h3>
             <form onSubmit={handleAdd} className="space-y-4">
               <div>
-                <Label htmlFor="image_url">Посилання на фото *</Label>
+                <Label htmlFor="file">Виберіть фото *</Label>
                 <Input
-                  id="image_url"
-                  type="url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
+                  id="file"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
                   className="mt-1"
                   required
+                  disabled={uploading}
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Завантажте фото на imgur.com або інший хостинг
+                  Підтримуються формати: JPG, PNG, WEBP, GIF (макс. 10MB)
                 </p>
               </div>
+
+              {previewUrl && (
+                <div className="border rounded-lg p-2">
+                  <p className="text-sm text-gray-600 mb-2">Попередній перегляд:</p>
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="w-full h-48 object-cover rounded"
+                  />
+                  {selectedFile && (
+                    <p className="text-xs text-gray-500 mt-2">
+                      {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div>
                 <Label htmlFor="description">Опис (опціонально)</Label>
                 <Textarea
                   id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                   placeholder="Опишіть роботу..."
                   className="mt-1"
                   rows={3}
+                  disabled={uploading}
                 />
               </div>
 
-              {formData.image_url && (
-                <div className="border rounded-lg p-2">
-                  <p className="text-sm text-gray-600 mb-2">Попередній перегляд:</p>
-                  <img
-                    src={formData.image_url}
-                    alt="Preview"
-                    className="w-full h-48 object-cover rounded"
-                    onError={(e) => {
-                      e.target.src = 'https://via.placeholder.com/300x200?text=Помилка+завантаження';
-                    }}
-                  />
-                </div>
-              )}
-
               <div className="flex gap-2 pt-4">
-                <Button type="submit" className="flex-1 bg-[#D4A5A5] hover:bg-[#9E829C] text-white">
-                  Додати
+                <Button 
+                  type="submit" 
+                  className="flex-1 bg-[#D4A5A5] hover:bg-[#9E829C] text-white"
+                  disabled={uploading || !selectedFile}
+                >
+                  {uploading ? 'Завантаження...' : 'Завантажити'}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => {
                     setDialogOpen(false);
-                    setFormData({ image_url: '', description: '' });
+                    resetForm();
                   }}
                   className="flex-1"
+                  disabled={uploading}
                 >
                   Скасувати
                 </Button>
