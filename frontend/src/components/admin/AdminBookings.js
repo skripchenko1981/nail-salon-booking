@@ -116,9 +116,22 @@ function AdminBookings() {
     }
   };
 
-  const filteredBookings = filterStatus === 'all' 
-    ? bookings 
-    : bookings.filter(b => b.status === filterStatus);
+  const filteredBookings = bookings.filter(booking => {
+    // Фільтр по статусу
+    const statusMatch = filterStatus === 'all' || booking.status === filterStatus;
+    
+    // Фільтр по даті
+    const dateMatch = !selectedDate || booking.date === selectedDate;
+    
+    return statusMatch && dateMatch;
+  });
+
+  // Сортування за датою (найближчі спочатку)
+  const sortedBookings = [...filteredBookings].sort((a, b) => {
+    const dateA = new Date(a.date + ' ' + a.time);
+    const dateB = new Date(b.date + ' ' + b.time);
+    return dateA - dateB;
+  });
 
   if (loading) {
     return <div className="text-center py-12">Завантаження...</div>;
