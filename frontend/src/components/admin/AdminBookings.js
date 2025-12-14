@@ -189,13 +189,17 @@ function AdminBookings() {
         </div>
       </div>
 
-      {filteredBookings.length === 0 ? (
+      {sortedBookings.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center border border-rose-200/50">
-          <p className="text-gray-500">Записів не знайдено</p>
+          <p className="text-gray-500">
+            {selectedDate 
+              ? `Записів на ${selectedDate} не знайдено`
+              : 'Записів не знайдено'}
+          </p>
         </div>
       ) : (
         <div className="grid gap-6">
-          {filteredBookings.map((booking) => (
+          {sortedBookings.map((booking) => (
             <div 
               key={booking.id} 
               className="bg-white rounded-2xl p-6 border border-rose-200/50 shadow-[0_2px_8px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all"
