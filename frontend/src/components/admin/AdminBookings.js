@@ -139,25 +139,54 @@ function AdminBookings() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
         <div>
           <h1 className="text-4xl font-bold tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
             Записи
           </h1>
           <p className="text-gray-600 mt-2">Керування записами клієнтів</p>
         </div>
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-48" data-testid="filter-status">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Всі записи</SelectItem>
-            <SelectItem value="pending">Очікують</SelectItem>
-            <SelectItem value="confirmed">Підтверджені</SelectItem>
-            <SelectItem value="completed">Завершені</SelectItem>
-            <SelectItem value="cancelled">Скасовані</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="space-y-1">
+            <Label htmlFor="date-filter" className="text-xs text-gray-500">Фільтр по даті</Label>
+            <div className="flex gap-2">
+              <Input
+                id="date-filter"
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="w-48"
+                data-testid="filter-date"
+              />
+              {selectedDate && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedDate('')}
+                  className="px-3"
+                  data-testid="clear-date"
+                >
+                  ✕
+                </Button>
+              )}
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="status-filter" className="text-xs text-gray-500">Фільтр по статусу</Label>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger id="status-filter" className="w-48" data-testid="filter-status">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Всі записи</SelectItem>
+                <SelectItem value="pending">Очікують</SelectItem>
+                <SelectItem value="confirmed">Підтверджені</SelectItem>
+                <SelectItem value="completed">Завершені</SelectItem>
+                <SelectItem value="cancelled">Скасовані</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       {filteredBookings.length === 0 ? (
