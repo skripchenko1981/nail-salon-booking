@@ -18,9 +18,6 @@ S3_SECRET_KEY = os.environ.get('S3_SECRET_KEY')
 S3_BUCKET = os.environ.get('S3_BUCKET')
 S3_REGION = os.environ.get('S3_REGION', 'hel1')
 
-# Дебаг (видалити пізніше)
-print(f"S3 Config loaded: endpoint={S3_ENDPOINT}, bucket={S3_BUCKET}, region={S3_REGION}")
-
 # Ініціалізація S3 клієнта
 s3_client = boto3.client(
     's3',
