@@ -1362,27 +1362,94 @@ async def update_site_settings(settings: SiteSettings, _: str = Depends(verify_t
 async def get_gallery_images():
     """Отримати всі активні фото з галереї (публічний доступ)"""
     images = await db.gallery.find({"is_active": True}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    # Генерувати presigned URLs для кожного зображення
+    for image in images:
+        if image.get('file_key'):
+            image['image_url'] = generate_presigned_url(image['file_key'], expiration=3600)
+    
     return images
 
 @api_router.get("/admin/gallery", response_model=List[GalleryImage])
 async def get_all_gallery_images(user: Dict = Depends(verify_master_or_admin)):
     """Отримати всі фото з галереї для адміна/майстра"""
     images = await db.gallery.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    
+    # Генерувати presigned URLs для кожного зображення
+    for image in images:
+        if image.get('file_key'):
+            image['image_url'] = generate_presigned_url(image['file_key'], expiration=3600)
+    
     return images
 
-@api_router.post("/admin/gallery", response_model=GalleryImage)
-async def create_gallery_image(image_data: GalleryImageCreate, user: Dict = Depends(verify_master_or_admin)):
+@api_router.post("/admin/gallery")
+async def create_gallery_image(
+    file: UploadFile = File(...),
+    description: Optional[str] = Form(None),
+    user: Dict = Depends(verify_master_or_admin)
+):
     """Додати фото в галерею"""
-    image = GalleryImage(**image_data.model_dump())
-    await db.gallery.insert_one(image.model_dump())
+    # Перевірка типу файлу
+    if not file.content_type.startswith('image/'):
+        raise HTTPException(status_code=400, detail="File must be an image")
+    
+    # Отримати розширення файлу
+    file_extension = file.filename.split('.')[-1].lower()
+    if file_extension not in ['jpg', 'jpeg', 'png', 'webp', 'gif']:
+        raise HTTPException(status_code=400, detail="Unsupported image format")
+    
+    # Читати вміст файлу
+    file_content = await file.read()
+    
+    # Завантажити на S3
+    try:
+        file_key = upload_file_to_s3(file_content, file_extension)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
+    
+    # Створити запис в БД
+    master_id = user["user_id"] if user["role"] == "master" else None
+    master_name = None
+    if master_id:
+        master = await db.masters.find_one({"id": master_id}, {"_id": 0, "name": 1})
+        if master:
+            master_name = master.get("name")
+    
+    image = {
+        "id": str(uuid.uuid4()),
+        "image_url": "",  # Буде генеруватися динамічно
+        "file_key": file_key,
+        "master_id": master_id,
+        "master_name": master_name,
+        "description": description,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "is_active": True
+    }
+    
+    await db.gallery.insert_one(image)
+    
+    # Генерувати presigned URL для відповіді
+    image['image_url'] = generate_presigned_url(file_key, expiration=3600)
+    
     return image
 
 @api_router.delete("/admin/gallery/{image_id}")
 async def delete_gallery_image(image_id: str, user: Dict = Depends(verify_master_or_admin)):
     """Видалити фото з галереї"""
+    # Знайти зображення
+    image = await db.gallery.find_one({"id": image_id}, {"_id": 0})
+    if not image:
+        raise HTTPException(status_code=404, detail="Image not found")
+    
+    # Видалити з S3
+    if image.get('file_key'):
+        delete_file_from_s3(image['file_key'])
+    
+    # Видалити з БД
     result = await db.gallery.delete_one({"id": image_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Image not found")
+    
     return {"success": True, "message": "Image deleted"}
 
 @api_router.put("/admin/gallery/{image_id}")
