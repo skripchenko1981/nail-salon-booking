@@ -143,9 +143,15 @@ class TelegramBot:
         
         return success
     
-    async def send_booking_pending(self, client_name: str, service_name: str, 
-                                   date: str, time: str, telegram_id: str) -> bool:
+    async def send_booking_pending(self, booking_id: str, client_name: str, service_name: str, 
+                                   date: str, time: str) -> bool:
         """Повідомлення про очікування підтвердження"""
+        # Отримати Telegram ID клієнта
+        telegram_id = await self.get_client_telegram_id(booking_id)
+        if not telegram_id:
+            logger.info(f"Клієнт для бронювання {booking_id} не підписаний на Telegram сповіщення")
+            return False
+        
         text = f"""🔔 <b>Новий запис очікує підтвердження</b>
 
 👤 Клієнт: {client_name}
@@ -155,11 +161,16 @@ class TelegramBot:
 
 ⏳ Очікуйте підтвердження від майстра."""
         
-        return await self.send_message(telegram_id, text)
+        return await self.send_message(telegram_id, text, booking_id=booking_id, notification_type="pending")
     
-    async def send_booking_confirmed(self, client_name: str, service_name: str, 
-                                     date: str, time: str, telegram_id: str) -> bool:
+    async def send_booking_confirmed(self, booking_id: str, client_name: str, service_name: str, 
+                                     date: str, time: str) -> bool:
         """Повідомлення про підтвердження запису"""
+        telegram_id = await self.get_client_telegram_id(booking_id)
+        if not telegram_id:
+            logger.info(f"Клієнт для бронювання {booking_id} не підписаний на Telegram сповіщення")
+            return False
+        
         text = f"""✅ <b>Ваш запис підтверджено!</b>
 
 👤 Клієнт: {client_name}
@@ -170,12 +181,16 @@ class TelegramBot:
 📍 Чекаємо на вас!
 Якщо у вас виникли питання, зв'яжіться з нами."""
         
-        return await self.send_message(telegram_id, text)
+        return await self.send_message(telegram_id, text, booking_id=booking_id, notification_type="confirmed")
     
-    async def send_booking_cancelled(self, client_name: str, service_name: str, 
-                                     date: str, time: str, telegram_id: str, 
-                                     reason: Optional[str] = None) -> bool:
+    async def send_booking_cancelled(self, booking_id: str, client_name: str, service_name: str, 
+                                     date: str, time: str, reason: Optional[str] = None) -> bool:
         """Повідомлення про скасування запису"""
+        telegram_id = await self.get_client_telegram_id(booking_id)
+        if not telegram_id:
+            logger.info(f"Клієнт для бронювання {booking_id} не підписаний на Telegram сповіщення")
+            return False
+        
         text = f"""❌ <b>Запис скасовано</b>
 
 👤 Клієнт: {client_name}
@@ -188,12 +203,16 @@ class TelegramBot:
         
         text += "\n\nВи можете записатися на інший час через наш сайт."
         
-        return await self.send_message(telegram_id, text)
+        return await self.send_message(telegram_id, text, booking_id=booking_id, notification_type="cancelled")
     
-    async def send_booking_reminder(self, client_name: str, service_name: str, 
-                                    date: str, time: str, telegram_id: str, 
-                                    hours_before: int) -> bool:
+    async def send_booking_reminder(self, booking_id: str, client_name: str, service_name: str, 
+                                    date: str, time: str, hours_before: int = 24) -> bool:
         """Нагадування про запис"""
+        telegram_id = await self.get_client_telegram_id(booking_id)
+        if not telegram_id:
+            logger.info(f"Клієнт для бронювання {booking_id} не підписаний на Telegram сповіщення")
+            return False
+        
         text = f"""⏰ <b>Нагадування про запис</b>
 
 👤 {client_name}, нагадуємо про ваш візит!
@@ -206,7 +225,7 @@ class TelegramBot:
 
 📍 Чекаємо на вас!"""
         
-        return await self.send_message(telegram_id, text)
+        return await self.send_message(telegram_id, text, booking_id=booking_id, notification_type="reminder")
     
     # ============ ADMIN NOTIFICATIONS ============
     
