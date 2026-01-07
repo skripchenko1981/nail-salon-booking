@@ -124,19 +124,24 @@ class TelegramBot:
             "parse_mode": parse_mode
         }
         
+        success = False
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(url, json=data) as response:
                     if response.status == 200:
                         logger.info(f"Повідомлення відправлено до {chat_id}")
-                        return True
+                        success = True
                     else:
                         error_text = await response.text()
                         logger.error(f"Помилка відправки: {error_text}")
-                        return False
         except Exception as e:
             logger.error(f"Помилка при відправці повідомлення: {e}")
-            return False
+        
+        # Зберегти в історію
+        if booking_id and notification_type:
+            await self.save_notification(chat_id, booking_id, notification_type, text, success)
+        
+        return success
     
     async def send_booking_pending(self, client_name: str, service_name: str, 
                                    date: str, time: str, telegram_id: str) -> bool:
