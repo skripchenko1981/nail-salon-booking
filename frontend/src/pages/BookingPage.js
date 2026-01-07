@@ -34,7 +34,6 @@ function BookingPage() {
     client_name: '',
     client_phone: '',
     client_email: '',
-    telegram_id: '',
     reminder_hours: 24,
     notes: ''
   });
