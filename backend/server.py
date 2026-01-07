@@ -262,12 +262,12 @@ class BookingCreate(BaseModel):
     client_name: str
     client_phone: str
     client_email: Optional[EmailStr] = None
-    telegram_id: Optional[str] = None
     service_id: str
     date: str
     time: str
     reminder_hours: int = 24
     notes: Optional[str] = None
+    master_name: Optional[str] = None
     
     @field_validator('client_phone')
     @classmethod
