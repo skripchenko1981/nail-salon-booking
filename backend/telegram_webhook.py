@@ -10,7 +10,7 @@ import os
 
 logger = logging.getLogger(__name__)
 
-telegram_router = APIRouter(prefix="/telegram", tags=["telegram"])
+telegram_router = APIRouter(prefix="/api/telegram", tags=["telegram"])
 
 # MongoDB connection
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
