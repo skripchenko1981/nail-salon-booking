@@ -1129,48 +1129,27 @@ async def update_booking_status(booking_id: str, update: BookingUpdate,
         if new_status == "completed":
             await update_client_stats(booking["client_id"], booking["price"], "completed")
         
-        # Відправити повідомлення клієнту (SMS або Telegram)
+        # Відправити повідомлення клієнту через Telegram
         if background_tasks:
             if new_status == "confirmed":
-                if booking.get("telegram_id"):
-                    background_tasks.add_task(
-                        telegram_bot.send_booking_confirmed,
-                        booking["client_name"],
-                        booking["service_name"],
-                        booking["date"],
-                        booking["time"],
-                        booking["telegram_id"]
-                    )
-                else:
-                    background_tasks.add_task(
-                        sms_service.send_booking_confirmation,
-                        booking["client_name"],
-                        booking["service_name"],
-                        booking["date"],
-                        booking["time"],
-                        booking["client_phone"]
-                    )
+                background_tasks.add_task(
+                    telegram_bot.send_booking_confirmed,
+                    booking_id,
+                    booking["client_name"],
+                    booking["service_name"],
+                    booking["date"],
+                    booking["time"]
+                )
             elif new_status == "cancelled":
-                if booking.get("telegram_id"):
-                    background_tasks.add_task(
-                        telegram_bot.send_booking_cancelled,
-                        booking["client_name"],
-                        booking["service_name"],
-                        booking["date"],
-                        booking["time"],
-                        booking["telegram_id"],
-                        update.cancellation_reason
-                    )
-                else:
-                    background_tasks.add_task(
-                        sms_service.send_booking_cancelled,
-                        booking["client_name"],
-                        booking["service_name"],
-                        booking["date"],
-                        booking["time"],
-                        booking["client_phone"],
-                        update.cancellation_reason
-                    )
+                background_tasks.add_task(
+                    telegram_bot.send_booking_cancelled,
+                    booking_id,
+                    booking["client_name"],
+                    booking["service_name"],
+                    booking["date"],
+                    booking["time"],
+                    update.cancellation_reason
+                )
                 
                 # Сповістити адміна про скасування (тільки якщо скасував клієнт через адмін-панель)
                 admin_telegram_id = os.environ.get('ADMIN_TELEGRAM_ID')
