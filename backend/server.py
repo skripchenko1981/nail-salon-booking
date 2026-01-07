@@ -578,7 +578,7 @@ async def create_or_update_schedule(schedule: WorkScheduleCreate, user: Dict = D
 
 # ============ BOOKING ROUTES ============
 
-@api_router.post("/bookings", response_model=Booking)
+@api_router.post("/bookings")
 async def create_booking(booking: BookingCreate, background_tasks: BackgroundTasks):
     service = await db.services.find_one({"id": booking.service_id, "active": True}, {"_id": 0})
     if not service:
@@ -598,7 +598,7 @@ async def create_booking(booking: BookingCreate, background_tasks: BackgroundTas
         booking.client_name,
         booking.client_phone,
         booking.client_email,
-        booking.telegram_id
+        None  # Більше не використовуємо telegram_id при створенні
     )
     
     # Оновити загальну кількість записів
@@ -609,7 +609,15 @@ async def create_booking(booking: BookingCreate, background_tasks: BackgroundTas
     
     booking_obj = Booking(
         client_id=client_id,
-        **booking.model_dump(),
+        master_id=booking.master_id,
+        service_id=booking.service_id,
+        master_name=booking.master_name,
+        client_name=booking.client_name,
+        client_phone=booking.client_phone,
+        client_email=booking.client_email,
+        date=booking.date,
+        time=booking.time,
+        notes=booking.notes,
         service_name=service["name"],
         duration_minutes=service["duration_minutes"],
         price=service["price"]
@@ -617,27 +625,10 @@ async def create_booking(booking: BookingCreate, background_tasks: BackgroundTas
     doc = booking_obj.model_dump()
     await db.bookings.insert_one(doc)
     
-    # Відправити повідомлення клієнту (SMS або Telegram)
-    if booking.telegram_id:
-        # Якщо є Telegram ID - відправити в Telegram
-        background_tasks.add_task(
-            telegram_bot.send_booking_pending,
-            booking.client_name,
-            service["name"],
-            booking.date,
-            booking.time,
-            booking.telegram_id
-        )
-    else:
-        # Якщо немає Telegram ID - відправити SMS
-        background_tasks.add_task(
-            sms_service.send_booking_confirmation,
-            booking.client_name,
-            service["name"],
-            booking.date,
-            booking.time,
-            booking.client_phone
-        )
+    # Генерувати посилання на Telegram бота
+    telegram_link = None
+    if telegram_bot.enabled:
+        telegram_link = telegram_bot.generate_subscription_link(booking_obj.id)
     
     # Відправити повідомлення адміну про новий запис
     admin_telegram_id = os.environ.get('ADMIN_TELEGRAM_ID')
@@ -653,7 +644,11 @@ async def create_booking(booking: BookingCreate, background_tasks: BackgroundTas
             admin_telegram_id
         )
     
-    return booking_obj
+    # Повернути бронювання з посиланням на Telegram
+    response = booking_obj.model_dump()
+    response["telegram_subscription_link"] = telegram_link
+    
+    return response
 
 @api_router.get("/bookings/client/{phone}", response_model=List[Booking])
 async def get_client_bookings(phone: str):
