@@ -477,20 +477,8 @@ function BookingPage() {
                     className="mt-1 border-rose-200/50 focus:ring-rose-300"
                     data-testid="input-client-email"
                   />
-                </div>
-                <div>
-                  <Label htmlFor="telegram_id">Telegram ID (опціонально)</Label>
-                  <Input
-                    id="telegram_id"
-                    value={formData.telegram_id}
-                    onChange={(e) => setFormData({ ...formData, telegram_id: e.target.value })}
-                    placeholder="@username або chat_id"
-                    className="mt-1 border-rose-200/50 focus:ring-rose-300"
-                    data-testid="input-telegram-id"
-                  />
                   <p className="text-xs text-gray-500 mt-1">
-                    📱 Нагадування приходитимуть по SMS на ваш номер телефону<br/>
-                    💬 Telegram - додатково, якщо бажаєте дублювати в месенджер
+                    📱 Після створення запису ви зможете підписатися на Telegram-сповіщення
                   </p>
                 </div>
                 <div>
