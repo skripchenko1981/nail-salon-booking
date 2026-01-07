@@ -21,6 +21,8 @@ function BookingPage() {
   const [masters, setMasters] = useState([]);
   const [timeSlots, setTimeSlots] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [telegramLink, setTelegramLink] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   
   const [formData, setFormData] = useState({
     service_id: '',
