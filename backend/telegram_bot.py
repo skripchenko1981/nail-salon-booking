@@ -5,6 +5,12 @@ from datetime import datetime, timedelta
 from typing import Optional
 import aiohttp
 from motor.motor_asyncio import AsyncIOMotorClient
+from dotenv import load_dotenv
+from pathlib import Path
+
+# Завантажити .env
+ROOT_DIR = Path(__file__).parent
+load_dotenv(ROOT_DIR / '.env')
 
 logger = logging.getLogger(__name__)
 
