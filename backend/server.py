@@ -15,7 +15,7 @@ import re
 import phonenumbers
 import hashlib
 from telegram_bot import telegram_bot
-from sms_service import sms_service
+from telegram_webhook import telegram_router
 from s3_utils import upload_file_to_s3, generate_presigned_url, delete_file_from_s3
 
 ROOT_DIR = Path(__file__).parent
