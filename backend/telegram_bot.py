@@ -305,3 +305,10 @@ class TelegramBot:
 
 # Глобальний екземпляр бота
 telegram_bot = TelegramBot()
+
+# Отримати інформацію про бота при старті
+import asyncio
+try:
+    asyncio.create_task(telegram_bot.get_bot_info())
+except:
+    pass  # Ігнорувати помилки при старті
