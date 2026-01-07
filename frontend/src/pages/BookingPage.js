@@ -541,6 +541,83 @@ function BookingPage() {
           )}
         </div>
       </div>
+
+      {/* Модальне вікно успішного бронювання */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-300">
+            <div className="text-center">
+              {/* Іконка успіху */}
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Check className="h-10 w-10 text-green-600" />
+              </div>
+
+              {/* Заголовок */}
+              <h2 className="text-3xl font-bold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
+                Запис створено!
+              </h2>
+              
+              <p className="text-gray-600 mb-6">
+                Ваш запис очікує підтвердження майстра
+              </p>
+
+              {/* Telegram блок */}
+              {telegramLink && (
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 mb-6 border-2 border-blue-200">
+                  <div className="flex items-center justify-center mb-4">
+                    <svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.68c.223-.198-.054-.308-.346-.11l-6.4 4.03-2.76-.918c-.6-.187-.612-.6.125-.89l10.782-4.156c.5-.18.943.112.78.89z"/>
+                    </svg>
+                  </div>
+                  
+                  <h3 className="font-bold text-lg mb-2 text-gray-900">
+                    📱 Отримуйте сповіщення в Telegram
+                  </h3>
+                  <p className="text-sm text-gray-700 mb-4">
+                    Підпишіться на бота для автоматичних нагадувань про запис
+                  </p>
+                  
+                  <a
+                    href={telegramLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+                  >
+                    Підписатися на сповіщення
+                  </a>
+                  
+                  <p className="text-xs text-gray-600 mt-3">
+                    Ви отримаєте: підтвердження, нагадування за 24 год, зміни статусу
+                  </p>
+                </div>
+              )}
+
+              {/* Кнопки */}
+              <div className="space-y-3">
+                <Button
+                  onClick={() => {
+                    setShowSuccessModal(false);
+                    navigate('/');
+                  }}
+                  className="w-full bg-[#D4A5A5] hover:bg-[#9E829C] text-white py-3 rounded-xl"
+                >
+                  На головну
+                </Button>
+                
+                <button
+                  onClick={() => {
+                    setShowSuccessModal(false);
+                    navigate('/');
+                  }}
+                  className="text-sm text-gray-500 hover:text-gray-700 underline"
+                >
+                  Пропустити
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
