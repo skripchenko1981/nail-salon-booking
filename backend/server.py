@@ -1462,8 +1462,9 @@ async def update_gallery_image(image_id: str, is_active: bool, user: Dict = Depe
         raise HTTPException(status_code=404, detail="Image not found")
     return {"success": True, "message": "Image updated"}
 
-# Include router
+# Include routers
 app.include_router(api_router)
+app.include_router(telegram_router)
 
 app.add_middleware(
     CORSMiddleware,
