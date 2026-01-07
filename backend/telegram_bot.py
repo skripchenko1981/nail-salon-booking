@@ -4,6 +4,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import Optional
 import aiohttp
+from motor.motor_asyncio import AsyncIOMotorClient
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +13,12 @@ class TelegramBot:
         self.token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
         self.base_url = f"https://api.telegram.org/bot{self.token}"
         self.enabled = bool(self.token)
+        self.bot_username = None
+        
+        # MongoDB connection для збереження підписок
+        mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+        self.client = AsyncIOMotorClient(mongo_url)
+        self.db = self.client[os.environ.get('DB_NAME', 'test_database')]
         
     async def send_message(self, chat_id: str, text: str, parse_mode: str = "HTML") -> bool:
         """Відправка повідомлення в Telegram"""
