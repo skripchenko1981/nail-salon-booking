@@ -148,22 +148,29 @@ function BookingPage() {
     try {
       const bookingData = {
         master_id: formData.master_id,
+        master_name: formData.master_name,
         service_id: formData.service_id,
         date: formData.date,
         time: formData.time,
         client_name: formData.client_name,
         client_phone: formData.client_phone,
         client_email: formData.client_email || undefined,
-        telegram_id: formData.telegram_id || undefined,
         reminder_hours: parseInt(formData.reminder_hours),
         notes: formData.notes || undefined
       };
       
-      await axios.post(`${API}/bookings`, bookingData);
-      toast.success('Запис успішно створено!', {
-        description: 'Ми зв\'яжемося з вами для підтвердження'
-      });
-      setTimeout(() => navigate('/'), 2000);
+      const response = await axios.post(`${API}/bookings`, bookingData);
+      
+      // Зберегти посилання на Telegram
+      if (response.data.telegram_subscription_link) {
+        setTelegramLink(response.data.telegram_subscription_link);
+        setShowSuccessModal(true);
+      } else {
+        toast.success('Запис успішно створено!', {
+          description: 'Ми зв\'яжемося з вами для підтвердження'
+        });
+        setTimeout(() => navigate('/'), 2000);
+      }
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Помилка при створенні запису');
     } finally {
