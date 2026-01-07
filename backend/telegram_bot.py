@@ -20,7 +20,95 @@ class TelegramBot:
         self.client = AsyncIOMotorClient(mongo_url)
         self.db = self.client[os.environ.get('DB_NAME', 'test_database')]
         
-    async def send_message(self, chat_id: str, text: str, parse_mode: str = "HTML") -> bool:
+    async def get_bot_info(self) -> Optional[dict]:
+        """Отримати інформацію про бота"""
+        if not self.enabled:
+            return None
+            
+        url = f"{self.base_url}/getMe"
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        self.bot_username = data['result']['username']
+                        return data['result']
+        except Exception as e:
+            logger.error(f"Помилка отримання інформації про бота: {e}")
+        return None
+    
+    def generate_subscription_link(self, booking_id: str) -> str:
+        """Генерація посилання для підписки на сповіщення"""
+        if not self.bot_username:
+            asyncio.create_task(self.get_bot_info())
+            # Fallback якщо username ще не отримано
+            return f"https://t.me/bot?start={booking_id}"
+        return f"https://t.me/{self.bot_username}?start={booking_id}"
+    
+    async def register_client_subscription(self, telegram_id: str, booking_id: str, 
+                                         client_phone: str, client_name: str) -> bool:
+        """Реєстрація підписки клієнта на сповіщення"""
+        try:
+            subscription = {
+                "telegram_id": telegram_id,
+                "booking_id": booking_id,
+                "client_phone": client_phone,
+                "client_name": client_name,
+                "subscribed_at": datetime.now().isoformat(),
+                "is_active": True
+            }
+            
+            # Перевірити чи вже підписаний
+            existing = await self.db.telegram_subscriptions.find_one({
+                "telegram_id": telegram_id,
+                "booking_id": booking_id
+            })
+            
+            if existing:
+                # Оновити підписку
+                await self.db.telegram_subscriptions.update_one(
+                    {"telegram_id": telegram_id, "booking_id": booking_id},
+                    {"$set": {"is_active": True, "subscribed_at": datetime.now().isoformat()}}
+                )
+            else:
+                # Створити нову підписку
+                await self.db.telegram_subscriptions.insert_one(subscription)
+            
+            logger.info(f"Клієнт {client_name} ({telegram_id}) підписався на сповіщення для запису {booking_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Помилка реєстрації підписки: {e}")
+            return False
+    
+    async def get_client_telegram_id(self, booking_id: str) -> Optional[str]:
+        """Отримати Telegram ID клієнта за ID бронювання"""
+        try:
+            subscription = await self.db.telegram_subscriptions.find_one({
+                "booking_id": booking_id,
+                "is_active": True
+            }, {"_id": 0})
+            
+            if subscription:
+                return subscription.get("telegram_id")
+        except Exception as e:
+            logger.error(f"Помилка отримання Telegram ID: {e}")
+        return None
+    
+    async def save_notification(self, telegram_id: str, booking_id: str, 
+                               notification_type: str, message: str, success: bool) -> None:
+        """Зберегти історію сповіщень"""
+        try:
+            notification = {
+                "telegram_id": telegram_id,
+                "booking_id": booking_id,
+                "type": notification_type,
+                "message": message,
+                "success": success,
+                "sent_at": datetime.now().isoformat()
+            }
+            await self.db.notification_history.insert_one(notification)
+        except Exception as e:
+            logger.error(f"Помилка збереження історії сповіщень: {e}")
         """Відправка повідомлення в Telegram"""
         if not self.enabled:
             logger.warning("Telegram bot не налаштовано. Пропускаємо відправку повідомлення.")
