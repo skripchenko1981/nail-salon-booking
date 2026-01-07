@@ -109,6 +109,9 @@ class TelegramBot:
             await self.db.notification_history.insert_one(notification)
         except Exception as e:
             logger.error(f"Помилка збереження історії сповіщень: {e}")
+    
+    async def send_message(self, chat_id: str, text: str, parse_mode: str = "HTML", 
+                          booking_id: Optional[str] = None, notification_type: Optional[str] = None) -> bool:
         """Відправка повідомлення в Telegram"""
         if not self.enabled:
             logger.warning("Telegram bot не налаштовано. Пропускаємо відправку повідомлення.")
