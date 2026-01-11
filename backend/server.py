@@ -1198,6 +1198,50 @@ async def get_stats(user: Dict = Depends(verify_master_or_admin)):
         today_bookings=today_bookings
     )
 
+@api_router.get("/admin/stats/monthly")
+async def get_monthly_stats(year: int, user: Dict = Depends(verify_master_or_admin)):
+    """Отримати місячну статистику"""
+    # Фільтр для майстра
+    query = {}
+    if user["role"] == "master":
+        query["master_id"] = user["user_id"]
+    
+    # Отримати всі бронювання за рік
+    bookings = await db.bookings.find(query, {"_id": 0}).to_list(10000)
+    
+    # Ініціалізувати статистику для кожного місяця
+    months = [
+        "Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень",
+        "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"
+    ]
+    
+    monthly_stats = []
+    for month_index in range(12):
+        month_bookings = [
+            b for b in bookings 
+            if b.get("date") and b["date"].startswith(f"{year}-{month_index+1:02d}")
+        ]
+        
+        confirmed = len([b for b in month_bookings if b.get("status") == "confirmed"])
+        completed = len([b for b in month_bookings if b.get("status") == "completed"])
+        cancelled = len([b for b in month_bookings if b.get("status") == "cancelled"])
+        pending = len([b for b in month_bookings if b.get("status") == "pending"])
+        
+        revenue = sum(b.get("price", 0) for b in month_bookings if b.get("status") in ["confirmed", "completed"])
+        
+        monthly_stats.append({
+            "month": month_index + 1,
+            "month_name": months[month_index],
+            "total_bookings": len(month_bookings),
+            "confirmed": confirmed,
+            "completed": completed,
+            "cancelled": cancelled,
+            "pending": pending,
+            "revenue": revenue
+        })
+    
+    return monthly_stats
+
 @api_router.delete("/admin/bookings/{booking_id}")
 async def delete_booking(booking_id: str, user: Dict = Depends(verify_master_or_admin)):
     """Видалити запис"""
