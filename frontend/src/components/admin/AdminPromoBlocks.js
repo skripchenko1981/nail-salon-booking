@@ -57,6 +57,8 @@ function AdminPromoBlocks() {
         is_active: block.is_active,
         position: block.position
       });
+      setPreviewUrl(block.image_url || null);
+      setSelectedFile(null);
     } else {
       setEditingBlock(null);
       setFormData({
@@ -68,26 +70,78 @@ function AdminPromoBlocks() {
         is_active: true,
         position: blocks.length
       });
+      setPreviewUrl(null);
+      setSelectedFile(null);
     }
     setDialogOpen(true);
+  };
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Виберіть файл зображення');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Розмір файлу не повинен перевищувати 10MB');
+      return;
+    }
+
+    setSelectedFile(file);
+    
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('admin_token');
+    setUploading(true);
 
     try {
+      let imageUrl = formData.image_url;
+
+      // Якщо вибрано новий файл - завантажити на S3
+      if (selectedFile) {
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', selectedFile);
+        
+        const uploadResponse = await axios.post(
+          `${API}/admin/gallery`,
+          uploadFormData,
+          {
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data'
+            }
+          }
+        );
+        
+        imageUrl = uploadResponse.data.image_url;
+      }
+
+      const blockData = {
+        ...formData,
+        image_url: imageUrl || undefined
+      };
+
       if (editingBlock) {
         await axios.put(
           `${API}/admin/promo-blocks/${editingBlock.id}`,
-          formData,
+          blockData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         toast.success('Блок оновлено');
       } else {
         await axios.post(
           `${API}/admin/promo-blocks`,
-          formData,
+          blockData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         toast.success('Блок створено');
@@ -95,7 +149,10 @@ function AdminPromoBlocks() {
       setDialogOpen(false);
       fetchBlocks();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Помилка збереження');
+      console.error('Помилка:', error);
+      toast.error(error.response?.data?.detail || 'Помилка збереження блоку');
+    } finally {
+      setUploading(false);
     }
   };
 
