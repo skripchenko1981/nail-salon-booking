@@ -1227,7 +1227,8 @@ async def get_monthly_stats(year: int, user: Dict = Depends(verify_master_or_adm
         cancelled = len([b for b in month_bookings if b.get("status") == "cancelled"])
         pending = len([b for b in month_bookings if b.get("status") == "pending"])
         
-        revenue = sum(b.get("price", 0) for b in month_bookings if b.get("status") in ["confirmed", "completed"])
+        # Виручка тільки з завершених записів
+        revenue = sum(b.get("price", 0) for b in month_bookings if b.get("status") == "completed")
         
         monthly_stats.append({
             "month": month_index + 1,
