@@ -242,7 +242,19 @@ function AdminOverview() {
           <h2 className="text-2xl font-bold" style={{ fontFamily: 'Playfair Display, serif' }}>
             Аналіз діяльності по місяцях
           </h2>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <select 
+              value={selectedMaster}
+              onChange={(e) => setSelectedMaster(e.target.value)}
+              className="px-3 py-2 border border-rose-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4A5A5]"
+            >
+              <option value="all">Всі майстри (сукупно)</option>
+              {masters.map((master) => (
+                <option key={master.id} value={master.id}>
+                  {master.name}
+                </option>
+              ))}
+            </select>
             <select 
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}
