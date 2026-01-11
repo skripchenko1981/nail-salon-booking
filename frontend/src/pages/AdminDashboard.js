@@ -126,6 +126,7 @@ function AdminDashboard() {
             <Route path="/" element={<Navigate to="/admin/analytics" replace />} />
             <Route path="/analytics" element={<AdminOverview />} />
             <Route path="/masters" element={<AdminMasters />} />
+            <Route path="/promo" element={<AdminPromoBlocks />} />
             <Route path="/settings" element={<AdminSettings />} />
           </Routes>
         </div>
