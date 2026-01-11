@@ -24,7 +24,7 @@ function AdminLoginPage() {
       localStorage.setItem('admin_token', response.data.token);
       localStorage.setItem('admin_username', response.data.username);
       toast.success('Ласкаво просимо!');
-      navigate('/admin/dashboard');
+      navigate('/admin/analytics');
     } catch (error) {
       toast.error('Невірні облікові дані');
     } finally {
