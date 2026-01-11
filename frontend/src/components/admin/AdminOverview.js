@@ -268,6 +268,16 @@ function AdminOverview() {
           </div>
         </div>
 
+        {selectedMaster !== 'all' && (
+          <div className="mb-4 p-3 bg-[#F3EBEB]/50 rounded-lg border border-rose-200/50">
+            <p className="text-sm text-gray-700">
+              📊 Показано статистику для: <span className="font-semibold">
+                {masters.find(m => m.id === selectedMaster)?.name || 'Майстер'}
+              </span>
+            </p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {monthlyStats.map((month, index) => (
             <div 
