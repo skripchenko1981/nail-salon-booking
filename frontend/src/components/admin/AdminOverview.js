@@ -20,7 +20,8 @@ function AdminOverview() {
     fetchStats();
     fetchMonthlyStats();
     fetchMastersStats();
-  }, [selectedMonth, selectedYear]);
+    fetchMasters();
+  }, [selectedMonth, selectedYear, selectedMaster]);
 
   const fetchStats = async () => {
     try {
@@ -39,8 +40,13 @@ function AdminOverview() {
   const fetchMonthlyStats = async () => {
     try {
       const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
+      const params = { year: selectedYear };
+      if (selectedMaster !== 'all') {
+        params.master_id = selectedMaster;
+      }
+      
       const response = await axios.get(`${API}/admin/stats/monthly`, {
-        params: { year: selectedYear },
+        params,
         headers: { Authorization: `Bearer ${token}` }
       });
       setMonthlyStats(response.data);
@@ -58,6 +64,18 @@ function AdminOverview() {
       setMastersStats(response.data);
     } catch (error) {
       console.error('Помилка завантаження статистики майстрів');
+    }
+  };
+
+  const fetchMasters = async () => {
+    try {
+      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
+      const response = await axios.get(`${API}/masters`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setMasters(response.data);
+    } catch (error) {
+      console.error('Помилка завантаження списку майстрів');
     }
   };
 
