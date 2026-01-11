@@ -36,17 +36,11 @@ function AdminDashboard() {
     navigate('/admin/login');
   };
 
-  // Адмін бачить все
+  // Меню адміна: тільки управління майстрами, аналітика та налаштування
   const menuItems = [
-    { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Огляд', testId: 'nav-dashboard' },
-    { path: '/admin/bookings', icon: Calendar, label: 'Записи', testId: 'nav-bookings' },
-    { path: '/admin/clients', icon: Users, label: 'Клієнти', testId: 'nav-clients' },
+    { path: '/admin/analytics', icon: LayoutDashboard, label: 'Аналітика', testId: 'nav-analytics' },
     { path: '/admin/masters', icon: Users, label: 'Майстри', testId: 'nav-masters' },
-    { path: '/admin/services', icon: Package, label: 'Послуги', testId: 'nav-services' },
-    { path: '/admin/schedule', icon: Settings, label: 'Розклад', testId: 'nav-schedule' },
-    { path: '/admin/vacations', icon: Calendar, label: 'Відпустки', testId: 'nav-vacations' },
-    { path: '/admin/gallery', icon: Image, label: 'Галерея', testId: 'nav-gallery' },
-    { path: '/admin/settings', icon: Settings, label: 'Налаштування', testId: 'nav-settings' },
+    { path: '/admin/settings', icon: Settings, label: 'Налаштування сайту', testId: 'nav-settings' },
   ];
 
   if (!token) return null;
