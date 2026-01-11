@@ -10,9 +10,11 @@ function AdminOverview() {
   const [stats, setStats] = useState(null);
   const [monthlyStats, setMonthlyStats] = useState([]);
   const [mastersStats, setMastersStats] = useState([]);
+  const [masters, setMasters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMaster, setSelectedMaster] = useState('all');
 
   useEffect(() => {
     fetchStats();
