@@ -7,7 +7,7 @@ import os
 class VacationAPITester:
     def __init__(self):
         # Get backend URL from environment
-        self.base_url = "https://stylist-scheduler-12.preview.emergentagent.com"
+        self.base_url = "https://beauty-hub-180.preview.emergentagent.com"
         self.api_url = f"{self.base_url}/api"
         self.admin_token = None
         self.tests_run = 0
