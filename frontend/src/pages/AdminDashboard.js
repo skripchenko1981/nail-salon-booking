@@ -11,6 +11,7 @@ import AdminSettings from '../components/admin/AdminSettings';
 import AdminVacations from '../components/admin/AdminVacations';
 import AdminMasters from '../components/admin/AdminMasters';
 import AdminGallery from '../components/admin/AdminGallery';
+import AdminPromoBlocks from '../components/admin/AdminPromoBlocks';
 import axios from 'axios';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
