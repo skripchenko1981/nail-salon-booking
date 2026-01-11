@@ -333,6 +333,38 @@ class GalleryImageCreate(BaseModel):
     master_name: Optional[str] = None
     description: Optional[str] = None
 
+# ============ PROMO BLOCK MODELS ============
+
+class PromoBlock(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    description: str
+    image_url: Optional[str] = None
+    button_text: Optional[str] = None
+    button_link: Optional[str] = None
+    is_active: bool = True
+    position: int = 0  # Порядок відображення
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class PromoBlockCreate(BaseModel):
+    title: str
+    description: str
+    image_url: Optional[str] = None
+    button_text: Optional[str] = None
+    button_link: Optional[str] = None
+    is_active: bool = True
+    position: int = 0
+
+class PromoBlockUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    button_text: Optional[str] = None
+    button_link: Optional[str] = None
+    is_active: Optional[bool] = None
+    position: Optional[int] = None
+
 class TimeSlot(BaseModel):
     time: str
     available: bool
