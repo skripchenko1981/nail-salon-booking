@@ -41,6 +41,7 @@ function AdminDashboard() {
   const menuItems = [
     { path: '/admin/analytics', icon: LayoutDashboard, label: 'Аналітика', testId: 'nav-analytics' },
     { path: '/admin/masters', icon: Users, label: 'Майстри', testId: 'nav-masters' },
+    { path: '/admin/gallery', icon: Image, label: 'Галерея', testId: 'nav-gallery' },
     { path: '/admin/promo', icon: Package, label: 'Промо-блоки', testId: 'nav-promo' },
     { path: '/admin/settings', icon: Settings, label: 'Налаштування сайту', testId: 'nav-settings' },
   ];
