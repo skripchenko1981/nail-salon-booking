@@ -1199,12 +1199,18 @@ async def get_stats(user: Dict = Depends(verify_master_or_admin)):
     )
 
 @api_router.get("/admin/stats/monthly")
-async def get_monthly_stats(year: int, user: Dict = Depends(verify_master_or_admin)):
-    """Отримати місячну статистику"""
+async def get_monthly_stats(year: int, master_id: Optional[str] = None, user: Dict = Depends(verify_master_or_admin)):
+    """Отримати місячну статистику (з можливістю фільтрації по майстру)"""
     # Фільтр для майстра
     query = {}
+    
+    # Якщо користувач - майстер, показуємо тільки його дані
     if user["role"] == "master":
         query["master_id"] = user["user_id"]
+    # Якщо адмін і вказаний master_id - фільтруємо по ньому
+    elif master_id and master_id != "all":
+        query["master_id"] = master_id
+    # Інакше показуємо всіх (для адміна)
     
     # Отримати всі бронювання за рік
     bookings = await db.bookings.find(query, {"_id": 0}).to_list(10000)
