@@ -57,6 +57,15 @@ function HomePage() {
     }
   };
 
+  const fetchPromoBlocks = async () => {
+    try {
+      const response = await axios.get(`${API}/promo-blocks`);
+      setPromoBlocks(response.data);
+    } catch (error) {
+      console.error('Помилка завантаження промо-блоків:', error);
+    }
+  };
+
   const serviceImages = [
     'https://images.pexels.com/photos/5128123/pexels-photo-5128123.jpeg',
     'https://images.unsplash.com/photo-1727199433272-70fdb94c8430',
