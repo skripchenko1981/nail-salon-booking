@@ -9,6 +9,7 @@ const API = `${BACKEND_URL}/api`;
 function AdminOverview() {
   const [stats, setStats] = useState(null);
   const [monthlyStats, setMonthlyStats] = useState([]);
+  const [mastersStats, setMastersStats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
