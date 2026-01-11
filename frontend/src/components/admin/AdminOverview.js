@@ -143,6 +143,73 @@ function AdminOverview() {
           Використовуйте меню зліва для навігації.
         </p>
       </div>
+
+      {/* Місячна аналітика */}
+      <div className="bg-white rounded-2xl p-8 border border-rose-200/50 shadow-[0_2px_8px_rgb(0,0,0,0.04)]">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <h2 className="text-2xl font-bold" style={{ fontFamily: 'Playfair Display, serif' }}>
+            Аналіз діяльності по місяцях
+          </h2>
+          <div className="flex gap-2">
+            <select 
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="px-3 py-2 border border-rose-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4A5A5]"
+            >
+              {[...Array(5)].map((_, i) => {
+                const year = new Date().getFullYear() - i;
+                return <option key={year} value={year}>{year}</option>;
+              })}
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {monthlyStats.map((month, index) => (
+            <div 
+              key={index}
+              className={`p-6 rounded-xl border-2 transition-all cursor-pointer ${
+                selectedMonth === index 
+                  ? 'border-[#D4A5A5] bg-[#F3EBEB]/30' 
+                  : 'border-rose-200/50 hover:border-[#D4A5A5]/50'
+              }`}
+              onClick={() => setSelectedMonth(index)}
+            >
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="font-bold text-lg">{month.month_name}</h3>
+                <span className="text-2xl font-bold text-[#D4A5A5]" style={{ fontFamily: 'Playfair Display, serif' }}>
+                  {month.total_bookings}
+                </span>
+              </div>
+              
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Підтверджено:</span>
+                  <span className="font-semibold text-green-600">{month.confirmed}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Завершено:</span>
+                  <span className="font-semibold text-blue-600">{month.completed}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Скасовано:</span>
+                  <span className="font-semibold text-red-600">{month.cancelled}</span>
+                </div>
+                <div className="flex justify-between pt-2 border-t border-rose-200/50">
+                  <span className="text-gray-600 font-medium">Виручка:</span>
+                  <span className="font-bold text-[#D4A5A5]">{month.revenue} ₴</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {monthlyStats.length === 0 && (
+          <div className="text-center py-12 text-gray-500">
+            Немає даних за {selectedYear} рік
+          </div>
+        )}
+      </div>
     </div>
   );
 }
