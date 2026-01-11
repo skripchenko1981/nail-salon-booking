@@ -121,15 +121,9 @@ function AdminDashboard() {
       <main className="flex-1 overflow-auto">
         <div className="p-6 lg:p-12">
           <Routes>
-            <Route path="/" element={<Navigate to="/admin/masters" replace />} />
-            <Route path="/dashboard" element={<AdminOverview />} />
-            <Route path="/bookings" element={<AdminBookings />} />
-            <Route path="/clients" element={<AdminClients />} />
-            <Route path="/services" element={<AdminServices />} />
-            <Route path="/schedule" element={<AdminSchedule />} />
+            <Route path="/" element={<Navigate to="/admin/analytics" replace />} />
+            <Route path="/analytics" element={<AdminOverview />} />
             <Route path="/masters" element={<AdminMasters />} />
-            <Route path="/vacations" element={<AdminVacations />} />
-            <Route path="/gallery" element={<AdminGallery />} />
             <Route path="/settings" element={<AdminSettings />} />
           </Routes>
         </div>
