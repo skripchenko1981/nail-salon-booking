@@ -17,6 +17,7 @@ function AdminOverview() {
   useEffect(() => {
     fetchStats();
     fetchMonthlyStats();
+    fetchMastersStats();
   }, [selectedMonth, selectedYear]);
 
   const fetchStats = async () => {
@@ -43,6 +44,18 @@ function AdminOverview() {
       setMonthlyStats(response.data);
     } catch (error) {
       console.error('Помилка завантаження місячної статистики');
+    }
+  };
+
+  const fetchMastersStats = async () => {
+    try {
+      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
+      const response = await axios.get(`${API}/admin/stats/masters`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setMastersStats(response.data);
+    } catch (error) {
+      console.error('Помилка завантаження статистики майстрів');
     }
   };
 
