@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Calendar, Clock, Phone, Mail, User, Edit } from 'lucide-react';
+import { Calendar, Clock, Phone, Mail, User, Edit, Trash2 } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import {
