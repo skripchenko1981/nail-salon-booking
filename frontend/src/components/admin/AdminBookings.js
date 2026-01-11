@@ -116,6 +116,23 @@ function AdminBookings() {
     }
   };
 
+  const handleDeleteBooking = async (bookingId) => {
+    if (!window.confirm('Ви впевнені, що хочете видалити цей запис? Цю дію неможливо скасувати.')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
+      await axios.delete(`${API}/admin/bookings/${bookingId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Запис успішно видалено');
+      fetchBookings();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Помилка видалення запису');
+    }
+  };
+
   const filteredBookings = bookings.filter(booking => {
     // Фільтр по статусу
     const statusMatch = filterStatus === 'all' || booking.status === filterStatus;
