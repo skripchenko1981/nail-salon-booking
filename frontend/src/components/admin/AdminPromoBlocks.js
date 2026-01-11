@@ -34,7 +34,7 @@ function AdminPromoBlocks() {
   const fetchBlocks = async () => {
     try {
       const token = localStorage.getItem('admin_token');
-      const response = await axios.get(`${API}/admin/promo-blocks`, {
+      const response = await axios.get(`${API}/api/admin/promo-blocks`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setBlocks(response.data);
@@ -113,7 +113,7 @@ function AdminPromoBlocks() {
         uploadFormData.append('file', selectedFile);
         
         const uploadResponse = await axios.post(
-          `${API}/admin/gallery`,
+          `${API}/api/admin/gallery`,
           uploadFormData,
           {
             headers: { 
@@ -133,14 +133,14 @@ function AdminPromoBlocks() {
 
       if (editingBlock) {
         await axios.put(
-          `${API}/admin/promo-blocks/${editingBlock.id}`,
+          `${API}/api/admin/promo-blocks/${editingBlock.id}`,
           blockData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         toast.success('Блок оновлено');
       } else {
         await axios.post(
-          `${API}/admin/promo-blocks`,
+          `${API}/api/admin/promo-blocks`,
           blockData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -161,7 +161,7 @@ function AdminPromoBlocks() {
 
     try {
       const token = localStorage.getItem('admin_token');
-      await axios.delete(`${API}/admin/promo-blocks/${blockId}`, {
+      await axios.delete(`${API}/api/admin/promo-blocks/${blockId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Блок видалено');
@@ -175,7 +175,7 @@ function AdminPromoBlocks() {
     try {
       const token = localStorage.getItem('admin_token');
       await axios.put(
-        `${API}/admin/promo-blocks/${block.id}`,
+        `${API}/api/admin/promo-blocks/${block.id}`,
         { is_active: !block.is_active },
         { headers: { Authorization: `Bearer ${token}` } }
       );
