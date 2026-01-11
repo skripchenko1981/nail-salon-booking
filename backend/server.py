@@ -1198,6 +1198,24 @@ async def get_stats(user: Dict = Depends(verify_master_or_admin)):
         today_bookings=today_bookings
     )
 
+@api_router.delete("/admin/bookings/{booking_id}")
+async def delete_booking(booking_id: str, user: Dict = Depends(verify_master_or_admin)):
+    """Видалити запис"""
+    booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    # Перевірка прав доступу
+    if user["role"] == "master" and booking["master_id"] != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Видалити запис
+    result = await db.bookings.delete_one({"id": booking_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    return {"success": True, "message": "Booking deleted successfully"}
+
 # ============ CLIENT ROUTES ============
 
 @api_router.get("/admin/clients", response_model=List[Client])
