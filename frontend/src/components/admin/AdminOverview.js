@@ -153,9 +153,67 @@ function AdminOverview() {
           Ласкаво просимо до адмін-панелі!
         </h2>
         <p className="text-gray-600">
-          Тут ви можете керувати записами, послугами, розкладом та переглядати статистику.
-          Використовуйте меню зліва для навігації.
+          Тут ви можете керувати майстрами, налаштовувати сайт та переглядати загальну статистику.
         </p>
+      </div>
+
+      {/* Статистика по майстрам */}
+      <div className="bg-white rounded-2xl p-8 border border-rose-200/50 shadow-[0_2px_8px_rgb(0,0,0,0.04)]">
+        <h2 className="text-2xl font-bold mb-6" style={{ fontFamily: 'Playfair Display, serif' }}>
+          Статистика по майстрам
+        </h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {mastersStats.map((master) => (
+            <div 
+              key={master.master_id}
+              className="p-6 rounded-xl border-2 border-rose-200/50 hover:border-[#D4A5A5] transition-all"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="font-bold text-lg">{master.master_name}</h3>
+                  <p className="text-sm text-gray-500">{master.master_email}</p>
+                </div>
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  master.is_active 
+                    ? 'bg-green-100 text-green-700' 
+                    : 'bg-gray-100 text-gray-600'
+                }`}>
+                  {master.is_active ? 'Активний' : 'Неактивний'}
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center py-2 border-b border-rose-100">
+                  <span className="text-gray-600 text-sm">Всього записів:</span>
+                  <span className="font-bold text-[#D4A5A5]">{master.total_bookings}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 text-sm">Підтверджено:</span>
+                  <span className="font-semibold text-green-600">{master.confirmed}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 text-sm">Завершено:</span>
+                  <span className="font-semibold text-blue-600">{master.completed}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 text-sm">Скасовано:</span>
+                  <span className="font-semibold text-red-600">{master.cancelled}</span>
+                </div>
+                <div className="flex justify-between items-center pt-3 border-t border-rose-200/50">
+                  <span className="text-gray-700 font-medium">Виручка:</span>
+                  <span className="font-bold text-lg text-[#D4A5A5]">{master.revenue} ₴</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {mastersStats.length === 0 && (
+          <div className="text-center py-12 text-gray-500">
+            Немає майстрів для відображення статистики
+          </div>
+        )}
       </div>
 
       {/* Місячна аналітика */}
