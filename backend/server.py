@@ -1242,6 +1242,44 @@ async def get_monthly_stats(year: int, user: Dict = Depends(verify_master_or_adm
     
     return monthly_stats
 
+@api_router.get("/admin/stats/masters")
+async def get_masters_stats(user: Dict = Depends(verify_admin)):
+    """Отримати статистику по кожному майстру (тільки для адміна)"""
+    # Отримати всіх майстрів
+    masters = await db.masters.find({}, {"_id": 0}).to_list(100)
+    
+    masters_stats = []
+    for master in masters:
+        master_id = master["id"]
+        
+        # Отримати бронювання майстра
+        bookings = await db.bookings.find({"master_id": master_id}, {"_id": 0}).to_list(10000)
+        
+        confirmed = len([b for b in bookings if b.get("status") == "confirmed"])
+        completed = len([b for b in bookings if b.get("status") == "completed"])
+        cancelled = len([b for b in bookings if b.get("status") == "cancelled"])
+        pending = len([b for b in bookings if b.get("status") == "pending"])
+        
+        revenue = sum(b.get("price", 0) for b in bookings if b.get("status") in ["confirmed", "completed"])
+        
+        masters_stats.append({
+            "master_id": master_id,
+            "master_name": master.get("name"),
+            "master_email": master.get("email"),
+            "is_active": master.get("is_active", True),
+            "total_bookings": len(bookings),
+            "confirmed": confirmed,
+            "completed": completed,
+            "cancelled": cancelled,
+            "pending": pending,
+            "revenue": revenue
+        })
+    
+    # Сортувати за виручкою (від найбільшої)
+    masters_stats.sort(key=lambda x: x["revenue"], reverse=True)
+    
+    return masters_stats
+
 @api_router.delete("/admin/bookings/{booking_id}")
 async def delete_booking(booking_id: str, user: Dict = Depends(verify_master_or_admin)):
     """Видалити запис"""
