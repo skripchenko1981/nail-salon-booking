@@ -1570,6 +1570,63 @@ async def update_gallery_image(image_id: str, is_active: bool, user: Dict = Depe
         raise HTTPException(status_code=404, detail="Image not found")
     return {"success": True, "message": "Image updated"}
 
+# ============ PROMO BLOCKS ============
+
+@api_router.get("/promo-blocks", response_model=List[PromoBlock])
+async def get_active_promo_blocks():
+    """Отримати активні промо-блоки (публічний доступ)"""
+    blocks = await db.promo_blocks.find(
+        {"is_active": True}, 
+        {"_id": 0}
+    ).sort("position", 1).to_list(100)
+    return blocks
+
+@api_router.get("/admin/promo-blocks", response_model=List[PromoBlock])
+async def get_all_promo_blocks(user: Dict = Depends(verify_admin)):
+    """Отримати всі промо-блоки (тільки адмін)"""
+    blocks = await db.promo_blocks.find({}, {"_id": 0}).sort("position", 1).to_list(100)
+    return blocks
+
+@api_router.post("/admin/promo-blocks", response_model=PromoBlock)
+async def create_promo_block(block: PromoBlockCreate, user: Dict = Depends(verify_admin)):
+    """Створити промо-блок"""
+    new_block = PromoBlock(**block.model_dump())
+    await db.promo_blocks.insert_one(new_block.model_dump())
+    return new_block
+
+@api_router.put("/admin/promo-blocks/{block_id}", response_model=PromoBlock)
+async def update_promo_block(
+    block_id: str, 
+    block_update: PromoBlockUpdate, 
+    user: Dict = Depends(verify_admin)
+):
+    """Оновити промо-блок"""
+    update_data = {k: v for k, v in block_update.model_dump().items() if v is not None}
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    result = await db.promo_blocks.update_one(
+        {"id": block_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Promo block not found")
+    
+    updated_block = await db.promo_blocks.find_one({"id": block_id}, {"_id": 0})
+    return PromoBlock(**updated_block)
+
+@api_router.delete("/admin/promo-blocks/{block_id}")
+async def delete_promo_block(block_id: str, user: Dict = Depends(verify_admin)):
+    """Видалити промо-блок"""
+    result = await db.promo_blocks.delete_one({"id": block_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Promo block not found")
+    
+    return {"success": True, "message": "Promo block deleted"}
+
 # Include routers
 app.include_router(api_router)
 app.include_router(telegram_router)
