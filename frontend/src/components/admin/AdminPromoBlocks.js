@@ -313,6 +313,7 @@ function AdminPromoBlocks() {
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="Наприклад: Спеціальна пропозиція!"
                   required
+                  disabled={uploading}
                 />
               </div>
 
@@ -325,38 +326,64 @@ function AdminPromoBlocks() {
                   placeholder="Детальний опис промо-блоку..."
                   rows={4}
                   required
+                  disabled={uploading}
                 />
               </div>
 
               <div>
-                <Label htmlFor="image_url">URL зображення (опціонально)</Label>
+                <Label htmlFor="image">Зображення (опціонально)</Label>
                 <Input
-                  id="image_url"
-                  type="url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
+                  id="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  disabled={uploading}
+                  className="mt-1"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Підтримуються: JPG, PNG, WEBP, GIF (макс. 10MB)
+                </p>
+                
+                {previewUrl && (
+                  <div className="mt-3 border rounded-lg p-2">
+                    <p className="text-sm text-gray-600 mb-2">Попередній перегляд:</p>
+                    <img
+                      src={previewUrl}
+                      alt="Preview"
+                      className="w-full h-48 object-cover rounded"
+                    />
+                  </div>
+                )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="button_text">Текст кнопки (опціонально)</Label>
-                  <Input
-                    id="button_text"
-                    value={formData.button_text}
-                    onChange={(e) => setFormData({ ...formData, button_text: e.target.value })}
-                    placeholder="Детальніше"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="button_link">Посилання кнопки (опціонально)</Label>
-                  <Input
-                    id="button_link"
-                    value={formData.button_link}
-                    onChange={(e) => setFormData({ ...formData, button_link: e.target.value })}
-                    placeholder="/booking"
-                  />
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm font-medium text-blue-900 mb-2">💡 Кнопка на блоці (опціонально)</p>
+                <p className="text-xs text-blue-700 mb-3">
+                  Якщо заповните ці поля, на промо-блоці з'явиться кнопка.<br/>
+                  <strong>Приклад:</strong> Текст: "Записатися", Посилання: "/booking"
+                </p>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="button_text">Текст кнопки</Label>
+                    <Input
+                      id="button_text"
+                      value={formData.button_text}
+                      onChange={(e) => setFormData({ ...formData, button_text: e.target.value })}
+                      placeholder="Детальніше"
+                      disabled={uploading}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="button_link">Посилання</Label>
+                    <Input
+                      id="button_link"
+                      value={formData.button_link}
+                      onChange={(e) => setFormData({ ...formData, button_link: e.target.value })}
+                      placeholder="/booking"
+                      disabled={uploading}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -369,6 +396,7 @@ function AdminPromoBlocks() {
                     value={formData.position}
                     onChange={(e) => setFormData({ ...formData, position: parseInt(e.target.value) })}
                     min="0"
+                    disabled={uploading}
                   />
                   <p className="text-xs text-gray-500 mt-1">Чим менше число, тим вище показується</p>
                 </div>
@@ -379,20 +407,26 @@ function AdminPromoBlocks() {
                     checked={formData.is_active}
                     onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                     className="mr-2"
+                    disabled={uploading}
                   />
                   <Label htmlFor="is_active">Показувати на сайті</Label>
                 </div>
               </div>
 
               <div className="flex gap-2 pt-4">
-                <Button type="submit" className="flex-1 bg-[#D4A5A5] hover:bg-[#9E829C] text-white">
-                  {editingBlock ? 'Зберегти' : 'Створити'}
+                <Button 
+                  type="submit" 
+                  className="flex-1 bg-[#D4A5A5] hover:bg-[#9E829C] text-white"
+                  disabled={uploading}
+                >
+                  {uploading ? 'Завантаження...' : (editingBlock ? 'Зберегти' : 'Створити')}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setDialogOpen(false)}
                   className="flex-1"
+                  disabled={uploading}
                 >
                   Скасувати
                 </Button>
