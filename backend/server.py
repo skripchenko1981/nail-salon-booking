@@ -1261,7 +1261,8 @@ async def get_masters_stats(user: Dict = Depends(verify_admin)):
         cancelled = len([b for b in bookings if b.get("status") == "cancelled"])
         pending = len([b for b in bookings if b.get("status") == "pending"])
         
-        revenue = sum(b.get("price", 0) for b in bookings if b.get("status") in ["confirmed", "completed"])
+        # Виручка тільки з завершених записів
+        revenue = sum(b.get("price", 0) for b in bookings if b.get("status") == "completed")
         
         masters_stats.append({
             "master_id": master_id,
