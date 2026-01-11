@@ -12,6 +12,7 @@ function HomePage() {
   const navigate = useNavigate();
   const { themeColors } = useTheme();
   const [services, setServices] = useState([]);
+  const [promoBlocks, setPromoBlocks] = useState([]);
   const [settings, setSettings] = useState({
     site_name: 'Nail Studio',
     about_text: '',
@@ -35,6 +36,7 @@ function HomePage() {
   useEffect(() => {
     fetchServices();
     fetchSettings();
+    fetchPromoBlocks();
   }, []);
 
   const fetchServices = async () => {
