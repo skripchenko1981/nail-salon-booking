@@ -172,6 +172,52 @@ function HomePage() {
         </div>
       </section>
 
+      {/* Promo Blocks Section */}
+      {promoBlocks.length > 0 && (
+        <section className="py-16 px-6">
+          <div className="container mx-auto max-w-7xl">
+            <div className="grid gap-8">
+              {promoBlocks.map((block) => (
+                <div 
+                  key={block.id}
+                  className="bg-white rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_60px_rgb(0,0,0,0.08)] transition-all duration-500"
+                >
+                  <div className="flex flex-col md:flex-row">
+                    {block.image_url && (
+                      <div className="md:w-1/3">
+                        <img 
+                          src={block.image_url} 
+                          alt={block.title}
+                          className="w-full h-64 md:h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className={`${block.image_url ? 'md:w-2/3' : 'w-full'} p-8 md:p-12 flex flex-col justify-center`}>
+                      <h3 className="text-3xl font-bold mb-4" style={{ fontFamily: 'Playfair Display, serif', color: themeColors.primary }}>
+                        {block.title}
+                      </h3>
+                      <p className="text-gray-600 text-lg mb-6 leading-relaxed">
+                        {block.description}
+                      </p>
+                      {block.button_text && block.button_link && (
+                        <div>
+                          <Button
+                            onClick={() => navigate(block.button_link)}
+                            className="bg-[#D4A5A5] hover:bg-[#9E829C] text-white px-8 py-6 text-lg"
+                          >
+                            {block.button_text}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Services Section */}
       <section className="py-24 px-6 bg-white">
         <div className="container mx-auto max-w-7xl">
