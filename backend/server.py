@@ -221,6 +221,7 @@ class Client(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     master_id: str
     name: str
+    surname: Optional[str] = None
     phone: str
     email: Optional[EmailStr] = None
     telegram_id: Optional[str] = None
@@ -445,7 +446,8 @@ def verify_master_or_admin(user: Dict = Depends(verify_token)) -> Dict:
 
 async def get_or_create_client(master_id: str, name: str, phone: str, 
                                 email: Optional[str] = None, 
-                                telegram_id: Optional[str] = None) -> str:
+                                telegram_id: Optional[str] = None,
+                                surname: Optional[str] = None) -> str:
     """Отримати або створити клієнта для майстра"""
     phone_normalized = validate_ukrainian_phone(phone)
     
@@ -464,6 +466,8 @@ async def get_or_create_client(master_id: str, name: str, phone: str,
             update_data["telegram_id"] = telegram_id
         if name != existing_client.get("name"):
             update_data["name"] = name
+        if surname and surname != existing_client.get("surname"):
+            update_data["surname"] = surname
             
         if update_data:
             await db.clients.update_one({
@@ -477,6 +481,7 @@ async def get_or_create_client(master_id: str, name: str, phone: str,
         client = Client(
             master_id=master_id,
             name=name,
+            surname=surname,
             phone=phone_normalized,
             email=email,
             telegram_id=telegram_id,
