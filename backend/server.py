@@ -635,7 +635,8 @@ async def create_booking(booking: BookingCreate, background_tasks: BackgroundTas
         booking.client_name,
         booking.client_phone,
         booking.client_email,
-        None  # Більше не використовуємо telegram_id при створенні
+        None,  # Більше не використовуємо telegram_id при створенні
+        booking.client_surname
     )
     
     # Оновити загальну кількість записів
@@ -650,6 +651,7 @@ async def create_booking(booking: BookingCreate, background_tasks: BackgroundTas
         service_id=booking.service_id,
         master_name=booking.master_name,
         client_name=booking.client_name,
+        client_surname=booking.client_surname,
         client_phone=booking.client_phone,
         client_email=booking.client_email,
         date=booking.date,
@@ -657,7 +659,8 @@ async def create_booking(booking: BookingCreate, background_tasks: BackgroundTas
         notes=booking.notes,
         service_name=service["name"],
         duration_minutes=service["duration_minutes"],
-        price=service["price"]
+        price=service["price"],
+        reminder_hours=booking.reminder_hours
     )
     doc = booking_obj.model_dump()
     await db.bookings.insert_one(doc)
