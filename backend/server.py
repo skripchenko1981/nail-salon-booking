@@ -1145,9 +1145,12 @@ async def admin_login(credentials: AdminLogin):
 
 @api_router.get("/admin/bookings", response_model=List[Booking])
 async def get_admin_bookings(user: Dict = Depends(verify_master_or_admin)):
-    """Отримати записи майстра (кожен майстер бачить тільки свої)"""
-    # Кожен користувач (адмін або майстер) бачить тільки свої записи
-    query = {"master_id": user["user_id"]}
+    """Отримати записи (адмін бачить всі, майстер - тільки свої)"""
+    # Адмін бачить всі записи, майстер - тільки свої
+    if user["role"] == "admin":
+        query = {}
+    else:
+        query = {"master_id": user["user_id"]}
     
     bookings = await db.bookings.find(query, {"_id": 0}).sort("date", -1).to_list(1000)
     return bookings
