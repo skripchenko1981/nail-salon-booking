@@ -17,6 +17,9 @@ import hashlib
 from telegram_bot import telegram_bot
 from telegram_webhook import telegram_router
 from s3_utils import upload_file_to_s3, generate_presigned_url, delete_file_from_s3
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.interval import IntervalTrigger
+import asyncio
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
