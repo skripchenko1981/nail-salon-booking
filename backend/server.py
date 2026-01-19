@@ -268,10 +268,9 @@ class BookingCreate(BaseModel):
     service_id: str
     date: str
     time: str
-    reminder_hours: int = 24
+    reminder_hours: int = 2
     notes: Optional[str] = None
     master_name: Optional[str] = None
-    reminder_hours: int = 2
     
     @field_validator('client_phone')
     @classmethod
