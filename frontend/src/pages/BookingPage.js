@@ -32,6 +32,7 @@ function BookingPage() {
     date: '',
     time: '',
     client_name: '',
+    client_surname: '',
     client_phone: '',
     client_email: '',
     reminder_hours: 2,
