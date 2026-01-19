@@ -246,7 +246,7 @@ class Booking(BaseModel):
     master_id: str
     client_id: str
     client_name: str
-    client_surname: str
+    client_surname: Optional[str] = None
     client_phone: str
     client_email: Optional[EmailStr] = None
     telegram_id: Optional[str] = None
