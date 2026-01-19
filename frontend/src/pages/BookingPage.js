@@ -153,6 +153,7 @@ function BookingPage() {
         date: formData.date,
         time: formData.time,
         client_name: formData.client_name,
+        client_surname: formData.client_surname,
         client_phone: formData.client_phone,
         client_email: formData.client_email || undefined,
         reminder_hours: parseInt(formData.reminder_hours),
