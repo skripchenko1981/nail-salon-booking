@@ -61,6 +61,25 @@
 - **Affected File:** `/app/frontend/src/pages/AdminDashboard.js`
 - **Testing Status:** ✅ PASSED
 
+## Recent Bug Fixes (2025-01-19)
+
+### P0 Bug Fixed: Reminder Notifications Not Sending
+- **Root Cause:** 
+  1. No scheduled task was running to check for reminders
+  2. Default reminder time was 24 hours instead of 2 hours
+- **Fix Applied:**
+  - Added APScheduler for automatic reminder checks every 5 minutes
+  - Changed default `reminder_hours` from 24 to 2
+  - Added startup event to initialize scheduler
+  - Added admin endpoints for manual trigger and status check
+- **Affected Files:**
+  - `/app/backend/server.py` - Added scheduler and endpoints
+  - `/app/backend/send_reminders.py` - Updated logic
+- **New Endpoints:**
+  - `POST /api/admin/send-reminders` - Manual trigger
+  - `GET /api/admin/reminder-status` - Check status
+- **IMPORTANT:** Clients must subscribe to Telegram bot after booking to receive reminders
+
 ## Backlog / Future Tasks
 
 ### P1 - Refactoring
