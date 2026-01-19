@@ -443,17 +443,31 @@ function BookingPage() {
               </div>
 
               <div className="space-y-4">
-                <div>
-                  <Label htmlFor="client_name">Ім&apos;я *</Label>
-                  <Input
-                    id="client_name"
-                    required
-                    value={formData.client_name}
-                    onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
-                    placeholder="Ваше ім'я"
-                    className="mt-1 border-rose-200/50 focus:ring-rose-300"
-                    data-testid="input-client-name"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="client_name">Ім&apos;я *</Label>
+                    <Input
+                      id="client_name"
+                      required
+                      value={formData.client_name}
+                      onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
+                      placeholder="Ваше ім'я"
+                      className="mt-1 border-rose-200/50 focus:ring-rose-300"
+                      data-testid="input-client-name"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="client_surname">Прізвище *</Label>
+                    <Input
+                      id="client_surname"
+                      required
+                      value={formData.client_surname}
+                      onChange={(e) => setFormData({ ...formData, client_surname: e.target.value })}
+                      placeholder="Ваше прізвище"
+                      className="mt-1 border-rose-200/50 focus:ring-rose-300"
+                      data-testid="input-client-surname"
+                    />
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="client_phone">Телефон *</Label>
