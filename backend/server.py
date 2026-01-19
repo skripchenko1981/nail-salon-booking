@@ -1649,6 +1649,90 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# ============ SCHEDULED TASKS ============
+
+scheduler = AsyncIOScheduler()
+
+async def check_and_send_reminders():
+    """Перевірка та відправка нагадувань кожні 5 хвилин"""
+    try:
+        logger.info("Запуск перевірки нагадувань...")
+        
+        now = datetime.now(timezone.utc)
+        
+        # Знайти всі підтверджені записи, для яких ще не відправлено нагадування
+        bookings = await db.bookings.find({
+            "status": {"$in": ["confirmed", "pending"]},
+            "reminder_sent": {"$ne": True}
+        }).to_list(1000)
+        
+        sent_count = 0
+        
+        for booking in bookings:
+            try:
+                # Розрахувати час запису
+                booking_date_str = booking['date']
+                if 'T' in booking_date_str:
+                    booking_date = datetime.fromisoformat(booking_date_str.replace('Z', '+00:00')).date()
+                else:
+                    booking_date = datetime.strptime(booking_date_str, "%Y-%m-%d").date()
+                    
+                booking_time_obj = datetime.strptime(booking['time'], "%H:%M").time()
+                booking_datetime = datetime.combine(booking_date, booking_time_obj)
+                booking_datetime = booking_datetime.replace(tzinfo=timezone.utc)
+                
+                # Розрахувати час відправки нагадування (за замовчуванням 2 години до)
+                reminder_hours = booking.get('reminder_hours', 2)
+                reminder_datetime = booking_datetime - timedelta(hours=reminder_hours)
+                
+                # Відправляємо якщо час нагадування <= поточного часу < час запису
+                if reminder_datetime <= now < booking_datetime:
+                    logger.info(f"Час відправки нагадування для запису {booking['id']}")
+                    
+                    sent_telegram = await telegram_bot.send_booking_reminder(
+                        booking['id'],
+                        booking['client_name'],
+                        booking['service_name'],
+                        booking['date'],
+                        booking['time'],
+                        reminder_hours
+                    )
+                    
+                    if sent_telegram:
+                        await db.bookings.update_one(
+                            {"id": booking['id']},
+                            {"$set": {"reminder_sent": True, "reminder_sent_at": datetime.now(timezone.utc).isoformat()}}
+                        )
+                        sent_count += 1
+                        logger.info(f"✓ Нагадування відправлено для {booking['client_name']}")
+                    else:
+                        logger.info(f"Клієнт {booking['client_name']} не підписаний на Telegram")
+                        
+            except Exception as e:
+                logger.error(f"Помилка обробки запису {booking.get('id', 'unknown')}: {e}")
+                continue
+        
+        if sent_count > 0:
+            logger.info(f"Відправлено {sent_count} нагадувань")
+            
+    except Exception as e:
+        logger.error(f"Помилка перевірки нагадувань: {e}")
+
+@app.on_event("startup")
+async def startup_event():
+    """Запуск планувальника при старті сервера"""
+    # Запустити перевірку нагадувань кожні 5 хвилин
+    scheduler.add_job(
+        check_and_send_reminders,
+        IntervalTrigger(minutes=5),
+        id='reminder_job',
+        name='Check and send booking reminders',
+        replace_existing=True
+    )
+    scheduler.start()
+    logger.info("Планувальник нагадувань запущено (кожні 5 хвилин)")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    scheduler.shutdown()
     client.close()
