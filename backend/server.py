@@ -252,7 +252,7 @@ class Booking(BaseModel):
     duration_minutes: int
     price: int
     status: str = "pending"
-    reminder_hours: int = 24
+    reminder_hours: int = 2
     reminder_sent: bool = False
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     notes: Optional[str] = None
@@ -268,6 +268,7 @@ class BookingCreate(BaseModel):
     reminder_hours: int = 24
     notes: Optional[str] = None
     master_name: Optional[str] = None
+    reminder_hours: int = 2
     
     @field_validator('client_phone')
     @classmethod
@@ -286,7 +287,7 @@ class BookingCancelRequest(BaseModel):
 class ReminderSettings(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = "reminder_settings"
-    default_hours_before: int = 24
+    default_hours_before: int = 2
     enabled: bool = True
 
 class SiteSettings(BaseModel):
