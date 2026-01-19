@@ -1441,6 +1441,68 @@ async def update_reminder_settings(settings: ReminderSettings, _: str = Depends(
     )
     return settings
 
+@api_router.post("/admin/send-reminders")
+async def trigger_reminders_manually(user: Dict = Depends(verify_admin)):
+    """Ручний запуск перевірки та відправки нагадувань"""
+    await check_and_send_reminders()
+    return {"success": True, "message": "Перевірка нагадувань виконана"}
+
+@api_router.get("/admin/reminder-status")
+async def get_reminder_status(user: Dict = Depends(verify_admin)):
+    """Отримати статус нагадувань для найближчих записів"""
+    now = datetime.now(timezone.utc)
+    
+    # Знайти записи на найближчі 24 години
+    bookings = await db.bookings.find({
+        "status": {"$in": ["confirmed", "pending"]}
+    }, {"_id": 0}).to_list(100)
+    
+    upcoming = []
+    for booking in bookings:
+        try:
+            booking_date_str = booking['date']
+            if 'T' in booking_date_str:
+                booking_date = datetime.fromisoformat(booking_date_str.replace('Z', '+00:00')).date()
+            else:
+                booking_date = datetime.strptime(booking_date_str, "%Y-%m-%d").date()
+            
+            booking_time_obj = datetime.strptime(booking['time'], "%H:%M").time()
+            booking_datetime = datetime.combine(booking_date, booking_time_obj).replace(tzinfo=timezone.utc)
+            
+            # Тільки майбутні записи
+            if booking_datetime > now:
+                reminder_hours = booking.get('reminder_hours', 2)
+                reminder_datetime = booking_datetime - timedelta(hours=reminder_hours)
+                
+                # Перевірити підписку на Telegram
+                subscription = await db.telegram_subscriptions.find_one({
+                    "booking_id": booking['id'],
+                    "is_active": True
+                })
+                
+                upcoming.append({
+                    "id": booking['id'],
+                    "client_name": booking['client_name'],
+                    "date": booking['date'],
+                    "time": booking['time'],
+                    "reminder_hours": reminder_hours,
+                    "reminder_sent": booking.get('reminder_sent', False),
+                    "reminder_time": reminder_datetime.isoformat(),
+                    "telegram_subscribed": bool(subscription),
+                    "status": booking['status']
+                })
+        except Exception:
+            continue
+    
+    # Сортувати за датою
+    upcoming.sort(key=lambda x: (x['date'], x['time']))
+    
+    return {
+        "scheduler_running": scheduler.running,
+        "current_time_utc": now.isoformat(),
+        "upcoming_bookings": upcoming[:20]
+    }
+
 # ============ SITE SETTINGS ============
 
 @api_router.get("/settings", response_model=SiteSettings)
