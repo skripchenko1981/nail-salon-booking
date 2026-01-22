@@ -251,7 +251,7 @@ function AdminBookings() {
                     </div>
                     <div className="flex items-center gap-2 text-gray-600">
                       <User className="h-4 w-4 text-[#D4A5A5]" />
-                      <span>{booking.client_name}</span>
+                      <span>{booking.client_name} {booking.client_surname || ''}</span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-600">
                       <Phone className="h-4 w-4 text-[#D4A5A5]" />
@@ -341,7 +341,7 @@ function AdminBookings() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <User className="h-4 w-4" />
-                  <span>{editingBooking.client_name}</span>
+                  <span>{editingBooking.client_name} {editingBooking.client_surname || ''}</span>
                 </div>
               </div>
 
