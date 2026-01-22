@@ -214,7 +214,7 @@ function MyBookingsPage() {
                     <div className="grid md:grid-cols-2 gap-4 text-sm">
                       <div>
                         <p className="text-gray-500">Клієнт</p>
-                        <p className="font-medium">{booking.client_name}</p>
+                        <p className="font-medium">{booking.client_name} {booking.client_surname || ''}</p>
                       </div>
                       <div>
                         <p className="text-gray-500">Телефон</p>
