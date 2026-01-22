@@ -23,6 +23,8 @@ function BookingPage() {
   const [loading, setLoading] = useState(false);
   const [telegramLink, setTelegramLink] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showTimeWarning, setShowTimeWarning] = useState(false);
+  const [pendingTime, setPendingTime] = useState(null);
   
   const [formData, setFormData] = useState({
     service_id: '',
