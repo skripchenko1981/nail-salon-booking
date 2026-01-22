@@ -141,7 +141,7 @@ function AdminClients() {
                     {index + 1}
                   </div>
                   <div>
-                    <p className="font-medium">{client.name}</p>
+                    <p className="font-medium">{client.name} {client.surname || ''}</p>
                     <p className="text-xs text-gray-500">{client.phone}</p>
                   </div>
                 </div>
@@ -186,7 +186,7 @@ function AdminClients() {
                       <User className="h-5 w-5 text-[#D4A5A5]" />
                     </div>
                     <div>
-                      <h4 className="text-xl font-semibold">{client.name}</h4>
+                      <h4 className="text-xl font-semibold">{client.name} {client.surname || ''}</h4>
                       <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
                         <span className="flex items-center gap-1">
                           <Phone className="h-3 w-3" />
@@ -249,7 +249,7 @@ function AdminClients() {
             <div className="space-y-6">
               {/* Client Info */}
               <div className="bg-[#F3EBEB] p-4 rounded-lg space-y-2">
-                <h4 className="font-semibold text-lg">{selectedClient.name}</h4>
+                <h4 className="font-semibold text-lg">{selectedClient.name} {selectedClient.surname || ''}</h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
                     <p className="text-gray-600">Телефон:</p>
