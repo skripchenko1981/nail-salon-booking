@@ -647,6 +647,52 @@ function BookingPage() {
           </div>
         </div>
       )}
+
+      {/* Модальне вікно попередження про спеціальний час */}
+      {showTimeWarning && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-300">
+            <div className="text-center">
+              {/* Іконка попередження */}
+              <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Clock className="h-10 w-10 text-amber-600" />
+              </div>
+
+              {/* Заголовок */}
+              <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
+                Зверніть увагу
+              </h2>
+              
+              <p className="text-gray-700 mb-6 leading-relaxed">
+                Запис до 9:00 та на 18:00 і пізніше, можливий лише за попередньою домовленістю. В іншому випадку запис буде скасовано. Дякуємо за розуміння 🤍
+              </p>
+
+              <p className="text-sm text-gray-500 mb-6">
+                Обраний час: <span className="font-semibold text-[#D4A5A5]">{pendingTime}</span>
+              </p>
+
+              {/* Кнопки */}
+              <div className="space-y-3">
+                <Button
+                  onClick={confirmTimeSelection}
+                  className="w-full bg-[#D4A5A5] hover:bg-[#9E829C] text-white py-3 rounded-xl"
+                  data-testid="confirm-time-warning"
+                >
+                  Зрозуміло, продовжити
+                </Button>
+                
+                <button
+                  onClick={cancelTimeSelection}
+                  className="w-full text-sm text-gray-500 hover:text-gray-700 underline py-2"
+                  data-testid="cancel-time-warning"
+                >
+                  Обрати інший час
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
