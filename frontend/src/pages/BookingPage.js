@@ -120,9 +120,32 @@ function BookingPage() {
     setStep(4);
   };
 
+  // Функція для перевірки чи час потребує попередження
+  const isSpecialTime = (time) => {
+    const specialTimes = ['08:00', '08:30', '18:00', '18:30', '19:00', '19:30', '20:00'];
+    return specialTimes.includes(time);
+  };
+
   const handleTimeSelect = (time) => {
-    setFormData({ ...formData, time });
+    if (isSpecialTime(time)) {
+      setPendingTime(time);
+      setShowTimeWarning(true);
+    } else {
+      setFormData({ ...formData, time });
+      setStep(5);
+    }
+  };
+
+  const confirmTimeSelection = () => {
+    setFormData({ ...formData, time: pendingTime });
+    setShowTimeWarning(false);
+    setPendingTime(null);
     setStep(5);
+  };
+
+  const cancelTimeSelection = () => {
+    setShowTimeWarning(false);
+    setPendingTime(null);
   };
 
   const handlePhoneChange = (e) => {
