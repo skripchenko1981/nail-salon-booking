@@ -64,6 +64,7 @@ function AdminClients() {
 
   const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (client.surname && client.surname.toLowerCase().includes(searchTerm.toLowerCase())) ||
     client.phone.includes(searchTerm)
   );
 
