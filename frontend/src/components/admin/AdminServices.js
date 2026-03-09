@@ -272,6 +272,21 @@ function AdminServices() {
               </div>
             </div>
             <div>
+              <Label htmlFor="category">Категорія *</Label>
+              <select
+                id="category"
+                required
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                data-testid="service-category-select"
+              >
+                <option value="manicure">Манікюр</option>
+                <option value="pedicure">Педікюр</option>
+                <option value="podology">Подологія</option>
+              </select>
+            </div>
+            <div>
               <Label htmlFor="image_url">URL зображення</Label>
               <Input
                 id="image_url"
