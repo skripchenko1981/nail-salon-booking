@@ -1462,9 +1462,12 @@ async def trigger_reminders_manually(user: Dict = Depends(verify_admin)):
 @api_router.get("/admin/reminder-status")
 async def get_reminder_status(user: Dict = Depends(verify_admin)):
     """Отримати статус нагадувань для найближчих записів"""
-    now = datetime.now(timezone.utc)
+    # Український часовий пояс (UTC+2)
+    ukraine_offset = timedelta(hours=2)
+    now_utc = datetime.now(timezone.utc)
+    now_ukraine = now_utc + ukraine_offset
     
-    # Знайти записи на найближчі 24 години
+    # Знайти записи
     bookings = await db.bookings.find({
         "status": {"$in": ["confirmed", "pending"]}
     }, {"_id": 0}).to_list(100)
@@ -1479,12 +1482,15 @@ async def get_reminder_status(user: Dict = Depends(verify_admin)):
                 booking_date = datetime.strptime(booking_date_str, "%Y-%m-%d").date()
             
             booking_time_obj = datetime.strptime(booking['time'], "%H:%M").time()
-            booking_datetime = datetime.combine(booking_date, booking_time_obj).replace(tzinfo=timezone.utc)
+            booking_datetime_local = datetime.combine(booking_date, booking_time_obj)
+            
+            # Порівнюємо з поточним українським часом
+            now_local = now_ukraine.replace(tzinfo=None)
             
             # Тільки майбутні записи
-            if booking_datetime > now:
+            if booking_datetime_local > now_local:
                 reminder_hours = booking.get('reminder_hours', 2)
-                reminder_datetime = booking_datetime - timedelta(hours=reminder_hours)
+                reminder_datetime_local = booking_datetime_local - timedelta(hours=reminder_hours)
                 
                 # Перевірити підписку на Telegram
                 subscription = await db.telegram_subscriptions.find_one({
@@ -1499,7 +1505,7 @@ async def get_reminder_status(user: Dict = Depends(verify_admin)):
                     "time": booking['time'],
                     "reminder_hours": reminder_hours,
                     "reminder_sent": booking.get('reminder_sent', False),
-                    "reminder_time": reminder_datetime.isoformat(),
+                    "reminder_time_local": reminder_datetime_local.strftime("%Y-%m-%d %H:%M"),
                     "telegram_subscribed": bool(subscription),
                     "status": booking['status']
                 })
@@ -1511,7 +1517,8 @@ async def get_reminder_status(user: Dict = Depends(verify_admin)):
     
     return {
         "scheduler_running": scheduler.running,
-        "current_time_utc": now.isoformat(),
+        "current_time_utc": now_utc.isoformat(),
+        "current_time_ukraine": now_ukraine.strftime("%Y-%m-%d %H:%M"),
         "upcoming_bookings": upcoming[:20]
     }
 
