@@ -3,7 +3,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
-import { Plus, Edit, Trash2, Clock, DollarSign } from 'lucide-react';
+import { Plus, Edit, Trash2, Clock, DollarSign, FolderPlus } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import {
@@ -18,7 +18,7 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const CATEGORY_LABELS = {
+const DEFAULT_CATEGORIES = {
   manicure: 'Манікюр',
   pedicure: 'Педикюр',
   podology: 'Подологія'
@@ -26,8 +26,12 @@ const CATEGORY_LABELS = {
 
 function AdminServices() {
   const [services, setServices] = useState([]);
+  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+  const [customCategories, setCustomCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
   const [editingService, setEditingService] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -40,6 +44,7 @@ function AdminServices() {
 
   useEffect(() => {
     fetchServices();
+    fetchCategories();
   }, []);
 
   const fetchServices = async () => {
@@ -52,6 +57,59 @@ function AdminServices() {
       toast.error('Помилка завантаження послуг');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const masterData = JSON.parse(localStorage.getItem('master_data') || '{"id": "admin"}');
+      const masterId = masterData.id;
+      const token = localStorage.getItem('master_token') || localStorage.getItem('admin_token');
+      const response = await axios.get(`${API}/service-categories/${masterId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCategories(response.data.all_labels);
+      setCustomCategories(response.data.custom_categories || []);
+    } catch (error) {
+      console.error('Помилка завантаження категорій:', error);
+      setCategories(DEFAULT_CATEGORIES);
+    }
+  };
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) {
+      toast.error('Введіть назву категорії');
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('master_token') || localStorage.getItem('admin_token');
+      await axios.post(`${API}/service-categories`, 
+        { name: newCategoryName },
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      toast.success('Категорію створено');
+      setNewCategoryName('');
+      setCategoryDialogOpen(false);
+      fetchCategories();
+    } catch (error) {
+      toast.error('Помилка створення категорії');
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId) => {
+    if (!window.confirm('Видалити цю категорію? Послуги будуть переміщені в "Манікюр".')) return;
+    
+    try {
+      const token = localStorage.getItem('master_token') || localStorage.getItem('admin_token');
+      await axios.delete(`${API}/service-categories/${categoryId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Категорію видалено');
+      fetchCategories();
+      fetchServices();
+    } catch (error) {
+      toast.error('Помилка видалення категорії');
     }
   };
 
