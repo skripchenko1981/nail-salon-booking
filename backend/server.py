@@ -1732,7 +1732,13 @@ async def check_and_send_reminders():
     try:
         logger.info("Запуск перевірки нагадувань...")
         
-        now = datetime.now(timezone.utc)
+        # Український часовий пояс (UTC+2 зимою, UTC+3 влітку)
+        # Використовуємо фіксований UTC+2 для простоти
+        ukraine_offset = timedelta(hours=2)
+        now_utc = datetime.now(timezone.utc)
+        now_ukraine = now_utc + ukraine_offset
+        
+        logger.info(f"Поточний час UTC: {now_utc.strftime('%Y-%m-%d %H:%M')}, Україна: {now_ukraine.strftime('%Y-%m-%d %H:%M')}")
         
         # Знайти всі підтверджені записи, для яких ще не відправлено нагадування
         bookings = await db.bookings.find({
@@ -1744,7 +1750,7 @@ async def check_and_send_reminders():
         
         for booking in bookings:
             try:
-                # Розрахувати час запису
+                # Розрахувати час запису (час зберігається в локальному українському часі)
                 booking_date_str = booking['date']
                 if 'T' in booking_date_str:
                     booking_date = datetime.fromisoformat(booking_date_str.replace('Z', '+00:00')).date()
@@ -1752,16 +1758,19 @@ async def check_and_send_reminders():
                     booking_date = datetime.strptime(booking_date_str, "%Y-%m-%d").date()
                     
                 booking_time_obj = datetime.strptime(booking['time'], "%H:%M").time()
-                booking_datetime = datetime.combine(booking_date, booking_time_obj)
-                booking_datetime = booking_datetime.replace(tzinfo=timezone.utc)
+                # Час запису в локальному українському часі (без timezone)
+                booking_datetime_local = datetime.combine(booking_date, booking_time_obj)
                 
                 # Розрахувати час відправки нагадування (за замовчуванням 2 години до)
                 reminder_hours = booking.get('reminder_hours', 2)
-                reminder_datetime = booking_datetime - timedelta(hours=reminder_hours)
+                reminder_datetime_local = booking_datetime_local - timedelta(hours=reminder_hours)
+                
+                # Порівнюємо з поточним українським часом (без timezone для простоти)
+                now_local = now_ukraine.replace(tzinfo=None)
                 
                 # Відправляємо якщо час нагадування <= поточного часу < час запису
-                if reminder_datetime <= now < booking_datetime:
-                    logger.info(f"Час відправки нагадування для запису {booking['id']}")
+                if reminder_datetime_local <= now_local < booking_datetime_local:
+                    logger.info(f"Час відправки нагадування для запису {booking['id']} ({booking['client_name']} на {booking['date']} {booking['time']})")
                     
                     sent_telegram = await telegram_bot.send_booking_reminder(
                         booking['id'],
