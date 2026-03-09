@@ -100,8 +100,17 @@ function BookingPage() {
 
   const fetchMasterServices = async (masterId) => {
     try {
-      const response = await axios.get(`${API}/masters/${masterId}/services`);
-      setServices(response.data);
+      const response = await axios.get(`${API}/services/grouped?master_id=${masterId}`);
+      setGroupedServices(response.data.services);
+      setCategoryLabels(response.data.categories);
+      // Flatten for backward compatibility
+      const allServices = [
+        ...(response.data.services.manicure || []),
+        ...(response.data.services.pedicure || []),
+        ...(response.data.services.podology || [])
+      ];
+      setServices(allServices);
+      setActiveCategory('manicure');
     } catch (error) {
       toast.error('Помилка завантаження послуг майстра');
     }
