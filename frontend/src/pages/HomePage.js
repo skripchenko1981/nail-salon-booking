@@ -247,33 +247,58 @@ function HomePage() {
               </p>
             )}
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((service, index) => (
-              <div 
-                key={service.id} 
-                className="group bg-[#FDFCFB] rounded-2xl overflow-hidden border border-rose-200/50 hover:shadow-[0_20px_60px_rgb(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-2"
-                data-testid={`service-card-${index}`}
+          
+          {/* Category Tabs */}
+          <div className="flex justify-center gap-3 mb-12 flex-wrap">
+            {Object.entries(categoryLabels).map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => setActiveCategory(key)}
+                className={`px-8 py-3 rounded-full font-medium transition-all ${
+                  activeCategory === key
+                    ? 'bg-[#D4A5A5] text-white shadow-lg'
+                    : 'bg-white border-2 border-rose-200/50 text-gray-700 hover:border-[#D4A5A5]'
+                }`}
+                data-testid={`home-category-tab-${key}`}
               >
-                <div className="aspect-[4/3] overflow-hidden">
-                  <img 
-                    src={service.image_url || serviceImages[index % serviceImages.length]} 
-                    alt={service.name} 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                </div>
-                <div className="p-6 space-y-3">
-                  <h4 className="text-2xl font-semibold" style={{ fontFamily: 'Playfair Display, serif' }}>{service.name}</h4>
-                  <p className="text-gray-600 text-sm leading-relaxed">{service.description}</p>
-                  <div className="flex justify-between items-center pt-4 border-t border-rose-200/50">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <Clock className="h-4 w-4" />
-                      <span>{service.duration_minutes} хв</span>
+                {label}
+              </button>
+            ))}
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {(groupedServices[activeCategory] || []).length === 0 ? (
+              <div className="col-span-full text-center py-12 text-gray-500">
+                <p>Немає послуг у цій категорії</p>
+              </div>
+            ) : (
+              (groupedServices[activeCategory] || []).map((service, index) => (
+                <div 
+                  key={service.id} 
+                  className="group bg-[#FDFCFB] rounded-2xl overflow-hidden border border-rose-200/50 hover:shadow-[0_20px_60px_rgb(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-2"
+                  data-testid={`service-card-${index}`}
+                >
+                  <div className="aspect-[4/3] overflow-hidden">
+                    <img 
+                      src={service.image_url || serviceImages[index % serviceImages.length]} 
+                      alt={service.name} 
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+                  </div>
+                  <div className="p-6 space-y-3">
+                    <h4 className="text-2xl font-semibold" style={{ fontFamily: 'Playfair Display, serif' }}>{service.name}</h4>
+                    <p className="text-gray-600 text-sm leading-relaxed">{service.description}</p>
+                    <div className="flex justify-between items-center pt-4 border-t border-rose-200/50">
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <Clock className="h-4 w-4" />
+                        <span>{service.duration_minutes} хв</span>
+                      </div>
+                      <p className="text-2xl font-bold text-[#D4A5A5]" style={{ fontFamily: 'Playfair Display, serif' }}>{service.price} ₴</p>
                     </div>
-                    <p className="text-2xl font-bold text-[#D4A5A5]" style={{ fontFamily: 'Playfair Display, serif' }}>{service.price} ₴</p>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
           <div className="text-center mt-12">
             <Button 
