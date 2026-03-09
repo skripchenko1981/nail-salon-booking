@@ -177,7 +177,7 @@ class VacationUpdate(BaseModel):
 SERVICE_CATEGORIES = ["manicure", "pedicure", "podology"]
 SERVICE_CATEGORY_LABELS = {
     "manicure": "Манікюр",
-    "pedicure": "Педікюр", 
+    "pedicure": "Педикюр", 
     "podology": "Подологія"
 }
 

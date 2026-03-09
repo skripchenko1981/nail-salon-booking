@@ -20,7 +20,7 @@ const API = `${BACKEND_URL}/api`;
 
 const CATEGORY_LABELS = {
   manicure: 'Манікюр',
-  pedicure: 'Педікюр',
+  pedicure: 'Педикюр',
   podology: 'Подологія'
 };
 
@@ -282,7 +282,7 @@ function AdminServices() {
                 data-testid="service-category-select"
               >
                 <option value="manicure">Манікюр</option>
-                <option value="pedicure">Педікюр</option>
+                <option value="pedicure">Педикюр</option>
                 <option value="podology">Подологія</option>
               </select>
             </div>

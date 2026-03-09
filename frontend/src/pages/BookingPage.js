@@ -44,7 +44,7 @@ function BookingPage() {
   const [groupedServices, setGroupedServices] = useState({});
   const [categoryLabels, setCategoryLabels] = useState({
     manicure: 'Манікюр',
-    pedicure: 'Педікюр',
+    pedicure: 'Педикюр',
     podology: 'Подологія'
   });
   const [activeCategory, setActiveCategory] = useState('manicure');
