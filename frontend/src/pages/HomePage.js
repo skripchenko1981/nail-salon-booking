@@ -12,6 +12,13 @@ function HomePage() {
   const navigate = useNavigate();
   const { themeColors } = useTheme();
   const [services, setServices] = useState([]);
+  const [groupedServices, setGroupedServices] = useState({});
+  const [categoryLabels, setCategoryLabels] = useState({
+    manicure: 'Манікюр',
+    pedicure: 'Педікюр',
+    podology: 'Подологія'
+  });
+  const [activeCategory, setActiveCategory] = useState('manicure');
   const [promoBlocks, setPromoBlocks] = useState([]);
   const [settings, setSettings] = useState({
     site_name: 'Nail Studio',
@@ -41,8 +48,16 @@ function HomePage() {
 
   const fetchServices = async () => {
     try {
-      const response = await axios.get(`${API}/services`);
-      setServices(response.data);
+      const response = await axios.get(`${API}/services/grouped`);
+      setGroupedServices(response.data.services);
+      setCategoryLabels(response.data.categories);
+      // Flatten for backward compatibility
+      const allServices = [
+        ...(response.data.services.manicure || []),
+        ...(response.data.services.pedicure || []),
+        ...(response.data.services.podology || [])
+      ];
+      setServices(allServices);
     } catch (error) {
       console.error('Помилка завантаження послуг:', error);
     }
