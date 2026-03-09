@@ -540,9 +540,87 @@ async def update_client_stats(client_id: str, booking_price: int, status: str):
 async def get_service_categories():
     """Отримати список категорій послуг"""
     return {
-        "categories": SERVICE_CATEGORIES,
-        "labels": SERVICE_CATEGORY_LABELS
+        "categories": list(DEFAULT_CATEGORIES.keys()),
+        "labels": DEFAULT_CATEGORIES
     }
+
+@api_router.get("/service-categories/{master_id}")
+async def get_master_categories(master_id: str):
+    """Отримати категорії конкретного майстра"""
+    # Отримати кастомні категорії майстра
+    custom_categories = await db.service_categories.find(
+        {"master_id": master_id}, {"_id": 0}
+    ).sort("position", 1).to_list(100)
+    
+    # Створити словник з дефолтних + кастомних
+    labels = dict(DEFAULT_CATEGORIES)
+    for cat in custom_categories:
+        labels[cat["key"]] = cat["name"]
+    
+    return {
+        "default_categories": DEFAULT_CATEGORIES,
+        "custom_categories": custom_categories,
+        "all_labels": labels
+    }
+
+@api_router.post("/service-categories")
+async def create_category(category: ServiceCategoryCreate, user: Dict = Depends(verify_master_or_admin)):
+    """Створити нову категорію послуг"""
+    master_id = user["user_id"]
+    
+    # Генерувати ключ з назви (транслітерація)
+    import re
+    key = re.sub(r'[^a-zA-Z0-9]', '_', category.name.lower())
+    key = f"custom_{key}_{str(uuid.uuid4())[:8]}"
+    
+    # Визначити позицію
+    existing_count = await db.service_categories.count_documents({"master_id": master_id})
+    
+    category_obj = ServiceCategory(
+        master_id=master_id,
+        key=key,
+        name=category.name,
+        position=existing_count + len(DEFAULT_CATEGORIES)
+    )
+    
+    await db.service_categories.insert_one(category_obj.model_dump())
+    return category_obj
+
+@api_router.put("/service-categories/{category_id}")
+async def update_category(category_id: str, category: ServiceCategoryUpdate, user: Dict = Depends(verify_master_or_admin)):
+    """Оновити категорію"""
+    existing = await db.service_categories.find_one({"id": category_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    if user["role"] == "master" and existing["master_id"] != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Can only update your own categories")
+    
+    update_data = {k: v for k, v in category.model_dump().items() if v is not None}
+    if update_data:
+        await db.service_categories.update_one({"id": category_id}, {"$set": update_data})
+    
+    updated = await db.service_categories.find_one({"id": category_id}, {"_id": 0})
+    return updated
+
+@api_router.delete("/service-categories/{category_id}")
+async def delete_category(category_id: str, user: Dict = Depends(verify_master_or_admin)):
+    """Видалити категорію"""
+    existing = await db.service_categories.find_one({"id": category_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    if user["role"] == "master" and existing["master_id"] != user["user_id"]:
+        raise HTTPException(status_code=403, detail="Can only delete your own categories")
+    
+    # Перенести послуги цієї категорії в "manicure"
+    await db.services.update_many(
+        {"category": existing["key"]},
+        {"$set": {"category": "manicure"}}
+    )
+    
+    await db.service_categories.delete_one({"id": category_id})
+    return {"success": True, "message": "Category deleted"}
 
 @api_router.get("/services", response_model=List[Service])
 async def get_services(master_id: Optional[str] = None):
@@ -561,12 +639,20 @@ async def get_services_grouped(master_id: Optional[str] = None):
         query["master_id"] = master_id
     services = await db.services.find(query, {"_id": 0}).to_list(100)
     
+    # Отримати кастомні категорії
+    custom_categories = []
+    if master_id:
+        custom_categories = await db.service_categories.find(
+            {"master_id": master_id}, {"_id": 0}
+        ).sort("position", 1).to_list(100)
+    
+    # Створити labels
+    labels = dict(DEFAULT_CATEGORIES)
+    for cat in custom_categories:
+        labels[cat["key"]] = cat["name"]
+    
     # Групувати по категоріях
-    grouped = {
-        "manicure": [],
-        "pedicure": [],
-        "podology": []
-    }
+    grouped = {key: [] for key in labels.keys()}
     
     for service in services:
         category = service.get("category", "manicure")
@@ -576,7 +662,7 @@ async def get_services_grouped(master_id: Optional[str] = None):
             grouped["manicure"].append(service)  # fallback
     
     return {
-        "categories": SERVICE_CATEGORY_LABELS,
+        "categories": labels,
         "services": grouped
     }
 
