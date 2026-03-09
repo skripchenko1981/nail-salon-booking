@@ -201,15 +201,49 @@ function AdminServices() {
           </h1>
           <p className="text-gray-600 mt-2">Керування послугами та цінами</p>
         </div>
-        <Button 
-          onClick={() => handleOpenDialog()} 
-          className="bg-[#D4A5A5] hover:bg-[#9E829C] text-white"
-          data-testid="add-service-button"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Додати послугу
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => setCategoryDialogOpen(true)} 
+            variant="outline"
+            className="border-[#D4A5A5] text-[#D4A5A5] hover:bg-rose-50"
+            data-testid="add-category-button"
+          >
+            <FolderPlus className="mr-2 h-4 w-4" />
+            Нова категорія
+          </Button>
+          <Button 
+            onClick={() => handleOpenDialog()} 
+            className="bg-[#D4A5A5] hover:bg-[#9E829C] text-white"
+            data-testid="add-service-button"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Додати послугу
+          </Button>
+        </div>
       </div>
+
+      {/* Custom Categories List */}
+      {customCategories.length > 0 && (
+        <div className="bg-rose-50/50 rounded-xl p-4">
+          <p className="text-sm font-medium text-gray-700 mb-2">Ваші категорії:</p>
+          <div className="flex flex-wrap gap-2">
+            {customCategories.map(cat => (
+              <span 
+                key={cat.id} 
+                className="inline-flex items-center gap-2 px-3 py-1 bg-white rounded-full border border-rose-200 text-sm"
+              >
+                {cat.name}
+                <button 
+                  onClick={() => handleDeleteCategory(cat.id)}
+                  className="text-red-400 hover:text-red-600"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {services.map((service) => (
