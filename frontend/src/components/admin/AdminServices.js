@@ -18,6 +18,12 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+const CATEGORY_LABELS = {
+  manicure: 'Манікюр',
+  pedicure: 'Педікюр',
+  podology: 'Подологія'
+};
+
 function AdminServices() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +34,7 @@ function AdminServices() {
     description: '',
     duration_minutes: 60,
     price: 0,
+    category: 'manicure',
     image_url: ''
   });
 
