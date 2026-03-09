@@ -267,7 +267,7 @@ function AdminServices() {
                   {service.name}
                 </h3>
                 <span className="text-xs px-2 py-1 rounded-full bg-rose-100 text-rose-700">
-                  {CATEGORY_LABELS[service.category] || 'Манікюр'}
+                  {categories[service.category] || 'Манікюр'}
                 </span>
               </div>
               <p className="text-sm text-gray-600 line-clamp-2">{service.description}</p>
