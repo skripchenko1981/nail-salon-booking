@@ -212,12 +212,24 @@ class TelegramBot:
         return await self.send_message(telegram_id, text, booking_id=booking_id, notification_type="cancelled")
     
     async def send_booking_reminder(self, booking_id: str, client_name: str, service_name: str, 
-                                    date: str, time: str, hours_before: int = 24) -> bool:
+                                    date: str, time: str, hours_before: int = 2) -> bool:
         """Нагадування про запис"""
         telegram_id = await self.get_client_telegram_id(booking_id)
         if not telegram_id:
             logger.info(f"Клієнт для бронювання {booking_id} не підписаний на Telegram сповіщення")
             return False
+        
+        # Формуємо текст про час до візиту
+        if hours_before == 1:
+            time_text = "через 1 годину"
+        elif hours_before in [2, 3, 4]:
+            time_text = f"через {hours_before} години"
+        elif hours_before == 24:
+            time_text = "завтра"
+        elif hours_before == 48:
+            time_text = "післязавтра"
+        else:
+            time_text = f"через {hours_before} годин"
         
         text = f"""⏰ <b>Нагадування про запис</b>
 
@@ -227,7 +239,7 @@ class TelegramBot:
 📅 Дата: {date}
 🕐 Час: {time}
 
-⏱ До візиту залишилось {hours_before} год.
+📍 Ваш візит {time_text}. Чекаємо на вас!
 
 📍 Чекаємо на вас!"""
         
