@@ -170,9 +170,14 @@ function AdminServices() {
               </div>
             )}
             <div className="p-6 space-y-3">
-              <h3 className="text-xl font-bold" style={{ fontFamily: 'Playfair Display, serif' }}>
-                {service.name}
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold" style={{ fontFamily: 'Playfair Display, serif' }}>
+                  {service.name}
+                </h3>
+                <span className="text-xs px-2 py-1 rounded-full bg-rose-100 text-rose-700">
+                  {CATEGORY_LABELS[service.category] || 'Манікюр'}
+                </span>
+              </div>
               <p className="text-sm text-gray-600 line-clamp-2">{service.description}</p>
               <div className="flex items-center gap-4 text-sm text-gray-500 pt-2">
                 <span className="flex items-center gap-1">
