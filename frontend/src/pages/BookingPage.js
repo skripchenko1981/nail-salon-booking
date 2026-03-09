@@ -324,31 +324,57 @@ function BookingPage() {
                 <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>Оберіть послугу</h2>
                 <p className="text-gray-600">Що вас цікавить?</p>
               </div>
-              <div className="grid gap-4">
-                {services.map((service) => (
+              
+              {/* Category Tabs */}
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {Object.entries(categoryLabels).map(([key, label]) => (
                   <button
-                    key={service.id}
-                    onClick={() => handleServiceSelect(service)}
-                    className="text-left p-6 border-2 border-rose-200/50 rounded-2xl hover:border-[#D4A5A5] hover:shadow-lg transition-all active:scale-98 group"
-                    data-testid={`service-option-${service.id}`}
+                    key={key}
+                    onClick={() => setActiveCategory(key)}
+                    className={`px-6 py-3 rounded-full font-medium transition-all whitespace-nowrap ${
+                      activeCategory === key
+                        ? 'bg-[#D4A5A5] text-white shadow-lg'
+                        : 'bg-white border-2 border-rose-200/50 text-gray-700 hover:border-[#D4A5A5]'
+                    }`}
+                    data-testid={`category-tab-${key}`}
                   >
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-2 flex-1">
-                        <h3 className="text-xl font-semibold group-hover:text-[#D4A5A5] transition-colors">{service.name}</h3>
-                        <p className="text-sm text-gray-600">{service.description}</p>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            {service.duration_minutes} хв
-                          </span>
-                          <span className="text-lg font-bold text-[#D4A5A5]" style={{ fontFamily: 'Playfair Display, serif' }}>
-                            {service.price} ₴
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                    {label}
                   </button>
                 ))}
+              </div>
+              
+              {/* Services in selected category */}
+              <div className="grid gap-4">
+                {(groupedServices[activeCategory] || []).length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>Немає послуг у цій категорії</p>
+                  </div>
+                ) : (
+                  (groupedServices[activeCategory] || []).map((service) => (
+                    <button
+                      key={service.id}
+                      onClick={() => handleServiceSelect(service)}
+                      className="text-left p-6 border-2 border-rose-200/50 rounded-2xl hover:border-[#D4A5A5] hover:shadow-lg transition-all active:scale-98 group"
+                      data-testid={`service-option-${service.id}`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-2 flex-1">
+                          <h3 className="text-xl font-semibold group-hover:text-[#D4A5A5] transition-colors">{service.name}</h3>
+                          <p className="text-sm text-gray-600">{service.description}</p>
+                          <div className="flex items-center gap-4 text-sm text-gray-500">
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-4 w-4" />
+                              {service.duration_minutes} хв
+                            </span>
+                            <span className="text-lg font-bold text-[#D4A5A5]" style={{ fontFamily: 'Playfair Display, serif' }}>
+                              {service.price} ₴
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  ))
+                )}
               </div>
             </div>
           )}
