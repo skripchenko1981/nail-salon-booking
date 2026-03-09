@@ -373,9 +373,9 @@ function AdminServices() {
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 data-testid="service-category-select"
               >
-                <option value="manicure">Манікюр</option>
-                <option value="pedicure">Педикюр</option>
-                <option value="podology">Подологія</option>
+                {Object.entries(categories).map(([key, label]) => (
+                  <option key={key} value={key}>{label}</option>
+                ))}
               </select>
             </div>
             <div>
@@ -397,6 +397,42 @@ function AdminServices() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Category Dialog */}
+      <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Створити нову категорію</DialogTitle>
+            <DialogDescription>
+              Додайте свою категорію послуг
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="categoryName">Назва категорії *</Label>
+              <Input
+                id="categoryName"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="Наприклад: Нарощування"
+                data-testid="category-name-input"
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setCategoryDialogOpen(false)}>
+                Скасувати
+              </Button>
+              <Button 
+                onClick={handleCreateCategory} 
+                className="bg-[#D4A5A5] hover:bg-[#9E829C] text-white"
+                data-testid="category-save-button"
+              >
+                Створити
+              </Button>
+            </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
