@@ -62,11 +62,12 @@ function AdminServices() {
     if (service) {
       setEditingService(service);
       setFormData({
-        master_id: masterId,  // Завжди використовуємо поточного майстра
+        master_id: masterId,
         name: service.name,
         description: service.description,
         duration_minutes: service.duration_minutes,
         price: service.price,
+        category: service.category || 'manicure',
         image_url: service.image_url || ''
       });
     } else {
@@ -77,6 +78,7 @@ function AdminServices() {
         description: '',
         duration_minutes: 60,
         price: 0,
+        category: 'manicure',
         image_url: ''
       });
     }
