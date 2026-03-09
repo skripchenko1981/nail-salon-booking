@@ -521,6 +521,14 @@ async def update_client_stats(client_id: str, booking_price: int, status: str):
 
 # ============ SERVICE ROUTES ============
 
+@api_router.get("/service-categories")
+async def get_service_categories():
+    """Отримати список категорій послуг"""
+    return {
+        "categories": SERVICE_CATEGORIES,
+        "labels": SERVICE_CATEGORY_LABELS
+    }
+
 @api_router.get("/services", response_model=List[Service])
 async def get_services(master_id: Optional[str] = None):
     """Отримати послуги (опціонально по майстру)"""
@@ -529,6 +537,33 @@ async def get_services(master_id: Optional[str] = None):
         query["master_id"] = master_id
     services = await db.services.find(query, {"_id": 0}).to_list(100)
     return services
+
+@api_router.get("/services/grouped")
+async def get_services_grouped(master_id: Optional[str] = None):
+    """Отримати послуги згруповані по категоріях"""
+    query = {"active": True}
+    if master_id:
+        query["master_id"] = master_id
+    services = await db.services.find(query, {"_id": 0}).to_list(100)
+    
+    # Групувати по категоріях
+    grouped = {
+        "manicure": [],
+        "pedicure": [],
+        "podology": []
+    }
+    
+    for service in services:
+        category = service.get("category", "manicure")
+        if category in grouped:
+            grouped[category].append(service)
+        else:
+            grouped["manicure"].append(service)  # fallback
+    
+    return {
+        "categories": SERVICE_CATEGORY_LABELS,
+        "services": grouped
+    }
 
 @api_router.get("/masters/{master_id}/services", response_model=List[Service])
 async def get_master_services(master_id: str):
