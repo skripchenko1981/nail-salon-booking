@@ -41,6 +41,14 @@ function BookingPage() {
     notes: ''
   });
 
+  const [groupedServices, setGroupedServices] = useState({});
+  const [categoryLabels, setCategoryLabels] = useState({
+    manicure: 'Манікюр',
+    pedicure: 'Педікюр',
+    podology: 'Подологія'
+  });
+  const [activeCategory, setActiveCategory] = useState('manicure');
+
   useEffect(() => {
     fetchServices();
     fetchMasters();
@@ -54,8 +62,16 @@ function BookingPage() {
 
   const fetchServices = async () => {
     try {
-      const response = await axios.get(`${API}/services`);
-      setServices(response.data);
+      const response = await axios.get(`${API}/services/grouped`);
+      setGroupedServices(response.data.services);
+      setCategoryLabels(response.data.categories);
+      // Flatten for backward compatibility
+      const allServices = [
+        ...(response.data.services.manicure || []),
+        ...(response.data.services.pedicure || []),
+        ...(response.data.services.podology || [])
+      ];
+      setServices(allServices);
     } catch (error) {
       toast.error('Помилка завантаження послуг');
     }
