@@ -239,9 +239,7 @@ class TelegramBot:
 📅 Дата: {date}
 🕐 Час: {time}
 
-📍 Ваш візит {time_text}. Чекаємо на вас!
-
-📍 Чекаємо на вас!"""
+📍 Ваш візит {time_text}. Чекаємо на вас!"""
         
         return await self.send_message(telegram_id, text, booking_id=booking_id, notification_type="reminder")
     
