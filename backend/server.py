@@ -173,13 +173,28 @@ class VacationUpdate(BaseModel):
 
 # ============ SERVICE MODELS ============
 
-# Категорії послуг
-SERVICE_CATEGORIES = ["manicure", "pedicure", "podology"]
-SERVICE_CATEGORY_LABELS = {
+# Дефолтні категорії послуг
+DEFAULT_CATEGORIES = {
     "manicure": "Манікюр",
     "pedicure": "Педикюр", 
     "podology": "Подологія"
 }
+
+class ServiceCategory(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    master_id: str
+    key: str  # Унікальний ключ (латиницею, без пробілів)
+    name: str  # Назва українською
+    position: int = 0
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class ServiceCategoryCreate(BaseModel):
+    name: str
+
+class ServiceCategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    position: Optional[int] = None
 
 class Service(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -189,7 +204,7 @@ class Service(BaseModel):
     description: str
     duration_minutes: int
     price: int
-    category: str = "manicure"  # manicure, pedicure, podology
+    category: str = "manicure"  # ключ категорії
     image_url: Optional[str] = None
     active: bool = True
 
