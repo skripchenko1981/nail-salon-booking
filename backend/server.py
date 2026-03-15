@@ -773,13 +773,26 @@ async def create_booking(booking: BookingCreate, background_tasks: BackgroundTas
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
     
-    existing_booking = await db.bookings.find_one({
+    # Перевірка на накладання записів з урахуванням тривалості
+    new_booking_start = datetime.strptime(booking.time, "%H:%M")
+    new_booking_end = new_booking_start + timedelta(minutes=service["duration_minutes"])
+    
+    existing_bookings = await db.bookings.find({
+        "master_id": booking.master_id,
         "date": booking.date,
-        "time": booking.time,
         "status": {"$in": ["pending", "confirmed"]}
-    })
-    if existing_booking:
-        raise HTTPException(status_code=400, detail="Time slot already booked")
+    }, {"_id": 0}).to_list(100)
+    
+    for existing in existing_bookings:
+        existing_start = datetime.strptime(existing["time"], "%H:%M")
+        existing_end = existing_start + timedelta(minutes=existing.get("duration_minutes", 60))
+        
+        # Перевірка перетину часових інтервалів
+        if not (new_booking_end <= existing_start or new_booking_start >= existing_end):
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Цей час перетинається з існуючим записом ({existing['time']} - {existing_end.strftime('%H:%M')})"
+            )
     
     # Створити або отримати клієнта
     client_id = await get_or_create_client(
