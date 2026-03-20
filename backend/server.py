@@ -1707,9 +1707,30 @@ async def update_site_settings(settings: SiteSettings, _: str = Depends(verify_t
 # ============ GALLERY ============
 
 @api_router.get("/gallery", response_model=List[GalleryImage])
-async def get_gallery_images():
-    """Отримати всі активні фото з галереї (публічний доступ)"""
-    images = await db.gallery.find({"is_active": True}, {"_id": 0}).sort("created_at", -1).to_list(100)
+async def get_gallery_images(master_id: Optional[str] = None):
+    """Отримати активні фото з галереї (публічний доступ)"""
+    query = {"is_active": True}
+    
+    # Якщо вказано master_id - показати тільки фото цього майстра
+    if master_id:
+        query["master_id"] = master_id
+    
+    images = await db.gallery.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    # Генерувати presigned URLs для кожного зображення
+    for image in images:
+        if image.get('file_key'):
+            image['image_url'] = generate_presigned_url(image['file_key'], expiration=3600)
+    
+    return images
+
+@api_router.get("/masters/{master_id}/gallery", response_model=List[GalleryImage])
+async def get_master_gallery(master_id: str):
+    """Отримати портфоліо конкретного майстра (публічний доступ)"""
+    images = await db.gallery.find({
+        "master_id": master_id,
+        "is_active": True
+    }, {"_id": 0}).sort("created_at", -1).to_list(100)
     
     # Генерувати presigned URLs для кожного зображення
     for image in images:
@@ -1720,8 +1741,14 @@ async def get_gallery_images():
 
 @api_router.get("/admin/gallery", response_model=List[GalleryImage])
 async def get_all_gallery_images(user: Dict = Depends(verify_master_or_admin)):
-    """Отримати всі фото з галереї для адміна/майстра"""
-    images = await db.gallery.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    """Отримати фото з галереї для адміна/майстра"""
+    # Майстер бачить тільки свої фото, адмін - всі
+    if user["role"] == "master":
+        query = {"master_id": user["user_id"]}
+    else:
+        query = {}
+    
+    images = await db.gallery.find(query, {"_id": 0}).sort("created_at", -1).to_list(200)
     
     # Генерувати presigned URLs для кожного зображення
     for image in images:
