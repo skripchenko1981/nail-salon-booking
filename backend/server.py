@@ -1820,6 +1820,10 @@ async def delete_gallery_image(image_id: str, user: Dict = Depends(verify_master
     if not image:
         raise HTTPException(status_code=404, detail="Image not found")
     
+    # Майстер може видаляти тільки свої фото
+    if user["role"] == "master" and image.get("master_id") != user["user_id"]:
+        raise HTTPException(status_code=403, detail="You can only delete your own images")
+    
     # Видалити з S3
     if image.get('file_key'):
         delete_file_from_s3(image['file_key'])
@@ -1834,6 +1838,15 @@ async def delete_gallery_image(image_id: str, user: Dict = Depends(verify_master
 @api_router.put("/admin/gallery/{image_id}")
 async def update_gallery_image(image_id: str, is_active: bool, user: Dict = Depends(verify_master_or_admin)):
     """Активувати/деактивувати фото"""
+    # Знайти зображення
+    image = await db.gallery.find_one({"id": image_id}, {"_id": 0})
+    if not image:
+        raise HTTPException(status_code=404, detail="Image not found")
+    
+    # Майстер може редагувати тільки свої фото
+    if user["role"] == "master" and image.get("master_id") != user["user_id"]:
+        raise HTTPException(status_code=403, detail="You can only edit your own images")
+    
     result = await db.gallery.update_one(
         {"id": image_id},
         {"$set": {"is_active": is_active}}
