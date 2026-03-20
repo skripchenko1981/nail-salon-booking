@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, User } from 'lucide-react';
 import axios from 'axios';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -8,21 +8,49 @@ const API = `${BACKEND_URL}/api`;
 
 function PortfolioPage() {
   const navigate = useNavigate();
+  const [masters, setMasters] = useState([]);
+  const [selectedMaster, setSelectedMaster] = useState(null);
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    fetchImages();
+    fetchMasters();
   }, []);
 
-  const fetchImages = async () => {
+  useEffect(() => {
+    if (selectedMaster) {
+      fetchMasterGallery(selectedMaster.id);
+    }
+  }, [selectedMaster]);
+
+  const fetchMasters = async () => {
     try {
-      const response = await axios.get(`${API}/gallery`);
+      const response = await axios.get(`${API}/masters`);
+      const activeMasters = response.data.filter(m => m.is_active);
+      setMasters(activeMasters);
+      
+      // Вибрати першого майстра за замовчуванням
+      if (activeMasters.length > 0) {
+        setSelectedMaster(activeMasters[0]);
+      } else {
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Помилка завантаження майстрів:', error);
+      setLoading(false);
+    }
+  };
+
+  const fetchMasterGallery = async (masterId) => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API}/masters/${masterId}/gallery`);
       setImages(response.data);
     } catch (error) {
       console.error('Помилка завантаження галереї:', error);
+      setImages([]);
     } finally {
       setLoading(false);
     }
@@ -44,17 +72,6 @@ function PortfolioPage() {
   const prevImage = () => {
     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-[#FDFCFB] to-[#F3EBEB] flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4A5A5] mx-auto"></div>
-          <p className="mt-4 text-gray-600">Завантаження...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#FDFCFB] to-[#F3EBEB]">
@@ -78,23 +95,90 @@ function PortfolioPage() {
       </nav>
 
       {/* Hero */}
-      <div className="pt-24 pb-12 px-6">
+      <div className="pt-24 pb-8 px-6">
         <div className="container mx-auto max-w-7xl text-center">
           <h2 className="text-5xl md:text-6xl font-bold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
-            Наші роботи
+            Портфоліо
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Портфоліо наших майстрів - ідеї та натхнення для вашого наступного манікюру
+            Оберіть майстра щоб переглянути його роботи
           </p>
         </div>
       </div>
 
+      {/* Masters Tabs */}
+      <div className="container mx-auto max-w-7xl px-6 pb-8">
+        <div className="flex flex-wrap justify-center gap-3">
+          {masters.map((master) => (
+            <button
+              key={master.id}
+              onClick={() => setSelectedMaster(master)}
+              className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all ${
+                selectedMaster?.id === master.id
+                  ? 'bg-[#D4A5A5] text-white shadow-lg'
+                  : 'bg-white border-2 border-rose-200/50 text-gray-700 hover:border-[#D4A5A5]'
+              }`}
+              data-testid={`master-tab-${master.id}`}
+            >
+              {master.photo_url ? (
+                <img 
+                  src={master.photo_url} 
+                  alt={master.name}
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center">
+                  <User className="w-4 h-4 text-[#D4A5A5]" />
+                </div>
+              )}
+              <span>{master.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Selected Master Info */}
+      {selectedMaster && (
+        <div className="container mx-auto max-w-7xl px-6 pb-8">
+          <div className="bg-white rounded-2xl p-6 border border-rose-200/50 shadow-sm">
+            <div className="flex items-center gap-4">
+              {selectedMaster.photo_url ? (
+                <img 
+                  src={selectedMaster.photo_url} 
+                  alt={selectedMaster.name}
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center">
+                  <User className="w-8 h-8 text-[#D4A5A5]" />
+                </div>
+              )}
+              <div>
+                <h3 className="text-2xl font-bold" style={{ fontFamily: 'Playfair Display, serif' }}>
+                  {selectedMaster.name}
+                </h3>
+                {selectedMaster.bio && (
+                  <p className="text-gray-600 mt-1">{selectedMaster.bio}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Gallery Grid */}
       <div className="container mx-auto max-w-7xl px-6 pb-20">
-        {images.length === 0 ? (
+        {loading ? (
           <div className="text-center py-20">
-            <p className="text-gray-600 text-lg">Галерея ще порожня</p>
-            <p className="text-gray-400 mt-2">Скоро тут з'являться наші роботи</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4A5A5] mx-auto"></div>
+            <p className="mt-4 text-gray-600">Завантаження...</p>
+          </div>
+        ) : images.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-gray-600 text-lg">
+              {selectedMaster ? `У майстра ${selectedMaster.name} ще немає фото в портфоліо` : 'Оберіть майстра'}
+            </p>
+            <p className="text-gray-400 mt-2">Скоро тут з'являться роботи</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
