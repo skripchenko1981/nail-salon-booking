@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { Calendar, Clock, Sparkles, Phone, Mail, MapPin, Instagram, Facebook } from 'lucide-react';
+import { Calendar, Clock, Sparkles, Phone, Mail, MapPin, Instagram, Facebook, User } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 
@@ -11,6 +11,8 @@ const API = `${BACKEND_URL}/api`;
 function HomePage() {
   const navigate = useNavigate();
   const { themeColors } = useTheme();
+  const [masters, setMasters] = useState([]);
+  const [selectedMaster, setSelectedMaster] = useState(null);
   const [services, setServices] = useState([]);
   const [groupedServices, setGroupedServices] = useState({});
   const [categoryLabels, setCategoryLabels] = useState({
@@ -41,23 +43,43 @@ function HomePage() {
   });
 
   useEffect(() => {
-    fetchServices();
+    fetchMasters();
     fetchSettings();
     fetchPromoBlocks();
   }, []);
 
-  const fetchServices = async () => {
+  useEffect(() => {
+    if (selectedMaster) {
+      fetchMasterServices(selectedMaster.id);
+    }
+  }, [selectedMaster]);
+
+  const fetchMasters = async () => {
     try {
-      const response = await axios.get(`${API}/services/grouped`);
+      const response = await axios.get(`${API}/masters`);
+      const activeMasters = response.data.filter(m => m.is_active);
+      setMasters(activeMasters);
+      if (activeMasters.length > 0) {
+        setSelectedMaster(activeMasters[0]);
+      }
+    } catch (error) {
+      console.error('Помилка завантаження майстрів:', error);
+    }
+  };
+
+  const fetchMasterServices = async (masterId) => {
+    try {
+      const response = await axios.get(`${API}/services/grouped?master_id=${masterId}`);
       setGroupedServices(response.data.services);
       setCategoryLabels(response.data.categories);
       // Flatten for backward compatibility
-      const allServices = [
-        ...(response.data.services.manicure || []),
-        ...(response.data.services.pedicure || []),
-        ...(response.data.services.podology || [])
-      ];
+      const allServices = Object.values(response.data.services).flat();
       setServices(allServices);
+      // Set first non-empty category as active
+      const firstNonEmpty = Object.entries(response.data.services).find(([_, services]) => services.length > 0);
+      if (firstNonEmpty) {
+        setActiveCategory(firstNonEmpty[0]);
+      }
     } catch (error) {
       console.error('Помилка завантаження послуг:', error);
     }
