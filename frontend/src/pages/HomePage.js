@@ -258,7 +258,7 @@ function HomePage() {
       {/* Services Section */}
       <section className="py-24 px-6 bg-white">
         <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-16 space-y-4">
+          <div className="text-center mb-12 space-y-4">
             <p className="text-xs uppercase tracking-widest font-medium" style={{ color: themeColors.secondary }}>ПОСЛУГИ</p>
             <h3 className="text-4xl lg:text-5xl font-bold tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>
               {settings.services_title || 'Наші послуги'}
@@ -270,26 +270,67 @@ function HomePage() {
             )}
           </div>
           
-          {/* Category Tabs */}
-          <div className="flex justify-center gap-3 mb-12 flex-wrap">
-            {Object.entries(categoryLabels).map(([key, label]) => (
+          {/* Master Tabs */}
+          <div className="flex justify-center gap-3 mb-8 flex-wrap">
+            {masters.map((master) => (
               <button
-                key={key}
-                onClick={() => setActiveCategory(key)}
-                className={`px-8 py-3 rounded-full font-medium transition-all ${
-                  activeCategory === key
+                key={master.id}
+                onClick={() => setSelectedMaster(master)}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-medium transition-all ${
+                  selectedMaster?.id === master.id
                     ? 'bg-[#D4A5A5] text-white shadow-lg'
                     : 'bg-white border-2 border-rose-200/50 text-gray-700 hover:border-[#D4A5A5]'
                 }`}
-                data-testid={`home-category-tab-${key}`}
+                data-testid={`home-master-tab-${master.id}`}
               >
-                {label}
+                {master.photo_url ? (
+                  <img 
+                    src={master.photo_url} 
+                    alt={master.name}
+                    className="w-6 h-6 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-6 h-6 rounded-full bg-rose-100 flex items-center justify-center">
+                    <User className="w-3 h-3 text-[#D4A5A5]" />
+                  </div>
+                )}
+                <span>{master.name}</span>
               </button>
             ))}
           </div>
+
+          {/* Category Tabs */}
+          {Object.keys(categoryLabels).length > 0 && (
+            <div className="flex justify-center gap-2 mb-10 flex-wrap">
+              {Object.entries(categoryLabels).map(([key, label]) => {
+                const hasServices = (groupedServices[key] || []).length > 0;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setActiveCategory(key)}
+                    disabled={!hasServices}
+                    className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+                      activeCategory === key
+                        ? 'bg-[#9E829C] text-white'
+                        : hasServices
+                          ? 'bg-rose-50 text-gray-700 hover:bg-rose-100'
+                          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    }`}
+                    data-testid={`home-category-tab-${key}`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {(groupedServices[activeCategory] || []).length === 0 ? (
+            {services.length === 0 ? (
+              <div className="col-span-full text-center py-12 text-gray-500">
+                <p>{selectedMaster ? `У майстра ${selectedMaster.name} ще немає послуг` : 'Оберіть майстра'}</p>
+              </div>
+            ) : (groupedServices[activeCategory] || []).length === 0 ? (
               <div className="col-span-full text-center py-12 text-gray-500">
                 <p>Немає послуг у цій категорії</p>
               </div>
