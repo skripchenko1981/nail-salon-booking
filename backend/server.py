@@ -83,6 +83,12 @@ class Master(BaseModel):
     bio: Optional[str] = None
     photo_url: Optional[str] = None
     is_active: bool = True
+    # Telegram bot settings for notifications
+    telegram_bot_token: Optional[str] = None
+    telegram_chat_id: Optional[str] = None
+    telegram_notifications_enabled: bool = False
+    # Notification counters
+    unread_bookings_count: int = 0
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class MasterResponse(BaseModel):
