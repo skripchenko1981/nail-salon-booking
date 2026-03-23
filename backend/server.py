@@ -101,6 +101,10 @@ class MasterResponse(BaseModel):
     bio: Optional[str] = None
     photo_url: Optional[str] = None
     is_active: bool = True
+    telegram_bot_token: Optional[str] = None
+    telegram_chat_id: Optional[str] = None
+    telegram_notifications_enabled: bool = False
+    unread_bookings_count: int = 0
     created_at: str
 
 class MasterCreate(BaseModel):
