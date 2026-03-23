@@ -127,6 +127,9 @@ class MasterUpdate(BaseModel):
     bio: Optional[str] = None
     photo_url: Optional[str] = None
     is_active: Optional[bool] = None
+    telegram_bot_token: Optional[str] = None
+    telegram_chat_id: Optional[str] = None
+    telegram_notifications_enabled: Optional[bool] = None
     
     @field_validator('phone')
     @classmethod
