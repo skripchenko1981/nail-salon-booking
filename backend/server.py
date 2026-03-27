@@ -930,6 +930,13 @@ async def create_booking(booking: BookingCreate, background_tasks: BackgroundTas
             admin_telegram_id
         )
     
+    # Відправити сповіщення майстру через його Telegram бот
+    background_tasks.add_task(
+        notify_master_new_booking,
+        doc,
+        service["name"]
+    )
+    
     # Повернути бронювання з посиланням на Telegram
     response = booking_obj.model_dump()
     response["telegram_subscription_link"] = telegram_link
