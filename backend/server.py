@@ -442,6 +442,73 @@ def verify_password(password: str, password_hash: str) -> bool:
     """Перевірити пароль"""
     return hash_password(password) == password_hash
 
+# ============ MASTER TELEGRAM NOTIFICATIONS ============
+
+async def send_master_telegram_notification(master_id: str, message: str) -> bool:
+    """Відправити сповіщення майстру через його Telegram бот"""
+    try:
+        master = await db.masters.find_one({"id": master_id}, {"_id": 0})
+        if not master:
+            logger.warning(f"Master {master_id} not found")
+            return False
+        
+        if not master.get("telegram_notifications_enabled"):
+            logger.info(f"Telegram notifications disabled for master {master_id}")
+            return False
+        
+        bot_token = master.get("telegram_bot_token")
+        chat_id = master.get("telegram_chat_id")
+        
+        if not bot_token or not chat_id:
+            logger.warning(f"Telegram not configured for master {master_id}")
+            return False
+        
+        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, json={
+                "chat_id": chat_id,
+                "text": message,
+                "parse_mode": "HTML"
+            }, timeout=10.0)
+            
+            if response.status_code == 200:
+                logger.info(f"Telegram notification sent to master {master_id}")
+                return True
+            else:
+                logger.error(f"Failed to send Telegram to master {master_id}: {response.text}")
+                return False
+                
+    except Exception as e:
+        logger.error(f"Error sending Telegram to master {master_id}: {e}")
+        return False
+
+async def notify_master_new_booking(booking: dict, service_name: str):
+    """Сповістити майстра про новий запис"""
+    master_id = booking.get("master_id")
+    
+    # Збільшити лічильник непрочитаних
+    await db.masters.update_one(
+        {"id": master_id},
+        {"$inc": {"unread_bookings_count": 1}}
+    )
+    
+    # Відправити Telegram
+    message = f"""🆕 <b>Новий запис!</b>
+
+👤 Клієнт: {booking.get('client_name')} {booking.get('client_surname', '')}
+📱 Телефон: {booking.get('client_phone')}
+💅 Послуга: {service_name}
+📅 Дата: {booking.get('date')}
+🕐 Час: {booking.get('time')}
+
+💰 Вартість: {booking.get('price', 0)} ₴"""
+
+    if booking.get('notes'):
+        message += f"\n📝 Примітка: {booking.get('notes')}"
+    
+    await send_master_telegram_notification(master_id, message)
+
 # ============ AUTH HELPERS ============
 
 def create_token(username: str, role: str = "admin", user_id: Optional[str] = None) -> str:
