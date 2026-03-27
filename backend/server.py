@@ -14,6 +14,7 @@ import jwt
 import re
 import phonenumbers
 import hashlib
+import httpx
 from telegram_bot import telegram_bot
 from telegram_webhook import telegram_router
 from s3_utils import upload_file_to_s3, generate_presigned_url, delete_file_from_s3
