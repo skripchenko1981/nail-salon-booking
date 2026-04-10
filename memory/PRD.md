@@ -80,6 +80,17 @@
   - `GET /api/admin/reminder-status` - Check status
 - **IMPORTANT:** Clients must subscribe to Telegram bot after booking to receive reminders
 
+## Recent Feature (2025-12-10): Individual Master Telegram Notifications
+
+### Implementation
+- **Backend endpoints:**
+  - `PATCH /api/masters/{master_id}/telegram` — Save bot token, chat ID, enable/disable
+  - `POST /api/masters/{master_id}/test-telegram` — Test message delivery
+  - `POST /api/masters/{master_id}/reset-notifications` — Reset unread counter
+- **Frontend:** New `MasterTelegramSettings.js` component added to MasterDashboard at `/master/telegram`
+- **Notification flow:** On new booking, `notify_master_new_booking()` increments counter and sends Telegram message via master's own bot
+- **Testing Status:** PASSED (19/19 backend, 100% frontend)
+
 ## Backlog / Future Tasks
 
 ### P1 - Refactoring
