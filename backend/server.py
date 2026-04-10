@@ -143,6 +143,11 @@ class MasterPasswordUpdate(BaseModel):
     current_password: Optional[str] = None
     new_password: str
 
+class MasterTelegramConfig(BaseModel):
+    telegram_bot_token: Optional[str] = None
+    telegram_chat_id: Optional[str] = None
+    telegram_notifications_enabled: bool = False
+
 class MasterLogin(BaseModel):
     email: EmailStr
     password: str
@@ -1221,6 +1226,77 @@ async def update_master_password(master_id: str, password_update: MasterPassword
     await db.masters.update_one({"id": master_id}, {"$set": {"password_hash": new_password_hash}})
     
     return {"message": "Password updated successfully"}
+
+@api_router.patch("/masters/{master_id}/telegram")
+async def update_master_telegram(master_id: str, config: MasterTelegramConfig, user: Dict = Depends(verify_master_or_admin)):
+    """Оновити Telegram налаштування майстра"""
+    if user["role"] == "master" and user["user_id"] != master_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    update_data = {
+        "telegram_bot_token": config.telegram_bot_token,
+        "telegram_chat_id": config.telegram_chat_id,
+        "telegram_notifications_enabled": config.telegram_notifications_enabled,
+    }
+    
+    result = await db.masters.update_one({"id": master_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Master not found")
+    
+    return {"message": "Telegram settings updated", "notifications_enabled": config.telegram_notifications_enabled}
+
+@api_router.post("/masters/{master_id}/test-telegram")
+async def test_master_telegram(master_id: str, user: Dict = Depends(verify_master_or_admin)):
+    """Надіслати тестове повідомлення через Telegram бот майстра"""
+    if user["role"] == "master" and user["user_id"] != master_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    master = await db.masters.find_one({"id": master_id}, {"_id": 0})
+    if not master:
+        raise HTTPException(status_code=404, detail="Master not found")
+    
+    bot_token = master.get("telegram_bot_token")
+    chat_id = master.get("telegram_chat_id")
+    
+    if not bot_token or not chat_id:
+        raise HTTPException(status_code=400, detail="Telegram bot token або chat ID не налаштовано")
+    
+    try:
+        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+        async with httpx.AsyncClient() as http_client:
+            response = await http_client.post(url, json={
+                "chat_id": chat_id,
+                "text": "✅ Тестове повідомлення! Ваш Telegram бот працює коректно.",
+                "parse_mode": "HTML"
+            }, timeout=10.0)
+            
+            if response.status_code == 200:
+                return {"success": True, "message": "Тестове повідомлення відправлено!"}
+            else:
+                error_data = response.json()
+                error_desc = error_data.get("description", "Unknown error")
+                raise HTTPException(status_code=400, detail=f"Помилка Telegram API: {error_desc}")
+    except httpx.TimeoutException:
+        raise HTTPException(status_code=408, detail="Timeout при з'єднанні з Telegram API")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Помилка: {str(e)}")
+
+@api_router.post("/masters/{master_id}/reset-notifications")
+async def reset_master_notifications(master_id: str, user: Dict = Depends(verify_master_or_admin)):
+    """Скинути лічильник непрочитаних записів"""
+    if user["role"] == "master" and user["user_id"] != master_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    result = await db.masters.update_one(
+        {"id": master_id},
+        {"$set": {"unread_bookings_count": 0}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Master not found")
+    
+    return {"message": "Notifications reset", "unread_bookings_count": 0}
 
 @api_router.delete("/masters/{master_id}")
 async def delete_master(master_id: str, _: Dict = Depends(verify_admin)):

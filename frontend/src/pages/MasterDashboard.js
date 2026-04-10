@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Users, Package, Settings, LogOut, User, Image } from 'lucide-react';
+import { LayoutDashboard, Calendar, Users, Package, Settings, LogOut, User, Image, Bell } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import AdminOverview from '../components/admin/AdminOverview';
 import AdminBookings from '../components/admin/AdminBookings';
@@ -9,6 +9,7 @@ import AdminSchedule from '../components/admin/AdminSchedule';
 import AdminClients from '../components/admin/AdminClients';
 import AdminVacations from '../components/admin/AdminVacations';
 import AdminGallery from '../components/admin/AdminGallery';
+import MasterTelegramSettings from '../components/admin/MasterTelegramSettings';
 
 function MasterDashboard() {
   const navigate = useNavigate();
@@ -40,6 +41,7 @@ function MasterDashboard() {
     { path: '/master/schedule', icon: Settings, label: 'Розклад', testId: 'nav-schedule' },
     { path: '/master/vacations', icon: Calendar, label: 'Відпустки', testId: 'nav-vacations' },
     { path: '/master/gallery', icon: Image, label: 'Галерея', testId: 'nav-gallery' },
+    { path: '/master/telegram', icon: Bell, label: 'Telegram', testId: 'nav-telegram' },
   ];
 
   return (
@@ -119,6 +121,7 @@ function MasterDashboard() {
             <Route path="/schedule" element={<AdminSchedule />} />
             <Route path="/vacations" element={<AdminVacations />} />
             <Route path="/gallery" element={<AdminGallery />} />
+            <Route path="/telegram" element={<MasterTelegramSettings />} />
           </Routes>
         </main>
       </div>
