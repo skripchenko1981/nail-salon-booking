@@ -1275,6 +1275,10 @@ async def test_master_telegram(master_id: str, user: Dict = Depends(verify_maste
             else:
                 error_data = response.json()
                 error_desc = error_data.get("description", "Unknown error")
+                if "chat not found" in error_desc.lower():
+                    raise HTTPException(status_code=400, detail="Чат не знайдено. Спершу відкрийте вашого бота в Telegram і надішліть йому /start, потім спробуйте знову.")
+                if "bot token" in error_desc.lower() or "unauthorized" in error_desc.lower() or "not found" in error_desc.lower():
+                    raise HTTPException(status_code=400, detail="Невірний Bot Token. Перевірте токен, який ви отримали від @BotFather.")
                 raise HTTPException(status_code=400, detail=f"Помилка Telegram API: {error_desc}")
     except httpx.TimeoutException:
         raise HTTPException(status_code=408, detail="Timeout при з'єднанні з Telegram API")
