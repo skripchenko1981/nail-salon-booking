@@ -52,6 +52,7 @@ function AdminPromoBlocks() {
         title: block.title,
         description: block.description,
         image_url: block.image_url || '',
+        image_key: block.image_key || '',
         button_text: block.button_text || '',
         button_link: block.button_link || '',
         is_active: block.is_active,
@@ -65,6 +66,7 @@ function AdminPromoBlocks() {
         title: '',
         description: '',
         image_url: '',
+        image_key: '',
         button_text: '',
         button_link: '',
         is_active: true,
@@ -106,6 +108,7 @@ function AdminPromoBlocks() {
 
     try {
       let imageUrl = formData.image_url;
+      let imageKey = formData.image_key;
 
       // Якщо вибрано новий файл - завантажити на S3
       if (selectedFile) {
@@ -124,11 +127,13 @@ function AdminPromoBlocks() {
         );
         
         imageUrl = uploadResponse.data.image_url;
+        imageKey = uploadResponse.data.file_key;
       }
 
       const blockData = {
         ...formData,
-        image_url: imageUrl || undefined
+        image_url: imageUrl || undefined,
+        image_key: imageKey || undefined
       };
 
       if (editingBlock) {

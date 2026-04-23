@@ -91,6 +91,17 @@
 - **Notification flow:** On new booking, `notify_master_new_booking()` increments counter and sends Telegram message via master's own bot
 - **Testing Status:** PASSED (19/19 backend, 100% frontend)
 
+## Bug Fix (2025-12-10): Promo Block Images Not Loading After Reload
+
+### Root Cause
+Promo blocks stored presigned S3 URLs directly (expire after 1 hour). Gallery images used `file_key` and regenerated URLs on each request — promo blocks did not.
+
+### Fix
+- Added `image_key` field to PromoBlock models
+- Backend regenerates fresh presigned URLs from `image_key` on every API call
+- Frontend sends `file_key` from gallery upload response when creating/updating blocks
+- Migrated existing blocks with S3 images to store `image_key`
+
 ## Backlog / Future Tasks
 
 ### P1 - Refactoring

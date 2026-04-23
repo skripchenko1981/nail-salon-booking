@@ -392,6 +392,7 @@ class PromoBlock(BaseModel):
     title: str
     description: str
     image_url: Optional[str] = None
+    image_key: Optional[str] = None
     button_text: Optional[str] = None
     button_link: Optional[str] = None
     is_active: bool = True
@@ -402,6 +403,7 @@ class PromoBlockCreate(BaseModel):
     title: str
     description: str
     image_url: Optional[str] = None
+    image_key: Optional[str] = None
     button_text: Optional[str] = None
     button_link: Optional[str] = None
     is_active: bool = True
@@ -411,6 +413,7 @@ class PromoBlockUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     image_url: Optional[str] = None
+    image_key: Optional[str] = None
     button_text: Optional[str] = None
     button_link: Optional[str] = None
     is_active: Optional[bool] = None
@@ -2025,6 +2028,13 @@ async def update_gallery_image(image_id: str, is_active: bool, user: Dict = Depe
 
 # ============ PROMO BLOCKS ============
 
+def refresh_promo_block_urls(blocks):
+    """Оновити presigned URLs для промо-блоків з image_key"""
+    for block in blocks:
+        if block.get("image_key"):
+            block["image_url"] = generate_presigned_url(block["image_key"], expiration=3600)
+    return blocks
+
 @api_router.get("/promo-blocks", response_model=List[PromoBlock])
 async def get_active_promo_blocks():
     """Отримати активні промо-блоки (публічний доступ)"""
@@ -2032,20 +2042,23 @@ async def get_active_promo_blocks():
         {"is_active": True}, 
         {"_id": 0}
     ).sort("position", 1).to_list(100)
-    return blocks
+    return refresh_promo_block_urls(blocks)
 
 @api_router.get("/admin/promo-blocks", response_model=List[PromoBlock])
 async def get_all_promo_blocks(user: Dict = Depends(verify_admin)):
     """Отримати всі промо-блоки (тільки адмін)"""
     blocks = await db.promo_blocks.find({}, {"_id": 0}).sort("position", 1).to_list(100)
-    return blocks
+    return refresh_promo_block_urls(blocks)
 
 @api_router.post("/admin/promo-blocks", response_model=PromoBlock)
 async def create_promo_block(block: PromoBlockCreate, user: Dict = Depends(verify_admin)):
     """Створити промо-блок"""
     new_block = PromoBlock(**block.model_dump())
-    await db.promo_blocks.insert_one(new_block.model_dump())
-    return new_block
+    doc = new_block.model_dump()
+    await db.promo_blocks.insert_one(doc)
+    if doc.get("image_key"):
+        doc["image_url"] = generate_presigned_url(doc["image_key"], expiration=3600)
+    return doc
 
 @api_router.put("/admin/promo-blocks/{block_id}", response_model=PromoBlock)
 async def update_promo_block(
@@ -2068,6 +2081,8 @@ async def update_promo_block(
         raise HTTPException(status_code=404, detail="Promo block not found")
     
     updated_block = await db.promo_blocks.find_one({"id": block_id}, {"_id": 0})
+    if updated_block.get("image_key"):
+        updated_block["image_url"] = generate_presigned_url(updated_block["image_key"], expiration=3600)
     return PromoBlock(**updated_block)
 
 @api_router.delete("/admin/promo-blocks/{block_id}")
