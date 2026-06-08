@@ -22,7 +22,7 @@ services:
     environment:
       MONGO_URL: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password123}@mongo:27017/
       DB_NAME: ${DB_NAME:-beauty_salon}
-      CORS_ORIGINS: ${CORS_ORIGINS:-https://beauty-alena.pp.ua}
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://nail-studio.pp.ua}
       JWT_SECRET: ${JWT_SECRET:-change-this-secret-in-production}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
