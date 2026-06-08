@@ -13,7 +13,7 @@ RUN yarn install --frozen-lockfile
 COPY frontend/ .
 
 # Build аргумент для backend URL
-ARG REACT_APP_BACKEND_URL=https://beauty-alena.pp.ua
+ARG REACT_APP_BACKEND_URL=https://nail-studio.pp.ua
 ENV REACT_APP_BACKEND_URL=$REACT_APP_BACKEND_URL
 
 # Білд застосунку
