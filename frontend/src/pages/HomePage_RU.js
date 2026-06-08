@@ -27,7 +27,7 @@ function HomePage() {
   const serviceImages = [
     'https://images.pexels.com/photos/5128123/pexels-photo-5128123.jpeg',
     'https://images.unsplash.com/photo-1727199433272-70fdb94c8430',
-    'https://customer-assets.emergentagent.com/job_beauty-hub-180/artifacts/htap3t0o_logo.jpg'
+    'https://hel1.your-objectstorage.com/bucket-cloud/uploads/logo/IMG_9032.PNG?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Checksum-Mode=ENABLED&X-Amz-Credential=5492XA7J7V9I783B3R8A%2F20260608%2Fhel1%2Fs3%2Faws4_request&X-Amz-Date=20260608T201317Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=4b9938589ff90f5d358b755a9e29663d4424689dfdc9b89d696be40f49862a44'
   ];
 
   return (
@@ -96,7 +96,7 @@ function HomePage() {
             <div className="relative">
               <div className="aspect-square rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_60px_rgb(0,0,0,0.08)] transition-all duration-500">
                 <img 
-                  src="https://customer-assets.emergentagent.com/job_beauty-hub-180/artifacts/htap3t0o_logo.jpg" 
+                  src="https://hel1.your-objectstorage.com/bucket-cloud/uploads/logo/IMG_9032.PNG?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Checksum-Mode=ENABLED&X-Amz-Credential=5492XA7J7V9I783B3R8A%2F20260608%2Fhel1%2Fs3%2Faws4_request&X-Amz-Date=20260608T201317Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=4b9938589ff90f5d358b755a9e29663d4424689dfdc9b89d696be40f49862a44" 
                   alt="Маникюр" 
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                 />
