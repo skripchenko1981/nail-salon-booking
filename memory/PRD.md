@@ -91,6 +91,25 @@
 - **Notification flow:** On new booking, `notify_master_new_booking()` increments counter and sends Telegram message via master's own bot
 - **Testing Status:** PASSED (19/19 backend, 100% frontend)
 
+## SEO Integration (2025-12-10)
+
+### Implemented
+- Meta tags: title, description, keywords, canonical URL (`https://nail-studio.pp.ua/`)
+- Open Graph & Twitter Card tags with Soul Nail Studio logo
+- JSON-LD Structured Data: `NailSalon` schema with address, phone, email, social links, services
+- `sitemap.xml` with public pages (/, /booking, /portfolio, /my-bookings)
+- `robots.txt` blocking /admin and /master panels
+- Semantic HTML: `<header>`, `<main>`, `<footer>`, role attributes, descriptive alt tags
+- Geo tags for local SEO (Дніпропетровська область, Томаківка)
+- Brand updated to "Soul Nail Studio" in navigation
+
+### Business Details in SEO
+- Phone: +380967920596
+- Email: alena19panchenko92@gmail.com
+- Address: вул. Шевченка, 3, 2-й поверх, каб. 2, Томаківка
+- Facebook: https://www.facebook.com/al.ona.azarcik
+- Instagram: https://www.instagram.com/_soul_nail_studio_
+
 ## Bug Fix (2025-12-10): Promo Block Images Not Loading After Reload
 
 ### Root Cause

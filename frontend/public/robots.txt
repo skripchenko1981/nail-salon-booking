@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Allow: /booking
+Allow: /portfolio
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /master
+Disallow: /master/*
+Disallow: /my-bookings
+
+Sitemap: https://nail-studio.pp.ua/sitemap.xml
