@@ -27,7 +27,7 @@ function HomePage() {
   const serviceImages = [
     'https://images.pexels.com/photos/5128123/pexels-photo-5128123.jpeg',
     'https://images.unsplash.com/photo-1727199433272-70fdb94c8430',
-    'https://customer-assets.emergentagent.com/job_beauty-hub-180/artifacts/htap3t0o_logo.jpg'
+    'https://customer-assets.emergentagent.com/job_0f6d9556-ec97-43b3-a3de-6c881e7bcaa6/artifacts/w0iz29ic_IMG_9032.PNG'
   ];
 
   return (
@@ -96,7 +96,7 @@ function HomePage() {
             <div className="relative">
               <div className="aspect-square rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_60px_rgb(0,0,0,0.08)] transition-all duration-500">
                 <img 
-                  src="https://customer-assets.emergentagent.com/job_beauty-hub-180/artifacts/htap3t0o_logo.jpg" 
+                  src="https://customer-assets.emergentagent.com/job_0f6d9556-ec97-43b3-a3de-6c881e7bcaa6/artifacts/w0iz29ic_IMG_9032.PNG" 
                   alt="Маникюр" 
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                 />
