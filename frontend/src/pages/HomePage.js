@@ -114,9 +114,10 @@ function HomePage() {
       <div className="noise-overlay"></div>
       
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-rose-200/50">
+      <header>
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-rose-200/50" role="navigation" aria-label="Головна навігація">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>Nail Studio</h1>
+          <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: 'Playfair Display, serif' }}>Soul Nail Studio</h1>
           <div className="flex gap-4 items-center">
             <button 
               onClick={() => navigate('/portfolio')} 
@@ -148,7 +149,9 @@ function HomePage() {
           </div>
         </div>
       </nav>
+      </header>
 
+      <main>
       {/* Hero Section */}
       <section className="pt-32 pb-24 px-6">
         <div className="container mx-auto max-w-7xl">
@@ -189,7 +192,7 @@ function HomePage() {
               <div className="aspect-square rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_60px_rgb(0,0,0,0.08)] transition-all duration-500">
                 <img 
                   src="https://customer-assets.emergentagent.com/job_0f6d9556-ec97-43b3-a3de-6c881e7bcaa6/artifacts/w0iz29ic_IMG_9032.PNG" 
-                  alt="Манікюр" 
+                  alt="Soul Nail Studio — студія манікюру та педикюру в Томаківці" 
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                 />
               </div>
@@ -445,9 +448,10 @@ function HomePage() {
           </div>
         </div>
       </section>
+      </main>
 
       {/* Footer */}
-      <footer className="py-16 px-6 bg-gradient-to-b from-white border-t" style={{ backgroundColor: themeColors.accent, borderColor: themeColors.border }}>
+      <footer className="py-16 px-6 bg-gradient-to-b from-white border-t" style={{ backgroundColor: themeColors.accent, borderColor: themeColors.border }} role="contentinfo">
         <div className="container mx-auto max-w-7xl">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
             {/* Про студію */}
