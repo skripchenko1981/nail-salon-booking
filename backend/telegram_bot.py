@@ -138,7 +138,8 @@ class TelegramBot:
             logger.error(f"Помилка збереження історії сповіщень: {e}")
     
     async def send_message(self, chat_id: str, text: str, parse_mode: str = "HTML", 
-                          booking_id: Optional[str] = None, notification_type: Optional[str] = None) -> bool:
+                          booking_id: Optional[str] = None, notification_type: Optional[str] = None,
+                          reply_markup: Optional[dict] = None) -> bool:
         """Відправка повідомлення в Telegram"""
         if not self.enabled:
             logger.warning("Telegram bot не налаштовано. Пропускаємо відправку повідомлення.")
@@ -166,6 +167,8 @@ class TelegramBot:
             "text": text,
             "parse_mode": parse_mode
         }
+        if reply_markup:
+            data["reply_markup"] = reply_markup
         
         success = False
         try:

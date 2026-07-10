@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Calendar, Clock, Phone, Mail, User, Edit, Trash2 } from 'lucide-react';
+import { Calendar, Clock, Phone, Mail, User, Edit, Trash2, StickyNote, Save } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { Textarea } from '../ui/textarea';
 import {
   Select,
   SelectContent,
@@ -32,10 +33,62 @@ function AdminBookings() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingBooking, setEditingBooking] = useState(null);
   const [editDuration, setEditDuration] = useState(60);
+  const [dailyNote, setDailyNote] = useState('');
+  const [noteSaving, setNoteSaving] = useState(false);
+  const [noteLoaded, setNoteLoaded] = useState(false);
 
   useEffect(() => {
     fetchBookings();
   }, []);
+
+  useEffect(() => {
+    if (selectedDate) {
+      fetchDailyNote(selectedDate);
+    } else {
+      setDailyNote('');
+      setNoteLoaded(false);
+    }
+  }, [selectedDate]);
+
+  const getMasterId = () => {
+    const data = JSON.parse(localStorage.getItem('master_data') || '{}');
+    return data.id;
+  };
+
+  const fetchDailyNote = async (date) => {
+    try {
+      const masterId = getMasterId();
+      if (!masterId) return;
+      const token = localStorage.getItem('master_token') || localStorage.getItem('admin_token');
+      const res = await axios.get(`${API}/masters/${masterId}/notes/${date}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDailyNote(res.data.text || '');
+      setNoteLoaded(true);
+    } catch {
+      setDailyNote('');
+      setNoteLoaded(true);
+    }
+  };
+
+  const saveDailyNote = async () => {
+    const masterId = getMasterId();
+    if (!masterId || !selectedDate) return;
+    setNoteSaving(true);
+    try {
+      const token = localStorage.getItem('master_token') || localStorage.getItem('admin_token');
+      await axios.put(
+        `${API}/masters/${masterId}/notes/${selectedDate}`,
+        { text: dailyNote },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success('Нотатку збережено');
+    } catch {
+      toast.error('Помилка збереження нотатки');
+    } finally {
+      setNoteSaving(false);
+    }
+  };
 
   const fetchBookings = async () => {
     try {
@@ -205,6 +258,33 @@ function AdminBookings() {
           </div>
         </div>
       </div>
+
+      {/* Нотатки на день */}
+      {selectedDate && noteLoaded && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5" data-testid="daily-notes-section">
+          <div className="flex items-center gap-2 mb-3">
+            <StickyNote className="h-5 w-5 text-amber-600" />
+            <h3 className="font-semibold text-gray-800">Нотатки на {selectedDate}</h3>
+          </div>
+          <Textarea
+            value={dailyNote}
+            onChange={(e) => setDailyNote(e.target.value)}
+            placeholder="Записати примітки на цей день..."
+            className="bg-white border-amber-200 focus:border-amber-400 min-h-[80px] resize-y mb-3"
+            data-testid="daily-note-input"
+          />
+          <Button
+            onClick={saveDailyNote}
+            disabled={noteSaving}
+            size="sm"
+            className="bg-amber-600 hover:bg-amber-700 text-white"
+            data-testid="save-daily-note-btn"
+          >
+            <Save className="h-4 w-4 mr-1" />
+            {noteSaving ? 'Збереження...' : 'Зберегти нотатку'}
+          </Button>
+        </div>
+      )}
 
       {sortedBookings.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center border border-rose-200/50">
