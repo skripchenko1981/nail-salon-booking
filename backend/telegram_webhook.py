@@ -52,8 +52,9 @@ async def telegram_webhook(request: Request):
                         )
                         
                         # Зберегти telegram_id в записі клієнта для майбутніх нагадувань
+                        # chat_id з Telegram API завжди числовий
                         client_phone = booking.get("client_phone", "")
-                        if client_phone:
+                        if client_phone and str(chat_id).lstrip("-").isdigit():
                             await db.clients.update_many(
                                 {"phone": client_phone},
                                 {"$set": {"telegram_id": chat_id}}

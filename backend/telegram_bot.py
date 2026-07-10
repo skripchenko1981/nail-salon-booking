@@ -96,7 +96,11 @@ class TelegramBot:
             }, {"_id": 0})
             
             if subscription:
-                return subscription.get("telegram_id")
+                tid = subscription.get("telegram_id")
+                if tid and str(tid).lstrip("-").isdigit():
+                    return tid
+                else:
+                    logger.warning(f"Невалідний telegram_id '{tid}' в підписці для {booking_id}")
             
             # 2. Якщо немає підписки — шукаємо telegram_id клієнта по телефону
             booking = await self.db.bookings.find_one({"id": booking_id}, {"_id": 0})
@@ -106,8 +110,12 @@ class TelegramBot:
                     {"_id": 0}
                 )
                 if client and client.get("telegram_id"):
-                    logger.info(f"Знайдено telegram_id клієнта {booking.get('client_name')} через запис клієнта")
-                    return client["telegram_id"]
+                    tid = client["telegram_id"]
+                    if str(tid).lstrip("-").isdigit():
+                        logger.info(f"Знайдено telegram_id клієнта {booking.get('client_name')} через запис клієнта")
+                        return tid
+                    else:
+                        logger.warning(f"Невалідний telegram_id '{tid}' для клієнта {booking.get('client_name')}")
                     
         except Exception as e:
             logger.error(f"Помилка отримання Telegram ID: {e}")
@@ -134,6 +142,22 @@ class TelegramBot:
         """Відправка повідомлення в Telegram"""
         if not self.enabled:
             logger.warning("Telegram bot не налаштовано. Пропускаємо відправку повідомлення.")
+            return False
+        
+        # Валідація chat_id — тільки числовий ID
+        if not str(chat_id).lstrip("-").isdigit():
+            logger.warning(f"Невалідний chat_id '{chat_id}' (не числовий). Telegram username не підтримується. Очищаю з бази.")
+            try:
+                await self.db.clients.update_many(
+                    {"telegram_id": chat_id},
+                    {"$unset": {"telegram_id": ""}}
+                )
+                await self.db.telegram_subscriptions.update_many(
+                    {"telegram_id": chat_id},
+                    {"$set": {"is_active": False}}
+                )
+            except Exception as e:
+                logger.error(f"Помилка очищення невалідного telegram_id: {e}")
             return False
             
         url = f"{self.base_url}/sendMessage"
