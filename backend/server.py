@@ -1305,6 +1305,29 @@ async def reset_master_notifications(master_id: str, user: Dict = Depends(verify
     
     return {"message": "Notifications reset", "unread_bookings_count": 0}
 
+# ============ НОТАТКИ МАЙСТРА ============
+
+@api_router.get("/masters/{master_id}/notes/{date}")
+async def get_master_note(master_id: str, date: str, user: Dict = Depends(verify_master_or_admin)):
+    """Отримати нотатку майстра на конкретну дату"""
+    if user["role"] == "master" and user["user_id"] != master_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    note = await db.master_notes.find_one({"master_id": master_id, "date": date}, {"_id": 0})
+    return {"text": note.get("text", "") if note else "", "date": date}
+
+@api_router.put("/masters/{master_id}/notes/{date}")
+async def save_master_note(master_id: str, date: str, body: dict, user: Dict = Depends(verify_master_or_admin)):
+    """Зберегти нотатку майстра на конкретну дату"""
+    if user["role"] == "master" and user["user_id"] != master_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    text = body.get("text", "")
+    await db.master_notes.update_one(
+        {"master_id": master_id, "date": date},
+        {"$set": {"text": text, "master_id": master_id, "date": date}},
+        upsert=True
+    )
+    return {"message": "Note saved", "date": date, "text": text}
+
 @api_router.delete("/masters/{master_id}")
 async def delete_master(master_id: str, _: Dict = Depends(verify_admin)):
     """Видалити майстра та всі його дані"""
