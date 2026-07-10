@@ -51,22 +51,31 @@ async def telegram_webhook(request: Request):
                             client_name=booking.get("client_name", "")
                         )
                         
+                        # Зберегти telegram_id в записі клієнта для майбутніх нагадувань
+                        client_phone = booking.get("client_phone", "")
+                        if client_phone:
+                            await db.clients.update_many(
+                                {"phone": client_phone},
+                                {"$set": {"telegram_id": chat_id}}
+                            )
+                            logger.info(f"Збережено telegram_id {chat_id} для клієнта з телефоном {client_phone}")
+                        
                         if success:
                             # Відправити привітальне повідомлення
                             welcome_text = f"""✅ <b>Вітаємо!</b>
 
-Ви успішно підписалися на сповіщення про ваш запис:
+Ви успішно підписалися на сповіщення!
 
 💅 <b>{booking.get('service_name')}</b>
 📅 Дата: {booking.get('date')}
 🕐 Час: {booking.get('time')}
 
-Ми надсилатимемо вам:
-• Підтвердження запису
-• Нагадування за 24 години
-• Зміни статусу
+Тепер ви будете отримувати:
+• Нагадування за 2 години до запису
+• Підтвердження та зміни статусу
+• <b>Автоматичні нагадування для всіх майбутніх записів</b>
 
-Дякуємо за довіру! 💅"""
+Дякуємо за довіру! 💅 Soul Nail Studio"""
                             await telegram_bot.send_message(chat_id, welcome_text)
                         else:
                             await telegram_bot.send_message(
@@ -79,15 +88,27 @@ async def telegram_webhook(request: Request):
                             "❌ Запис не знайдено. Перевірте посилання."
                         )
                 else:
-                    # /start без параметрів
-                    welcome = """👋 <b>Вітаємо в Nail Studio!</b>
+                    # /start без параметрів — зберегти chat_id для можливого зв'язування
+                    # Перевірити чи цей telegram_id вже є в клієнтах
+                    existing_client = await db.clients.find_one({"telegram_id": chat_id})
+                    if existing_client:
+                        await telegram_bot.send_message(
+                            chat_id,
+                            f"""👋 <b>Вітаємо, {existing_client.get('name', '')}!</b>
 
-Цей бот надсилає сповіщення про ваші записи.
+Ви вже підписані на сповіщення. Ми будемо надсилати нагадування про всі ваші записи автоматично.
 
-Щоб підписатися, використовуйте посилання, яке ви отримали після бронювання.
+💅 Soul Nail Studio"""
+                        )
+                    else:
+                        welcome = """👋 <b>Вітаємо в Soul Nail Studio!</b>
 
-📍 Записатися: https://nailstudio.ua"""
-                    await telegram_bot.send_message(chat_id, welcome)
+Цей бот надсилає нагадування про ваші записи.
+
+Щоб підписатися, використовуйте посилання, яке ви отримали після бронювання. Після першої підписки всі майбутні записи отримуватимуть нагадування автоматично.
+
+💅 Soul Nail Studio"""
+                        await telegram_bot.send_message(chat_id, welcome)
         
         return {"status": "ok"}
     except Exception as e:

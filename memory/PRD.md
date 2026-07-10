@@ -91,6 +91,18 @@
 - **Notification flow:** On new booking, `notify_master_new_booking()` increments counter and sends Telegram message via master's own bot
 - **Testing Status:** PASSED (19/19 backend, 100% frontend)
 
+## Reminder Fix (2025-12-10)
+
+### Issues Fixed
+- Timezone: Replaced hardcoded UTC+2 with `Europe/Kyiv` (pytz) for automatic DST handling
+- Client telegram_id: Now stored permanently on client record after first subscription. All future bookings get reminders automatically without re-subscribing
+- Migrated existing subscriptions to client records (2 clients updated)
+
+### How Reminders Work Now
+1. Client books → gets Telegram bot link
+2. Client clicks /start once → telegram_id saved to client record permanently
+3. Future bookings by same phone → auto-reminders 2h before
+
 ## SEO Integration (2025-12-10)
 
 ### Implemented
