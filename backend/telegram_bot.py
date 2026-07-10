@@ -153,6 +153,20 @@ class TelegramBot:
                     else:
                         error_text = await response.text()
                         logger.error(f"Помилка відправки: {error_text}")
+                        # Якщо "chat not found" — telegram_id невалідний, очистити
+                        if "chat not found" in error_text.lower() or "user not found" in error_text.lower() or "bot was blocked" in error_text.lower():
+                            logger.warning(f"Невалідний chat_id {chat_id} — очищаю з бази клієнтів")
+                            try:
+                                await self.db.clients.update_many(
+                                    {"telegram_id": chat_id},
+                                    {"$unset": {"telegram_id": ""}}
+                                )
+                                await self.db.telegram_subscriptions.update_many(
+                                    {"telegram_id": chat_id},
+                                    {"$set": {"is_active": False}}
+                                )
+                            except Exception as cleanup_err:
+                                logger.error(f"Помилка очищення невалідного telegram_id: {cleanup_err}")
         except Exception as e:
             logger.error(f"Помилка при відправці повідомлення: {e}")
         
