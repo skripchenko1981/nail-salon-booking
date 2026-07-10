@@ -1793,10 +1793,11 @@ async def trigger_reminders_manually(user: Dict = Depends(verify_admin)):
 @api_router.get("/admin/reminder-status")
 async def get_reminder_status(user: Dict = Depends(verify_admin)):
     """Отримати статус нагадувань для найближчих записів"""
-    # Український часовий пояс (UTC+2)
-    ukraine_offset = timedelta(hours=2)
+    # Правильний український часовий пояс з DST
+    import pytz
+    kyiv_tz = pytz.timezone('Europe/Kyiv')
     now_utc = datetime.now(timezone.utc)
-    now_ukraine = now_utc + ukraine_offset
+    now_ukraine = now_utc.astimezone(kyiv_tz)
     
     # Знайти записи
     bookings = await db.bookings.find({
@@ -2122,21 +2123,28 @@ async def check_and_send_reminders():
     try:
         logger.info("Запуск перевірки нагадувань...")
         
-        # Український часовий пояс (UTC+2 зимою, UTC+3 влітку)
-        # Використовуємо фіксований UTC+2 для простоти
-        ukraine_offset = timedelta(hours=2)
+        # Правильний український часовий пояс з автоматичним DST
+        import pytz
+        kyiv_tz = pytz.timezone('Europe/Kyiv')
         now_utc = datetime.now(timezone.utc)
-        now_ukraine = now_utc + ukraine_offset
+        now_ukraine = now_utc.astimezone(kyiv_tz)
         
-        logger.info(f"Поточний час UTC: {now_utc.strftime('%Y-%m-%d %H:%M')}, Україна: {now_ukraine.strftime('%Y-%m-%d %H:%M')}")
+        logger.info(f"Поточний час UTC: {now_utc.strftime('%Y-%m-%d %H:%M')}, Україна (Kyiv): {now_ukraine.strftime('%Y-%m-%d %H:%M %Z')}")
         
         # Знайти всі підтверджені записи, для яких ще не відправлено нагадування
+        # Фільтруємо тільки майбутні записи (дата >= сьогодні)
+        today_str = now_ukraine.strftime("%Y-%m-%d")
         bookings = await db.bookings.find({
             "status": {"$in": ["confirmed", "pending"]},
-            "reminder_sent": {"$ne": True}
+            "reminder_sent": {"$ne": True},
+            "date": {"$gte": today_str}
         }).to_list(1000)
         
+        if bookings:
+            logger.info(f"Знайдено {len(bookings)} записів для перевірки нагадувань")
+        
         sent_count = 0
+        skipped_no_sub = 0
         
         for booking in bookings:
             try:
@@ -2165,7 +2173,7 @@ async def check_and_send_reminders():
                     sent_telegram = await telegram_bot.send_booking_reminder(
                         booking['id'],
                         booking['client_name'],
-                        booking['service_name'],
+                        booking.get('service_name', 'Послуга'),
                         booking['date'],
                         booking['time'],
                         reminder_hours
@@ -2179,7 +2187,7 @@ async def check_and_send_reminders():
                         sent_count += 1
                         logger.info(f"✓ Нагадування відправлено для {booking['client_name']}")
                     else:
-                        logger.info(f"Клієнт {booking['client_name']} не підписаний на Telegram")
+                        skipped_no_sub += 1
                         
             except Exception as e:
                 logger.error(f"Помилка обробки запису {booking.get('id', 'unknown')}: {e}")
@@ -2187,6 +2195,8 @@ async def check_and_send_reminders():
         
         if sent_count > 0:
             logger.info(f"Відправлено {sent_count} нагадувань")
+        if skipped_no_sub > 0:
+            logger.info(f"Пропущено {skipped_no_sub} записів (клієнт не підписаний на Telegram)")
             
     except Exception as e:
         logger.error(f"Помилка перевірки нагадувань: {e}")
