@@ -1,8 +1,9 @@
 """
 Telegram Bot Webhook Handler
-Обробляє команду /start з deep linking для підписки на сповіщення
+Обробляє команду /start та контакт для підписки на сповіщення
 """
 import logging
+import re
 from fastapi import APIRouter, Request, HTTPException
 from telegram_bot import telegram_bot
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -18,6 +19,45 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ.get('DB_NAME', 'test_database')]
 
 
+def normalize_phone(phone: str) -> str:
+    """Нормалізувати номер телефону для порівняння"""
+    digits = re.sub(r'\D', '', phone)
+    if digits.startswith('380'):
+        return '+' + digits
+    if digits.startswith('80') and len(digits) == 12:
+        return '+3' + digits
+    if digits.startswith('0') and len(digits) == 10:
+        return '+38' + digits
+    if len(digits) == 9:
+        return '+380' + digits
+    return '+' + digits if not phone.startswith('+') else phone
+
+
+async def link_client_by_phone(chat_id: str, phone: str) -> bool:
+    """Зв'язати telegram_id з клієнтом по номеру телефону"""
+    normalized = normalize_phone(phone)
+    
+    # Шукаємо клієнта по різних варіантах номера
+    phone_variants = [normalized]
+    digits = re.sub(r'\D', '', normalized)
+    if digits.startswith('380'):
+        phone_variants.append('+' + digits)
+        phone_variants.append('0' + digits[3:])
+        phone_variants.append(digits)
+    
+    updated = False
+    for variant in phone_variants:
+        result = await db.clients.update_many(
+            {"phone": variant},
+            {"$set": {"telegram_id": chat_id}}
+        )
+        if result.modified_count > 0:
+            updated = True
+            logger.info(f"Зв'язано telegram_id {chat_id} з клієнтом (телефон: {variant})")
+    
+    return updated
+
+
 @telegram_router.post("/webhook")
 async def telegram_webhook(request: Request):
     """
@@ -27,43 +67,72 @@ async def telegram_webhook(request: Request):
         data = await request.json()
         logger.info(f"Отримано webhook: {data}")
         
-        # Обробка команди /start
-        if "message" in data:
-            message = data["message"]
-            chat_id = str(message["chat"]["id"])
-            text = message.get("text", "")
+        if "message" not in data:
+            return {"status": "ok"}
             
-            if text.startswith("/start"):
-                # Отримати параметр (booking_id)
-                parts = text.split()
-                if len(parts) > 1:
-                    booking_id = parts[1]
+        message = data["message"]
+        chat_id = str(message["chat"]["id"])
+        text = message.get("text", "")
+        
+        # Обробка контакту (коли клієнт ділиться номером телефону)
+        if "contact" in message:
+            contact = message["contact"]
+            phone = contact.get("phone_number", "")
+            first_name = contact.get("first_name", "")
+            
+            if phone:
+                linked = await link_client_by_phone(chat_id, phone)
+                
+                if linked:
+                    # Прибрати клавіатуру після успішного зв'язування
+                    await telegram_bot.send_message(
+                        chat_id,
+                        f"""✅ <b>Готово, {first_name}!</b>
+
+Ваш номер {phone} знайдено в базі. Тепер ви будете автоматично отримувати нагадування за 2 години до кожного вашого запису.
+
+💅 Soul Nail Studio""",
+                        reply_markup={"remove_keyboard": True}
+                    )
+                else:
+                    await telegram_bot.send_message(
+                        chat_id,
+                        f"""Номер {phone} не знайдено в базі клієнтів.
+
+Можливо, ви записувались з іншим номером. Запишіться через сайт — і після запису натисніть посилання на бот.
+
+💅 Soul Nail Studio""",
+                        reply_markup={"remove_keyboard": True}
+                    )
+            return {"status": "ok"}
+        
+        # Обробка команди /start
+        if text.startswith("/start"):
+            parts = text.split()
+            if len(parts) > 1:
+                booking_id = parts[1]
+                
+                # Отримати інформацію про бронювання
+                booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
+                
+                if booking:
+                    # Зареєструвати підписку
+                    success = await telegram_bot.register_client_subscription(
+                        telegram_id=chat_id,
+                        booking_id=booking_id,
+                        client_phone=booking.get("client_phone", ""),
+                        client_name=booking.get("client_name", "")
+                    )
                     
-                    # Отримати інформацію про бронювання
-                    booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
+                    # Зберегти telegram_id в записі клієнта
+                    client_phone = booking.get("client_phone", "")
+                    if client_phone and str(chat_id).lstrip("-").isdigit():
+                        await link_client_by_phone(chat_id, client_phone)
                     
-                    if booking:
-                        # Зареєструвати підписку
-                        success = await telegram_bot.register_client_subscription(
-                            telegram_id=chat_id,
-                            booking_id=booking_id,
-                            client_phone=booking.get("client_phone", ""),
-                            client_name=booking.get("client_name", "")
-                        )
-                        
-                        # Зберегти telegram_id в записі клієнта для майбутніх нагадувань
-                        # chat_id з Telegram API завжди числовий
-                        client_phone = booking.get("client_phone", "")
-                        if client_phone and str(chat_id).lstrip("-").isdigit():
-                            await db.clients.update_many(
-                                {"phone": client_phone},
-                                {"$set": {"telegram_id": chat_id}}
-                            )
-                            logger.info(f"Збережено telegram_id {chat_id} для клієнта з телефоном {client_phone}")
-                        
-                        if success:
-                            # Відправити привітальне повідомлення
-                            welcome_text = f"""✅ <b>Вітаємо!</b>
+                    if success:
+                        await telegram_bot.send_message(
+                            chat_id,
+                            f"""✅ <b>Вітаємо!</b>
 
 Ви успішно підписалися на сповіщення!
 
@@ -71,45 +140,51 @@ async def telegram_webhook(request: Request):
 📅 Дата: {booking.get('date')}
 🕐 Час: {booking.get('time')}
 
-Тепер ви будете отримувати:
-• Нагадування за 2 години до запису
-• Підтвердження та зміни статусу
-• <b>Автоматичні нагадування для всіх майбутніх записів</b>
+Тепер ви будете отримувати нагадування за 2 години до кожного запису автоматично.
 
-Дякуємо за довіру! 💅 Soul Nail Studio"""
-                            await telegram_bot.send_message(chat_id, welcome_text)
-                        else:
-                            await telegram_bot.send_message(
-                                chat_id, 
-                                "❌ Помилка підписки. Спробуйте пізніше."
-                            )
+💅 Soul Nail Studio"""
+                        )
                     else:
                         await telegram_bot.send_message(
-                            chat_id,
-                            "❌ Запис не знайдено. Перевірте посилання."
+                            chat_id, 
+                            "Помилка підписки. Спробуйте пізніше."
                         )
                 else:
-                    # /start без параметрів — зберегти chat_id для можливого зв'язування
-                    # Перевірити чи цей telegram_id вже є в клієнтах
-                    existing_client = await db.clients.find_one({"telegram_id": chat_id})
-                    if existing_client:
-                        await telegram_bot.send_message(
-                            chat_id,
-                            f"""👋 <b>Вітаємо, {existing_client.get('name', '')}!</b>
+                    await telegram_bot.send_message(
+                        chat_id,
+                        "Запис не знайдено. Перевірте посилання."
+                    )
+            else:
+                # /start без параметрів
+                # Перевірити чи вже зв'язаний
+                existing_client = await db.clients.find_one({"telegram_id": chat_id})
+                if existing_client:
+                    await telegram_bot.send_message(
+                        chat_id,
+                        f"""👋 <b>Вітаємо, {existing_client.get('name', '')}!</b>
 
-Ви вже підписані на сповіщення. Ми будемо надсилати нагадування про всі ваші записи автоматично.
-
-💅 Soul Nail Studio"""
-                        )
-                    else:
-                        welcome = """👋 <b>Вітаємо в Soul Nail Studio!</b>
-
-Цей бот надсилає нагадування про ваші записи.
-
-Щоб підписатися, використовуйте посилання, яке ви отримали після бронювання. Після першої підписки всі майбутні записи отримуватимуть нагадування автоматично.
+Ви вже підключені! Нагадування про записи приходитимуть автоматично.
 
 💅 Soul Nail Studio"""
-                        await telegram_bot.send_message(chat_id, welcome)
+                    )
+                else:
+                    # Запросити номер телефону через кнопку
+                    await telegram_bot.send_message(
+                        chat_id,
+                        """👋 <b>Вітаємо в Soul Nail Studio!</b>
+
+Щоб отримувати нагадування про ваші записи, натисніть кнопку нижче та поділіться номером телефону.
+
+Це потрібно зробити <b>лише один раз</b> — далі нагадування приходитимуть автоматично.""",
+                        reply_markup={
+                            "keyboard": [[{
+                                "text": "Поділитися номером телефону",
+                                "request_contact": True
+                            }]],
+                            "resize_keyboard": True,
+                            "one_time_keyboard": True
+                        }
+                    )
         
         return {"status": "ok"}
     except Exception as e:
@@ -119,34 +194,26 @@ async def telegram_webhook(request: Request):
 
 @telegram_router.get("/set-webhook")
 async def set_webhook(webhook_url: str):
-    """
-    Встановити webhook URL для бота
-    Викликається один раз при налаштуванні
-    """
+    """Встановити webhook URL для бота"""
     if not telegram_bot.enabled:
         raise HTTPException(status_code=400, detail="Telegram bot не налаштовано")
     
-    url = f"{telegram_bot.base_url}/setWebhook"
-    data = {"url": webhook_url}
-    
     import aiohttp
+    url = f"{telegram_bot.base_url}/setWebhook"
     async with aiohttp.ClientSession() as session:
-        async with session.post(url, json=data) as response:
+        async with session.post(url, json={"url": webhook_url}) as response:
             result = await response.json()
             return result
 
 
 @telegram_router.get("/webhook-info")
 async def get_webhook_info():
-    """
-    Отримати інформацію про поточний webhook
-    """
+    """Отримати інформацію про поточний webhook"""
     if not telegram_bot.enabled:
         raise HTTPException(status_code=400, detail="Telegram bot не налаштовано")
     
-    url = f"{telegram_bot.base_url}/getWebhookInfo"
-    
     import aiohttp
+    url = f"{telegram_bot.base_url}/getWebhookInfo"
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             result = await response.json()
