@@ -3,7 +3,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
-import { Plus, Trash2, Eye, EyeOff, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, Eye, EyeOff, Image as ImageIcon, Upload, X } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 
@@ -15,22 +15,24 @@ function AdminGallery() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [previews, setPreviews] = useState([]);
   const [description, setDescription] = useState('');
 
   useEffect(() => {
     fetchImages();
   }, []);
 
+  const getToken = () => localStorage.getItem('admin_token') || localStorage.getItem('master_token');
+
   const fetchImages = async () => {
     try {
-      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
       const response = await axios.get(`${API}/admin/gallery`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${getToken()}` }
       });
       setImages(response.data);
-    } catch (error) {
+    } catch {
       toast.error('Помилка завантаження галереї');
     } finally {
       setLoading(false);
@@ -38,107 +40,119 @@ function AdminGallery() {
   };
 
   const handleFileSelect = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
 
-    // Перевірка типу файлу
-    if (!file.type.startsWith('image/')) {
-      toast.error('Будь ласка, виберіть файл зображення');
-      return;
+    const validFiles = [];
+    const newPreviews = [];
+
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) {
+        toast.error(`${file.name}: не зображення`);
+        continue;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`${file.name}: розмір > 10MB`);
+        continue;
+      }
+      validFiles.push(file);
+      newPreviews.push({ name: file.name, size: file.size, url: URL.createObjectURL(file) });
     }
 
-    // Перевірка розміру (макс 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('Розмір файлу не повинен перевищувати 10MB');
-      return;
-    }
+    setSelectedFiles(prev => [...prev, ...validFiles]);
+    setPreviews(prev => [...prev, ...newPreviews]);
+  };
 
-    setSelectedFile(file);
-    
-    // Створити preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreviewUrl(reader.result);
-    };
-    reader.readAsDataURL(file);
+  const removeFile = (index) => {
+    URL.revokeObjectURL(previews[index].url);
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    setPreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    
-    if (!selectedFile) {
-      toast.error('Виберіть файл для завантаження');
+    if (!selectedFiles.length) {
+      toast.error('Виберіть файли для завантаження');
       return;
     }
 
     setUploading(true);
+    setUploadProgress(0);
 
     try {
-      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
-      
-      // Створити FormData
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      if (description) {
-        formData.append('description', description);
+      const token = getToken();
+
+      if (selectedFiles.length === 1) {
+        const formData = new FormData();
+        formData.append('file', selectedFiles[0]);
+        if (description) formData.append('description', description);
+
+        await axios.post(`${API}/admin/gallery`, formData, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+        });
+        toast.success('Фото завантажено!');
+      } else {
+        const formData = new FormData();
+        selectedFiles.forEach(file => formData.append('files', file));
+        if (description) formData.append('description', description);
+
+        const res = await axios.post(`${API}/admin/gallery/batch`, formData, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+          onUploadProgress: (e) => {
+            setUploadProgress(Math.round((e.loaded * 100) / e.total));
+          }
+        });
+        const { uploaded, errors } = res.data;
+        toast.success(`Завантажено ${uploaded} фото`);
+        if (errors.length > 0) {
+          errors.forEach(err => toast.error(err));
+        }
       }
 
-      await axios.post(`${API}/admin/gallery`, formData, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      
-      toast.success('Фото успішно завантажено!');
       setDialogOpen(false);
       resetForm();
       fetchImages();
     } catch (error) {
-      console.error('Upload error:', error);
-      toast.error(error.response?.data?.detail || 'Помилка завантаження фото');
+      toast.error(error.response?.data?.detail || 'Помилка завантаження');
     } finally {
       setUploading(false);
+      setUploadProgress(0);
     }
   };
 
   const resetForm = () => {
-    setSelectedFile(null);
-    setPreviewUrl(null);
+    previews.forEach(p => URL.revokeObjectURL(p.url));
+    setSelectedFiles([]);
+    setPreviews([]);
     setDescription('');
   };
 
   const handleToggleActive = async (imageId, currentStatus) => {
     try {
-      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
       await axios.put(`${API}/admin/gallery/${imageId}?is_active=${!currentStatus}`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${getToken()}` }
       });
       toast.success(currentStatus ? 'Фото приховано' : 'Фото показано');
       fetchImages();
-    } catch (error) {
+    } catch {
       toast.error('Помилка оновлення статусу');
     }
   };
 
   const handleDelete = async (imageId) => {
     if (!window.confirm('Видалити це фото?')) return;
-
     try {
-      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
       await axios.delete(`${API}/admin/gallery/${imageId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${getToken()}` }
       });
       toast.success('Фото видалено');
       fetchImages();
-    } catch (error) {
+    } catch {
       toast.error('Помилка видалення фото');
     }
   };
 
-  if (loading) {
-    return <div className="text-center py-12">Завантаження...</div>;
-  }
+  if (loading) return <div className="text-center py-12">Завантаження...</div>;
 
   return (
     <div className="space-y-6">
@@ -152,6 +166,7 @@ function AdminGallery() {
         <Button
           onClick={() => setDialogOpen(true)}
           className="bg-[#D4A5A5] hover:bg-[#9E829C] text-white"
+          data-testid="add-photo-btn"
         >
           <Plus className="mr-2 h-4 w-4" />
           Додати фото
@@ -166,15 +181,11 @@ function AdminGallery() {
         </div>
         <div className="bg-white rounded-xl p-6 border border-rose-200/50">
           <p className="text-sm text-gray-600">Активні</p>
-          <p className="text-3xl font-bold mt-1 text-green-600">
-            {images.filter(img => img.is_active).length}
-          </p>
+          <p className="text-3xl font-bold mt-1 text-green-600">{images.filter(img => img.is_active).length}</p>
         </div>
         <div className="bg-white rounded-xl p-6 border border-rose-200/50">
           <p className="text-sm text-gray-600">Приховані</p>
-          <p className="text-3xl font-bold mt-1 text-gray-400">
-            {images.filter(img => !img.is_active).length}
-          </p>
+          <p className="text-3xl font-bold mt-1 text-gray-400">{images.filter(img => !img.is_active).length}</p>
         </div>
       </div>
 
@@ -188,38 +199,20 @@ function AdminGallery() {
             }`}
           >
             <img
-              src={image.image_url}
+              src={image.thumb_url || image.image_url}
               alt={image.description || 'Gallery image'}
               className="w-full h-64 object-cover"
-              onError={(e) => {
-                e.target.src = 'https://via.placeholder.com/300x400?text=Фото+не+знайдено';
-              }}
+              loading="lazy"
+              onError={(e) => { e.target.src = 'https://via.placeholder.com/300x400?text=Фото+не+знайдено'; }}
             />
-            
-            {/* Overlay з кнопками */}
             <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
-              <Button
-                size="sm"
-                variant="outline"
-                className="bg-white"
-                onClick={() => handleToggleActive(image.id, image.is_active)}
-              >
-                {image.is_active ? (
-                  <><EyeOff className="h-4 w-4 mr-1" /> Сховати</>
-                ) : (
-                  <><Eye className="h-4 w-4 mr-1" /> Показати</>
-                )}
+              <Button size="sm" variant="outline" className="bg-white" onClick={() => handleToggleActive(image.id, image.is_active)}>
+                {image.is_active ? <><EyeOff className="h-4 w-4 mr-1" /> Сховати</> : <><Eye className="h-4 w-4 mr-1" /> Показати</>}
               </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => handleDelete(image.id)}
-              >
+              <Button size="sm" variant="destructive" onClick={() => handleDelete(image.id)}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
-
-            {/* Опис */}
             {image.description && (
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-3">
                 <p className="text-white text-sm">{image.description}</p>
@@ -237,43 +230,61 @@ function AdminGallery() {
         </div>
       )}
 
-      {/* Діалог додавання */}
+      {/* Діалог завантаження */}
       {dialogOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+          <div className="bg-white rounded-2xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
               Завантажити фото
             </h3>
             <form onSubmit={handleAdd} className="space-y-4">
-              <div>
-                <Label htmlFor="file">Виберіть фото *</Label>
-                <Input
-                  id="file"
+              {/* Drop zone */}
+              <div
+                className="border-2 border-dashed border-rose-300 rounded-xl p-6 text-center hover:border-[#D4A5A5] transition-colors cursor-pointer"
+                onClick={() => document.getElementById('gallery-file-input').click()}
+                data-testid="gallery-drop-zone"
+              >
+                <Upload className="h-10 w-10 text-[#D4A5A5] mx-auto mb-3" />
+                <p className="font-medium text-gray-700">Натисніть щоб вибрати фото</p>
+                <p className="text-sm text-gray-500 mt-1">Можна вибрати декілька файлів (макс. 10MB кожен)</p>
+                <input
+                  id="gallery-file-input"
                   type="file"
                   accept="image/*"
+                  multiple
                   onChange={handleFileSelect}
-                  className="mt-1"
-                  required
+                  className="hidden"
                   disabled={uploading}
+                  data-testid="gallery-file-input"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Підтримуються формати: JPG, PNG, WEBP, GIF (макс. 10MB)
-                </p>
               </div>
 
-              {previewUrl && (
-                <div className="border rounded-lg p-2">
-                  <p className="text-sm text-gray-600 mb-2">Попередній перегляд:</p>
-                  <img
-                    src={previewUrl}
-                    alt="Preview"
-                    className="w-full h-48 object-cover rounded"
-                  />
-                  {selectedFile && (
-                    <p className="text-xs text-gray-500 mt-2">
-                      {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                    </p>
-                  )}
+              {/* Previews */}
+              {previews.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-gray-700">Обрано файлів: {previews.length}</p>
+                  <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                    {previews.map((preview, i) => (
+                      <div key={i} className="relative group">
+                        <img src={preview.url} alt={preview.name} className="w-full h-24 object-cover rounded-lg" />
+                        <button
+                          type="button"
+                          onClick={() => removeFile(i)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                        <p className="text-xs text-gray-500 mt-0.5 truncate">{(preview.size / 1024 / 1024).toFixed(1)}MB</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Progress bar */}
+              {uploading && uploadProgress > 0 && (
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-[#D4A5A5] h-2 rounded-full transition-all" style={{ width: `${uploadProgress}%` }} />
                 </div>
               )}
 
@@ -285,26 +296,24 @@ function AdminGallery() {
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Опишіть роботу..."
                   className="mt-1"
-                  rows={3}
+                  rows={2}
                   disabled={uploading}
                 />
               </div>
 
-              <div className="flex gap-2 pt-4">
-                <Button 
-                  type="submit" 
+              <div className="flex gap-2 pt-2">
+                <Button
+                  type="submit"
                   className="flex-1 bg-[#D4A5A5] hover:bg-[#9E829C] text-white"
-                  disabled={uploading || !selectedFile}
+                  disabled={uploading || !selectedFiles.length}
+                  data-testid="upload-gallery-btn"
                 >
-                  {uploading ? 'Завантаження...' : 'Завантажити'}
+                  {uploading ? `Завантаження... ${uploadProgress}%` : `Завантажити (${selectedFiles.length})`}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => {
-                    setDialogOpen(false);
-                    resetForm();
-                  }}
+                  onClick={() => { setDialogOpen(false); resetForm(); }}
                   className="flex-1"
                   disabled={uploading}
                 >

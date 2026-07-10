@@ -91,6 +91,14 @@
 - **Notification flow:** On new booking, `notify_master_new_booking()` increments counter and sends Telegram message via master's own bot
 - **Testing Status:** PASSED (19/19 backend, 100% frontend)
 
+## Gallery Optimization (2025-12-10)
+
+### Implemented
+- Multi-file upload: Batch endpoint `POST /api/admin/gallery/batch`, drag & drop UI with previews
+- Thumbnails: Auto-generated 400px WebP thumbnails via Pillow stored as `thumb_key` in S3
+- Pagination: `skip` & `limit` params on `/gallery` and `/masters/{id}/gallery`, "Load more" button
+- Lazy loading: `loading="lazy"` on all gallery images
+
 ## Reminder Fix (2025-12-10)
 
 ### Issues Fixed

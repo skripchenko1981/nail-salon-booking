@@ -57,6 +57,52 @@ def upload_file_to_s3(file_content: bytes, file_extension: str) -> str:
         print(f"Error uploading file to S3: {e}")
         raise Exception(f"Failed to upload file: {str(e)}")
 
+
+def upload_file_with_thumbnail(file_content: bytes, file_extension: str) -> dict:
+    """
+    Завантажити файл + створити thumbnail на S3
+    
+    Returns:
+        {"file_key": str, "thumb_key": str}
+    """
+    from PIL import Image
+    import io
+    
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    random_id = uuid.uuid4().hex[:8]
+    file_key = f"gallery-{timestamp}-{random_id}.{file_extension}"
+    thumb_key = f"thumbs-{timestamp}-{random_id}.webp"
+    
+    try:
+        # Оригінал
+        s3_client.put_object(
+            Bucket=S3_BUCKET,
+            Key=file_key,
+            Body=file_content,
+            ContentType=f'image/{file_extension}'
+        )
+        
+        # Thumbnail (400px, webp, quality 70)
+        img = Image.open(io.BytesIO(file_content))
+        img.thumbnail((400, 400), Image.LANCZOS)
+        if img.mode in ('RGBA', 'P'):
+            img = img.convert('RGB')
+        thumb_buffer = io.BytesIO()
+        img.save(thumb_buffer, format='WEBP', quality=70, optimize=True)
+        thumb_buffer.seek(0)
+        
+        s3_client.put_object(
+            Bucket=S3_BUCKET,
+            Key=thumb_key,
+            Body=thumb_buffer.getvalue(),
+            ContentType='image/webp'
+        )
+        
+        return {"file_key": file_key, "thumb_key": thumb_key}
+    except Exception as e:
+        print(f"Error uploading file to S3: {e}")
+        raise Exception(f"Failed to upload file: {str(e)}")
+
 def generate_presigned_url(file_key: str, expiration: int = 3600) -> str:
     """
     Генерувати presigned URL для приватного файлу
