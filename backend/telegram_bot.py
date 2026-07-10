@@ -89,6 +89,7 @@ class TelegramBot:
     async def get_client_telegram_id(self, booking_id: str) -> Optional[str]:
         """Отримати Telegram ID клієнта за ID бронювання"""
         try:
+            # 1. Спочатку перевірити підписку на конкретний запис
             subscription = await self.db.telegram_subscriptions.find_one({
                 "booking_id": booking_id,
                 "is_active": True
@@ -96,6 +97,18 @@ class TelegramBot:
             
             if subscription:
                 return subscription.get("telegram_id")
+            
+            # 2. Якщо немає підписки — шукаємо telegram_id клієнта по телефону
+            booking = await self.db.bookings.find_one({"id": booking_id}, {"_id": 0})
+            if booking and booking.get("client_phone"):
+                client = await self.db.clients.find_one(
+                    {"phone": booking["client_phone"], "telegram_id": {"$exists": True, "$ne": None}},
+                    {"_id": 0}
+                )
+                if client and client.get("telegram_id"):
+                    logger.info(f"Знайдено telegram_id клієнта {booking.get('client_name')} через запис клієнта")
+                    return client["telegram_id"]
+                    
         except Exception as e:
             logger.error(f"Помилка отримання Telegram ID: {e}")
         return None
