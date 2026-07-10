@@ -570,7 +570,7 @@ function BookingPage() {
                     data-testid="input-client-email"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    📱 Після створення запису ви зможете підписатися на Telegram-сповіщення
+                    Після запису ви зможете підключити Telegram-нагадування (один раз)
                   </p>
                 </div>
                 <div>
@@ -641,33 +641,37 @@ function BookingPage() {
                 Ваш запис очікує підтвердження майстра
               </p>
 
-              {/* Telegram блок */}
+              {/* Telegram блок — ОБОВ'ЯЗКОВО */}
               {telegramLink && (
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 mb-6 border-2 border-blue-200">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 mb-6 border-2 border-blue-300 shadow-lg animate-pulse-once">
                   <div className="flex items-center justify-center mb-4">
-                    <svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-10 h-10 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.68c.223-.198-.054-.308-.346-.11l-6.4 4.03-2.76-.918c-.6-.187-.612-.6.125-.89l10.782-4.156c.5-.18.943.112.78.89z"/>
                     </svg>
                   </div>
                   
-                  <h3 className="font-bold text-lg mb-2 text-gray-900">
-                    📱 Отримуйте сповіщення в Telegram
+                  <h3 className="font-bold text-xl mb-2 text-gray-900">
+                    Отримуйте нагадування в Telegram!
                   </h3>
+                  <p className="text-sm text-gray-700 mb-1">
+                    Натисніть кнопку нижче щоб підключити нагадування.
+                  </p>
                   <p className="text-sm text-gray-700 mb-4">
-                    Підпишіться на бота для автоматичних нагадувань про запис
+                    <strong>Це потрібно зробити лише один раз</strong> — всі наступні записи отримуватимуть нагадування автоматично.
                   </p>
                   
                   <a
                     href={telegramLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+                    className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl transition-colors text-lg text-center"
+                    data-testid="telegram-subscribe-btn"
                   >
-                    Підписатися на сповіщення
+                    Підключити нагадування
                   </a>
                   
-                  <p className="text-xs text-gray-600 mt-3">
-                    Ви отримаєте: підтвердження, нагадування за 24 год, зміни статусу
+                  <p className="text-xs text-gray-500 mt-3 text-center">
+                    Нагадування прийде за 2 години до вашого запису
                   </p>
                 </div>
               )}
