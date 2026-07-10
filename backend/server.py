@@ -17,7 +17,7 @@ import hashlib
 import httpx
 from telegram_bot import telegram_bot
 from telegram_webhook import telegram_router
-from s3_utils import upload_file_to_s3, generate_presigned_url, delete_file_from_s3
+from s3_utils import upload_file_to_s3, generate_presigned_url, delete_file_from_s3, upload_file_with_thumbnail
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 import asyncio
@@ -1901,38 +1901,42 @@ async def update_site_settings(settings: SiteSettings, _: str = Depends(verify_t
 
 # ============ GALLERY ============
 
-@api_router.get("/gallery", response_model=List[GalleryImage])
-async def get_gallery_images(master_id: Optional[str] = None):
-    """Отримати активні фото з галереї (публічний доступ)"""
+@api_router.get("/gallery")
+async def get_gallery_images(master_id: Optional[str] = None, skip: int = 0, limit: int = 12):
+    """Отримати активні фото з галереї з пагінацією (публічний доступ)"""
     query = {"is_active": True}
     
     # Якщо вказано master_id - показати тільки фото цього майстра
     if master_id:
         query["master_id"] = master_id
     
-    images = await db.gallery.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    total = await db.gallery.count_documents(query)
+    images = await db.gallery.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     
-    # Генерувати presigned URLs для кожного зображення
+    # Генерувати presigned URLs
     for image in images:
+        if image.get('thumb_key'):
+            image['thumb_url'] = generate_presigned_url(image['thumb_key'], expiration=3600)
         if image.get('file_key'):
             image['image_url'] = generate_presigned_url(image['file_key'], expiration=3600)
     
-    return images
+    return {"images": images, "total": total, "skip": skip, "limit": limit, "has_more": skip + limit < total}
 
-@api_router.get("/masters/{master_id}/gallery", response_model=List[GalleryImage])
-async def get_master_gallery(master_id: str):
-    """Отримати портфоліо конкретного майстра (публічний доступ)"""
-    images = await db.gallery.find({
-        "master_id": master_id,
-        "is_active": True
-    }, {"_id": 0}).sort("created_at", -1).to_list(100)
+@api_router.get("/masters/{master_id}/gallery")
+async def get_master_gallery(master_id: str, skip: int = 0, limit: int = 12):
+    """Отримати портфоліо конкретного майстра з пагінацією (публічний доступ)"""
+    query = {"master_id": master_id, "is_active": True}
     
-    # Генерувати presigned URLs для кожного зображення
+    total = await db.gallery.count_documents(query)
+    images = await db.gallery.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
     for image in images:
+        if image.get('thumb_key'):
+            image['thumb_url'] = generate_presigned_url(image['thumb_key'], expiration=3600)
         if image.get('file_key'):
             image['image_url'] = generate_presigned_url(image['file_key'], expiration=3600)
     
-    return images
+    return {"images": images, "total": total, "skip": skip, "limit": limit, "has_more": skip + limit < total}
 
 @api_router.get("/admin/gallery", response_model=List[GalleryImage])
 async def get_all_gallery_images(user: Dict = Depends(verify_master_or_admin)):
@@ -1947,6 +1951,8 @@ async def get_all_gallery_images(user: Dict = Depends(verify_master_or_admin)):
     
     # Генерувати presigned URLs для кожного зображення
     for image in images:
+        if image.get('thumb_key'):
+            image['thumb_url'] = generate_presigned_url(image['thumb_key'], expiration=3600)
         if image.get('file_key'):
             image['image_url'] = generate_presigned_url(image['file_key'], expiration=3600)
     
@@ -1958,26 +1964,23 @@ async def create_gallery_image(
     description: Optional[str] = Form(None),
     user: Dict = Depends(verify_master_or_admin)
 ):
-    """Додати фото в галерею"""
-    # Перевірка типу файлу
+    """Додати фото в галерею (з thumbnail)"""
     if not file.content_type.startswith('image/'):
         raise HTTPException(status_code=400, detail="File must be an image")
     
-    # Отримати розширення файлу
     file_extension = file.filename.split('.')[-1].lower()
     if file_extension not in ['jpg', 'jpeg', 'png', 'webp', 'gif']:
         raise HTTPException(status_code=400, detail="Unsupported image format")
     
-    # Читати вміст файлу
     file_content = await file.read()
     
-    # Завантажити на S3
     try:
-        file_key = upload_file_to_s3(file_content, file_extension)
+        result = upload_file_with_thumbnail(file_content, file_extension)
+        file_key = result["file_key"]
+        thumb_key = result["thumb_key"]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
     
-    # Створити запис в БД
     master_id = user["user_id"] if user["role"] == "master" else None
     master_name = None
     if master_id:
@@ -1988,8 +1991,9 @@ async def create_gallery_image(
     image_id = str(uuid.uuid4())
     image = {
         "id": image_id,
-        "image_url": "",  # Буде генеруватися динамічно
+        "image_url": "",
         "file_key": file_key,
+        "thumb_key": thumb_key,
         "master_id": master_id,
         "master_name": master_name,
         "description": description,
@@ -1999,13 +2003,64 @@ async def create_gallery_image(
     
     await db.gallery.insert_one(image)
     
-    # Отримати збережений запис без _id
     saved_image = await db.gallery.find_one({"id": image_id}, {"_id": 0})
-    
-    # Генерувати presigned URL для відповіді
     saved_image['image_url'] = generate_presigned_url(file_key, expiration=3600)
+    saved_image['thumb_url'] = generate_presigned_url(thumb_key, expiration=3600)
     
     return saved_image
+
+@api_router.post("/admin/gallery/batch")
+async def create_gallery_images_batch(
+    files: List[UploadFile] = File(...),
+    description: Optional[str] = Form(None),
+    user: Dict = Depends(verify_master_or_admin)
+):
+    """Завантажити декілька фото за раз"""
+    master_id = user["user_id"] if user["role"] == "master" else None
+    master_name = None
+    if master_id:
+        master = await db.masters.find_one({"id": master_id}, {"_id": 0, "name": 1})
+        if master:
+            master_name = master.get("name")
+    
+    uploaded = []
+    errors = []
+    
+    for file in files:
+        try:
+            if not file.content_type.startswith('image/'):
+                errors.append(f"{file.filename}: не зображення")
+                continue
+            
+            file_extension = file.filename.split('.')[-1].lower()
+            if file_extension not in ['jpg', 'jpeg', 'png', 'webp', 'gif']:
+                errors.append(f"{file.filename}: непідтримуваний формат")
+                continue
+            
+            file_content = await file.read()
+            
+            result = upload_file_with_thumbnail(file_content, file_extension)
+            
+            image_id = str(uuid.uuid4())
+            image = {
+                "id": image_id,
+                "image_url": "",
+                "file_key": result["file_key"],
+                "thumb_key": result["thumb_key"],
+                "master_id": master_id,
+                "master_name": master_name,
+                "description": description,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "is_active": True
+            }
+            
+            await db.gallery.insert_one(image)
+            uploaded.append(image_id)
+            
+        except Exception as e:
+            errors.append(f"{file.filename}: {str(e)}")
+    
+    return {"uploaded": len(uploaded), "errors": errors, "image_ids": uploaded}
 
 @api_router.delete("/admin/gallery/{image_id}")
 async def delete_gallery_image(image_id: str, user: Dict = Depends(verify_master_or_admin)):
