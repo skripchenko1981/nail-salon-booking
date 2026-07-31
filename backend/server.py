@@ -491,7 +491,7 @@ async def send_master_telegram_notification(master_id: str, message: str) -> boo
         logger.error(f"Error sending Telegram to master {master_id}: {e}")
         return False
 
-async def notify_master_new_booking(booking: dict, service_name: str):
+async def notify_master_new_booking(booking: dict, service_name: str, master_name: str = ""):
     """Сповістити майстра про новий запис"""
     master_id = booking.get("master_id")
     
@@ -504,6 +504,7 @@ async def notify_master_new_booking(booking: dict, service_name: str):
     # Відправити Telegram
     message = f"""🆕 <b>Новий запис!</b>
 
+💇 Майстер: {master_name}
 👤 Клієнт: {booking.get('client_name')} {booking.get('client_surname', '')}
 📱 Телефон: {booking.get('client_phone')}
 💅 Послуга: {service_name}
@@ -924,6 +925,10 @@ async def create_booking(booking: BookingCreate, background_tasks: BackgroundTas
     if telegram_bot.enabled:
         telegram_link = telegram_bot.generate_subscription_link(booking_obj.id)
     
+    # Отримати ім'я майстра для повідомлень
+    master = await db.masters.find_one({"id": booking.master_id}, {"_id": 0, "name": 1})
+    master_name = master.get("name", "Невідомий") if master else "Невідомий"
+    
     # Відправити повідомлення адміну про новий запис
     admin_telegram_id = os.environ.get('ADMIN_TELEGRAM_ID')
     if admin_telegram_id:
@@ -935,14 +940,16 @@ async def create_booking(booking: BookingCreate, background_tasks: BackgroundTas
             booking.date,
             booking.time,
             service["price"],
-            admin_telegram_id
+            admin_telegram_id,
+            master_name
         )
     
     # Відправити сповіщення майстру через його Telegram бот
     background_tasks.add_task(
         notify_master_new_booking,
         doc,
-        service["name"]
+        service["name"],
+        master_name
     )
     
     # Повернути бронювання з посиланням на Telegram
@@ -999,6 +1006,8 @@ async def cancel_booking(booking_id: str, cancel_req: BookingCancelRequest,
     # Відправити повідомлення адміну про скасування
     admin_telegram_id = os.environ.get('ADMIN_TELEGRAM_ID')
     if admin_telegram_id:
+        master = await db.masters.find_one({"id": booking.get("master_id")}, {"_id": 0, "name": 1})
+        cancel_master_name = master.get("name", "") if master else ""
         background_tasks.add_task(
             telegram_bot.notify_admin_booking_cancelled,
             booking["client_name"],
@@ -1008,7 +1017,8 @@ async def cancel_booking(booking_id: str, cancel_req: BookingCancelRequest,
             booking["time"],
             booking["price"],
             cancel_req.cancellation_reason,
-            admin_telegram_id
+            admin_telegram_id,
+            cancel_master_name
         )
     
     return {"message": "Booking cancelled successfully"}

@@ -301,10 +301,12 @@ class TelegramBot:
     
     async def notify_admin_new_booking(self, client_name: str, client_phone: str,
                                       service_name: str, date: str, time: str,
-                                      price: int, admin_telegram_id: str) -> bool:
+                                      price: int, admin_telegram_id: str,
+                                      master_name: str = "") -> bool:
         """Повідомлення адміну про новий запис"""
         text = f"""🔔 <b>НОВИЙ ЗАПИС!</b>
 
+💇 Майстер: {master_name}
 👤 Клієнт: {client_name}
 📱 Телефон: {client_phone}
 
@@ -320,10 +322,12 @@ class TelegramBot:
     async def notify_admin_booking_cancelled(self, client_name: str, client_phone: str,
                                             service_name: str, date: str, time: str,
                                             price: int, reason: Optional[str],
-                                            admin_telegram_id: str) -> bool:
+                                            admin_telegram_id: str,
+                                            master_name: str = "") -> bool:
         """Повідомлення адміну про скасування запису"""
         text = f"""❌ <b>СКАСОВАНО ЗАПИС</b>
 
+💇 Майстер: {master_name}
 👤 Клієнт: {client_name}
 📱 Телефон: {client_phone}
 
