@@ -6,17 +6,14 @@ import logging
 import re
 from fastapi import APIRouter, Request, HTTPException
 from telegram_bot import telegram_bot
-from motor.motor_asyncio import AsyncIOMotorClient
 import os
 
 logger = logging.getLogger(__name__)
 
-telegram_router = APIRouter(prefix="/api/telegram", tags=["telegram"])
+telegram_router = APIRouter(prefix="/telegram", tags=["telegram"])
 
-# MongoDB connection
-mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ.get('DB_NAME', 'test_database')]
+# MongoDB connection - use shared database
+from database import db
 
 
 def normalize_phone(phone: str) -> str:
