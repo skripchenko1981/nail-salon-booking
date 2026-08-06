@@ -4,13 +4,10 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Save, Eye } from 'lucide-react';
-import axios from 'axios';
+import api from '../../lib/api';
 import { toast } from 'sonner';
 import { useSettings } from '../../context/SettingsContext';
 import { useTheme } from '../../context/ThemeContext';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
 
 function AdminSettings() {
   const { refreshSettings } = useSettings();
@@ -49,7 +46,7 @@ function AdminSettings() {
 
   const fetchSettings = async () => {
     try {
-      const response = await axios.get(`${API}/settings`);
+      const response = await api.get('/settings');
       setSettings(response.data);
     } catch (error) {
       toast.error('Помилка завантаження налаштувань');
@@ -63,14 +60,10 @@ function AdminSettings() {
     setSaving(true);
 
     try {
-      const token = localStorage.getItem('admin_token');
-      await axios.put(`${API}/admin/settings`, settings, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.put('/admin/settings', settings);
       toast.success('Налаштування збережено!', {
         description: 'Зміни застосовано на сайті'
       });
-      // Оновити налаштування та тему в контексті
       refreshSettings();
       refreshTheme();
     } catch (error) {

@@ -3,10 +3,11 @@ import { Bell, BellOff, Send, Save, Info, ExternalLink, CheckCircle, AlertCircle
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Switch } from '../ui/switch';
-
-const API = process.env.REACT_APP_BACKEND_URL;
+import api from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
 
 export default function MasterTelegramSettings() {
+  const { user } = useAuth();
   const [botToken, setBotToken] = useState('');
   const [chatId, setChatId] = useState('');
   const [enabled, setEnabled] = useState(false);
@@ -16,15 +17,7 @@ export default function MasterTelegramSettings() {
   const [testing, setTesting] = useState(false);
   const [message, setMessage] = useState(null);
 
-  const getHeaders = () => {
-    const token = localStorage.getItem('master_token') || localStorage.getItem('token');
-    return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
-  };
-
-  const getMasterId = () => {
-    const data = JSON.parse(localStorage.getItem('master_data') || '{}');
-    return data.id;
-  };
+  const getMasterId = () => user?.id;
 
   useEffect(() => {
     fetchProfile();
@@ -34,14 +27,11 @@ export default function MasterTelegramSettings() {
     try {
       const masterId = getMasterId();
       if (!masterId) return;
-      const res = await fetch(`${API}/api/masters/${masterId}`, { headers: getHeaders() });
-      if (res.ok) {
-        const data = await res.json();
-        setBotToken(data.telegram_bot_token || '');
-        setChatId(data.telegram_chat_id || '');
-        setEnabled(data.telegram_notifications_enabled || false);
-        setUnreadCount(data.unread_bookings_count || 0);
-      }
+      const res = await api.get(`/masters/${masterId}`);
+      setBotToken(res.data.telegram_bot_token || '');
+      setChatId(res.data.telegram_chat_id || '');
+      setEnabled(res.data.telegram_notifications_enabled || false);
+      setUnreadCount(res.data.unread_bookings_count || 0);
     } catch (err) {
       console.error('Failed to load profile:', err);
     } finally {
@@ -54,23 +44,14 @@ export default function MasterTelegramSettings() {
     setMessage(null);
     try {
       const masterId = getMasterId();
-      const res = await fetch(`${API}/api/masters/${masterId}/telegram`, {
-        method: 'PATCH',
-        headers: getHeaders(),
-        body: JSON.stringify({
-          telegram_bot_token: botToken || null,
-          telegram_chat_id: chatId || null,
-          telegram_notifications_enabled: enabled,
-        }),
+      await api.patch(`/masters/${masterId}/telegram`, {
+        telegram_bot_token: botToken || null,
+        telegram_chat_id: chatId || null,
+        telegram_notifications_enabled: enabled,
       });
-      if (res.ok) {
-        setMessage({ type: 'success', text: 'Налаштування збережено!' });
-      } else {
-        const err = await res.json();
-        setMessage({ type: 'error', text: err.detail || 'Помилка збереження' });
-      }
-    } catch {
-      setMessage({ type: 'error', text: 'Помилка з\'єднання з сервером' });
+      setMessage({ type: 'success', text: 'Налаштування збережено!' });
+    } catch (err) {
+      setMessage({ type: 'error', text: err.response?.data?.detail || 'Помилка збереження' });
     } finally {
       setSaving(false);
     }
@@ -81,18 +62,10 @@ export default function MasterTelegramSettings() {
     setMessage(null);
     try {
       const masterId = getMasterId();
-      const res = await fetch(`${API}/api/masters/${masterId}/test-telegram`, {
-        method: 'POST',
-        headers: getHeaders(),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setMessage({ type: 'success', text: data.message });
-      } else {
-        setMessage({ type: 'error', text: data.detail || 'Помилка тесту' });
-      }
-    } catch {
-      setMessage({ type: 'error', text: 'Помилка з\'єднання з сервером' });
+      const res = await api.post(`/masters/${masterId}/test-telegram`);
+      setMessage({ type: 'success', text: res.data.message });
+    } catch (err) {
+      setMessage({ type: 'error', text: err.response?.data?.detail || 'Помилка тесту' });
     } finally {
       setTesting(false);
     }
@@ -101,14 +74,9 @@ export default function MasterTelegramSettings() {
   const handleResetNotifications = async () => {
     try {
       const masterId = getMasterId();
-      const res = await fetch(`${API}/api/masters/${masterId}/reset-notifications`, {
-        method: 'POST',
-        headers: getHeaders(),
-      });
-      if (res.ok) {
-        setUnreadCount(0);
-        setMessage({ type: 'success', text: 'Лічильник скинуто' });
-      }
+      await api.post(`/masters/${masterId}/reset-notifications`);
+      setUnreadCount(0);
+      setMessage({ type: 'success', text: 'Лічильник скинуто' });
     } catch {
       setMessage({ type: 'error', text: 'Помилка скидання' });
     }

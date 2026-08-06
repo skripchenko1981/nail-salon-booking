@@ -3,7 +3,8 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Calendar, Clock, Phone, Mail, User, Edit, Trash2, StickyNote, Save } from 'lucide-react';
-import axios from 'axios';
+import api from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
 import { Textarea } from '../ui/textarea';
 import {
@@ -22,10 +23,8 @@ import {
   DialogTitle,
 } from '../ui/dialog';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
 function AdminBookings() {
+  const { user } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('all');
@@ -50,19 +49,13 @@ function AdminBookings() {
     }
   }, [selectedDate]);
 
-  const getMasterId = () => {
-    const data = JSON.parse(localStorage.getItem('master_data') || '{}');
-    return data.id;
-  };
+  const getMasterId = () => user?.id;
 
   const fetchDailyNote = async (date) => {
     try {
       const masterId = getMasterId();
       if (!masterId) return;
-      const token = localStorage.getItem('master_token') || localStorage.getItem('admin_token');
-      const res = await axios.get(`${API}/masters/${masterId}/notes/${date}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get(`/masters/${masterId}/notes/${date}`);
       setDailyNote(res.data.text || '');
       setNoteLoaded(true);
     } catch {
@@ -76,12 +69,7 @@ function AdminBookings() {
     if (!masterId || !selectedDate) return;
     setNoteSaving(true);
     try {
-      const token = localStorage.getItem('master_token') || localStorage.getItem('admin_token');
-      await axios.put(
-        `${API}/masters/${masterId}/notes/${selectedDate}`,
-        { text: dailyNote },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.put(`/masters/${masterId}/notes/${selectedDate}`, { text: dailyNote });
       toast.success('Нотатку збережено');
     } catch {
       toast.error('Помилка збереження нотатки');
@@ -92,10 +80,7 @@ function AdminBookings() {
 
   const fetchBookings = async () => {
     try {
-      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
-      const response = await axios.get(`${API}/admin/bookings`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/admin/bookings');
       setBookings(response.data);
     } catch (error) {
       console.error('Booking fetch error:', error);
@@ -107,12 +92,7 @@ function AdminBookings() {
 
   const handleStatusChange = async (bookingId, newStatus) => {
     try {
-      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
-      await axios.put(
-        `${API}/admin/bookings/${bookingId}`,
-        { status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.put(`/admin/bookings/${bookingId}`, { status: newStatus });
       toast.success('Статус оновлено');
       fetchBookings();
     } catch (error) {
@@ -131,15 +111,10 @@ function AdminBookings() {
     if (!editingBooking) return;
     
     try {
-      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
-      await axios.put(
-        `${API}/admin/bookings/${editingBooking.id}`,
-        { 
-          duration_minutes: editDuration,
-          status: 'confirmed'
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.put(`/admin/bookings/${editingBooking.id}`, { 
+        duration_minutes: editDuration,
+        status: 'confirmed'
+      });
       toast.success('Запис підтверджено з оновленою тривалістю');
       setEditDialogOpen(false);
       fetchBookings();
@@ -175,10 +150,7 @@ function AdminBookings() {
     }
 
     try {
-      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
-      await axios.delete(`${API}/admin/bookings/${bookingId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/admin/bookings/${bookingId}`);
       toast.success('Запис успішно видалено');
       fetchBookings();
     } catch (error) {

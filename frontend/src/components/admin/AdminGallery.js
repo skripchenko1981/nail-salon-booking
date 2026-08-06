@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Plus, Trash2, Eye, EyeOff, Image as ImageIcon, Upload, X } from 'lucide-react';
-import axios from 'axios';
+import api from '../../lib/api';
 import { toast } from 'sonner';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
 
 function AdminGallery() {
   const [images, setImages] = useState([]);
@@ -24,13 +20,9 @@ function AdminGallery() {
     fetchImages();
   }, []);
 
-  const getToken = () => localStorage.getItem('admin_token') || localStorage.getItem('master_token');
-
   const fetchImages = async () => {
     try {
-      const response = await axios.get(`${API}/admin/gallery`, {
-        headers: { Authorization: `Bearer ${getToken()}` }
-      });
+      const response = await api.get('/admin/gallery');
       setImages(response.data);
     } catch {
       toast.error('Помилка завантаження галереї');
@@ -80,15 +72,13 @@ function AdminGallery() {
     setUploadProgress(0);
 
     try {
-      const token = getToken();
-
       if (selectedFiles.length === 1) {
         const formData = new FormData();
         formData.append('file', selectedFiles[0]);
         if (description) formData.append('description', description);
 
-        await axios.post(`${API}/admin/gallery`, formData, {
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+        await api.post('/admin/gallery', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
         });
         toast.success('Фото завантажено!');
       } else {
@@ -96,8 +86,8 @@ function AdminGallery() {
         selectedFiles.forEach(file => formData.append('files', file));
         if (description) formData.append('description', description);
 
-        const res = await axios.post(`${API}/admin/gallery/batch`, formData, {
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+        const res = await api.post('/admin/gallery/batch', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
           onUploadProgress: (e) => {
             setUploadProgress(Math.round((e.loaded * 100) / e.total));
           }
@@ -129,9 +119,7 @@ function AdminGallery() {
 
   const handleToggleActive = async (imageId, currentStatus) => {
     try {
-      await axios.put(`${API}/admin/gallery/${imageId}?is_active=${!currentStatus}`, {}, {
-        headers: { Authorization: `Bearer ${getToken()}` }
-      });
+      await api.put(`/admin/gallery/${imageId}?is_active=${!currentStatus}`, {});
       toast.success(currentStatus ? 'Фото приховано' : 'Фото показано');
       fetchImages();
     } catch {
@@ -142,9 +130,7 @@ function AdminGallery() {
   const handleDelete = async (imageId) => {
     if (!window.confirm('Видалити це фото?')) return;
     try {
-      await axios.delete(`${API}/admin/gallery/${imageId}`, {
-        headers: { Authorization: `Bearer ${getToken()}` }
-      });
+      await api.delete(`/admin/gallery/${imageId}`);
       toast.success('Фото видалено');
       fetchImages();
     } catch {

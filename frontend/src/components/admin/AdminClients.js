@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { User, Phone, Mail, Calendar, TrendingUp, Eye } from 'lucide-react';
-import axios from 'axios';
+import api from '../../lib/api';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -10,9 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../ui/dialog';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
 
 function AdminClients() {
   const [clients, setClients] = useState([]);
@@ -29,14 +26,9 @@ function AdminClients() {
 
   const fetchData = async () => {
     try {
-      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
       const [clientsRes, statsRes] = await Promise.all([
-        axios.get(`${API}/admin/clients`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get(`${API}/admin/clients/stats`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        api.get('/admin/clients'),
+        api.get('/admin/clients/stats')
       ]);
       setClients(clientsRes.data);
       setStats(statsRes.data);
@@ -52,10 +44,7 @@ function AdminClients() {
     setDialogOpen(true);
     
     try {
-      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
-      const response = await axios.get(`${API}/admin/clients/${client.id}/bookings`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(`/admin/clients/${client.id}/bookings`);
       setClientBookings(response.data);
     } catch (error) {
       toast.error('Помилка завантаження історії');
