@@ -64,8 +64,23 @@ function AdminServices() {
     try {
       const masterId = getMasterId();
       const response = await api.get(`/service-categories/${masterId}`);
-      setCategories(response.data.all_labels);
-      setCustomCategories(response.data.custom_categories || []);
+      const cats = response.data;
+      // Backend returns an array of category objects — build a {key: name} map
+      if (Array.isArray(cats)) {
+        const labels = { ...DEFAULT_CATEGORIES };
+        const custom = [];
+        for (const cat of cats) {
+          labels[cat.key || cat.id] = cat.name;
+          if (cat.master_id) custom.push(cat);
+        }
+        setCategories(labels);
+        setCustomCategories(custom);
+      } else if (cats?.all_labels) {
+        setCategories(cats.all_labels);
+        setCustomCategories(cats.custom_categories || []);
+      } else {
+        setCategories(DEFAULT_CATEGORIES);
+      }
     } catch (error) {
       console.error('Помилка завантаження категорій:', error);
       setCategories(DEFAULT_CATEGORIES);
