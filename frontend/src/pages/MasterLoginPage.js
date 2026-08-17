@@ -4,14 +4,13 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { LogIn } from 'lucide-react';
-import axios from 'axios';
 import { toast } from 'sonner';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import api from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 
 function MasterLoginPage() {
   const navigate = useNavigate();
+  const { loginMaster } = useAuth();
   const [credentials, setCredentials] = useState({
     email: '',
     password: ''
@@ -23,9 +22,8 @@ function MasterLoginPage() {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${API}/masters/login`, credentials);
-      localStorage.setItem('master_token', response.data.token);
-      localStorage.setItem('master_data', JSON.stringify(response.data.master));
+      const response = await api.post('/masters/login', credentials);
+      loginMaster(response.data.token, response.data.master);
       toast.success('Успішний вхід!');
       navigate('/master/dashboard');
     } catch (error) {

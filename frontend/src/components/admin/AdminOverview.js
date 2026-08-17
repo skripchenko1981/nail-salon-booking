@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar, Clock, DollarSign, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
-import axios from 'axios';
+import api from '../../lib/api';
 import { toast } from 'sonner';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
 
 function AdminOverview() {
   const [stats, setStats] = useState(null);
@@ -25,10 +22,7 @@ function AdminOverview() {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
-      const response = await axios.get(`${API}/admin/stats`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/admin/stats');
       setStats(response.data);
     } catch (error) {
       toast.error('Помилка завантаження статистики');
@@ -39,16 +33,11 @@ function AdminOverview() {
 
   const fetchMonthlyStats = async () => {
     try {
-      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
       const params = { year: selectedYear };
       if (selectedMaster !== 'all') {
         params.master_id = selectedMaster;
       }
-      
-      const response = await axios.get(`${API}/admin/stats/monthly`, {
-        params,
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/admin/stats/monthly', { params });
       setMonthlyStats(response.data);
     } catch (error) {
       console.error('Помилка завантаження місячної статистики');
@@ -57,10 +46,7 @@ function AdminOverview() {
 
   const fetchMastersStats = async () => {
     try {
-      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
-      const response = await axios.get(`${API}/admin/stats/masters`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/admin/stats/masters');
       setMastersStats(response.data);
     } catch (error) {
       console.error('Помилка завантаження статистики майстрів');
@@ -69,10 +55,7 @@ function AdminOverview() {
 
   const fetchMasters = async () => {
     try {
-      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
-      const response = await axios.get(`${API}/masters`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/masters');
       setMasters(response.data);
     } catch (error) {
       console.error('Помилка завантаження списку майстрів');

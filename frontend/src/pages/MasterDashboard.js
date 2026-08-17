@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Routes, Route, Navigate, useNavigate, NavLink } from 'react-router-dom';
 import { LayoutDashboard, Calendar, Users, Package, Settings, LogOut, User, Image, Bell } from 'lucide-react';
 import { Button } from '../components/ui/button';
@@ -10,26 +10,16 @@ import AdminClients from '../components/admin/AdminClients';
 import AdminVacations from '../components/admin/AdminVacations';
 import AdminGallery from '../components/admin/AdminGallery';
 import MasterTelegramSettings from '../components/admin/MasterTelegramSettings';
+import { useAuth } from '../context/AuthContext';
 
 function MasterDashboard() {
   const navigate = useNavigate();
-  const [masterName, setMasterName] = useState('Майстер');
-  const [masterEmail, setMasterEmail] = useState('');
-  
-  useEffect(() => {
-    // Отримати дані майстра з localStorage
-    const masterData = JSON.parse(localStorage.getItem('master_data') || '{}');
-    if (masterData.name) {
-      setMasterName(masterData.name);
-    }
-    if (masterData.email) {
-      setMasterEmail(masterData.email);
-    }
-  }, []);
+  const { user, logout } = useAuth();
+  const masterName = user?.name || 'Майстер';
+  const masterEmail = user?.email || '';
   
   const handleLogout = () => {
-    localStorage.removeItem('master_token');
-    localStorage.removeItem('master_data');
+    logout();
     navigate('/master/login');
   };
 

@@ -1,39 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { LayoutDashboard, Calendar, Settings, Package, LogOut, Menu, X, Users, Image } from 'lucide-react';
+import { LayoutDashboard, Settings, Package, LogOut, Menu, X, Users, Image } from 'lucide-react';
 import AdminOverview from '../components/admin/AdminOverview';
-import AdminBookings from '../components/admin/AdminBookings';
-import AdminServices from '../components/admin/AdminServices';
-import AdminSchedule from '../components/admin/AdminSchedule';
-import AdminClients from '../components/admin/AdminClients';
-import AdminSettings from '../components/admin/AdminSettings';
-import AdminVacations from '../components/admin/AdminVacations';
 import AdminMasters from '../components/admin/AdminMasters';
 import AdminGallery from '../components/admin/AdminGallery';
 import AdminPromoBlocks from '../components/admin/AdminPromoBlocks';
-import axios from 'axios';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import AdminSettings from '../components/admin/AdminSettings';
+import { useAuth } from '../context/AuthContext';
 
 function AdminDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const token = localStorage.getItem('admin_token');
-  const [isAdmin, setIsAdmin] = useState(true);
-
-  // Protect admin routes
-  useEffect(() => {
-    if (!token) {
-      navigate('/admin/login');
-    }
-  }, [token, navigate]);
+  const { logout } = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_username');
+    logout();
     navigate('/admin/login');
   };
 
@@ -45,8 +28,6 @@ function AdminDashboard() {
     { path: '/admin/promo', icon: Package, label: 'Промо-блоки', testId: 'nav-promo' },
     { path: '/admin/settings', icon: Settings, label: 'Налаштування сайту', testId: 'nav-settings' },
   ];
-
-  if (!token) return null;
 
   return (
     <div className="min-h-screen bg-[#FDFCFB] flex">

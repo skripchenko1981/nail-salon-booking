@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Label } from '../ui/label';
 import { Clock, Save } from 'lucide-react';
-import axios from 'axios';
+import api from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
 import { Switch } from '../ui/switch';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
 function AdminSchedule() {
+  const { user } = useAuth();
   const [schedule, setSchedule] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const getMasterId = () => user?.id || 'admin';
 
   const daysOfWeek = [
     'Понеділок',
@@ -30,9 +30,8 @@ function AdminSchedule() {
 
   const fetchSchedule = async () => {
     try {
-      const masterData = JSON.parse(localStorage.getItem('master_data') || '{"id": "admin"}');
-      const masterId = masterData.id;
-      const response = await axios.get(`${API}/schedule?master_id=${masterId}`);
+      const masterId = getMasterId();
+      const response = await api.get(`/schedule?master_id=${masterId}`);
       setSchedule(response.data);
     } catch (error) {
       toast.error('Помилка завантаження розкладу');
@@ -42,22 +41,16 @@ function AdminSchedule() {
   };
 
   const handleSave = async (daySchedule) => {
-    const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
-    const masterData = JSON.parse(localStorage.getItem('master_data') || '{"id": "admin"}');
-    const masterId = masterData.id;
+    const masterId = getMasterId();
     
     try {
-      await axios.post(
-        `${API}/schedule`,
-        {
-          master_id: masterId,
-          day_of_week: daySchedule.day_of_week,
-          start_time: daySchedule.start_time,
-          end_time: daySchedule.end_time,
-          is_working: daySchedule.is_working
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.post('/schedule', {
+        master_id: masterId,
+        day_of_week: daySchedule.day_of_week,
+        start_time: daySchedule.start_time,
+        end_time: daySchedule.end_time,
+        is_working: daySchedule.is_working
+      });
       toast.success('Розклад оновлено');
       fetchSchedule();
     } catch (error) {

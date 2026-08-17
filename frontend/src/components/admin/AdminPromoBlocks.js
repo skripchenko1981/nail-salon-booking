@@ -4,10 +4,8 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
-import axios from 'axios';
+import api from '../../lib/api';
 import { toast } from 'sonner';
-
-const API = process.env.REACT_APP_BACKEND_URL;
 
 function AdminPromoBlocks() {
   const [blocks, setBlocks] = useState([]);
@@ -33,10 +31,7 @@ function AdminPromoBlocks() {
 
   const fetchBlocks = async () => {
     try {
-      const token = localStorage.getItem('admin_token');
-      const response = await axios.get(`${API}/api/admin/promo-blocks`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/admin/promo-blocks');
       setBlocks(response.data);
     } catch (error) {
       toast.error('Помилка завантаження блоків');
@@ -103,28 +98,19 @@ function AdminPromoBlocks() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('admin_token');
     setUploading(true);
 
     try {
       let imageUrl = formData.image_url;
       let imageKey = formData.image_key;
 
-      // Якщо вибрано новий файл - завантажити на S3
       if (selectedFile) {
         const uploadFormData = new FormData();
         uploadFormData.append('file', selectedFile);
         
-        const uploadResponse = await axios.post(
-          `${API}/api/admin/gallery`,
-          uploadFormData,
-          {
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data'
-            }
-          }
-        );
+        const uploadResponse = await api.post('/admin/gallery', uploadFormData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         
         imageUrl = uploadResponse.data.image_url;
         imageKey = uploadResponse.data.file_key;
@@ -137,18 +123,10 @@ function AdminPromoBlocks() {
       };
 
       if (editingBlock) {
-        await axios.put(
-          `${API}/api/admin/promo-blocks/${editingBlock.id}`,
-          blockData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await api.put(`/admin/promo-blocks/${editingBlock.id}`, blockData);
         toast.success('Блок оновлено');
       } else {
-        await axios.post(
-          `${API}/api/admin/promo-blocks`,
-          blockData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await api.post('/admin/promo-blocks', blockData);
         toast.success('Блок створено');
       }
       setDialogOpen(false);
@@ -165,10 +143,7 @@ function AdminPromoBlocks() {
     if (!window.confirm('Видалити цей блок?')) return;
 
     try {
-      const token = localStorage.getItem('admin_token');
-      await axios.delete(`${API}/api/admin/promo-blocks/${blockId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/admin/promo-blocks/${blockId}`);
       toast.success('Блок видалено');
       fetchBlocks();
     } catch (error) {
@@ -178,12 +153,7 @@ function AdminPromoBlocks() {
 
   const toggleActive = async (block) => {
     try {
-      const token = localStorage.getItem('admin_token');
-      await axios.put(
-        `${API}/api/admin/promo-blocks/${block.id}`,
-        { is_active: !block.is_active },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.put(`/admin/promo-blocks/${block.id}`, { is_active: !block.is_active });
       toast.success(block.is_active ? 'Блок приховано' : 'Блок показується');
       fetchBlocks();
     } catch (error) {

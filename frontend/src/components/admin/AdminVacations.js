@@ -4,7 +4,8 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Calendar, Plus, Edit, Trash2 } from 'lucide-react';
-import axios from 'axios';
+import api from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -15,10 +16,8 @@ import {
   DialogTitle,
 } from '../ui/dialog';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
 function AdminVacations() {
+  const { user } = useAuth();
   const [vacations, setVacations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -30,16 +29,15 @@ function AdminVacations() {
     reason: ''
   });
 
+  const getMasterId = () => user?.id || 'admin';
+
   useEffect(() => {
     fetchVacations();
   }, []);
 
   const fetchVacations = async () => {
     try {
-      const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
-      const response = await axios.get(`${API}/vacations`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/vacations');
       setVacations(response.data);
     } catch (error) {
       toast.error('Помилка завантаження відпусток');
@@ -49,13 +47,12 @@ function AdminVacations() {
   };
 
   const handleOpenDialog = (vacation = null) => {
-    const masterData = JSON.parse(localStorage.getItem('master_data') || '{"id": "admin"}');
-    const masterId = masterData.id;
+    const masterId = getMasterId();
     
     if (vacation) {
       setEditingVacation(vacation);
       setFormData({
-        master_id: masterId,  // Завжди використовуємо поточного майстра
+        master_id: masterId,
         start_date: vacation.start_date,
         end_date: vacation.end_date,
         reason: vacation.reason || ''
@@ -74,22 +71,12 @@ function AdminVacations() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
-
     try {
       if (editingVacation) {
-        await axios.put(
-          `${API}/vacations/${editingVacation.id}`,
-          formData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await api.put(`/vacations/${editingVacation.id}`, formData);
         toast.success('Відпустку оновлено');
       } else {
-        await axios.post(
-          `${API}/vacations`,
-          formData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await api.post('/vacations', formData);
         toast.success('Відпустку створено');
       }
       setDialogOpen(false);
@@ -101,12 +88,8 @@ function AdminVacations() {
 
   const handleDelete = async (vacationId) => {
     if (!window.confirm('Ви впевнені, що хочете видалити цю відпустку?')) return;
-
-    const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
     try {
-      await axios.delete(`${API}/vacations/${vacationId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/vacations/${vacationId}`);
       toast.success('Відпустку видалено');
       fetchVacations();
     } catch (error) {

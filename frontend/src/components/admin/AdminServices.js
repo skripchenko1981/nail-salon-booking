@@ -4,7 +4,8 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Plus, Edit, Trash2, Clock, DollarSign, FolderPlus } from 'lucide-react';
-import axios from 'axios';
+import api from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -15,9 +16,6 @@ import {
   DialogTitle,
 } from '../ui/dialog';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
 const DEFAULT_CATEGORIES = {
   manicure: 'Манікюр',
   pedicure: 'Педикюр',
@@ -25,6 +23,7 @@ const DEFAULT_CATEGORIES = {
 };
 
 function AdminServices() {
+  const { user } = useAuth();
   const [services, setServices] = useState([]);
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const [customCategories, setCustomCategories] = useState([]);
@@ -42,6 +41,8 @@ function AdminServices() {
     image_url: ''
   });
 
+  const getMasterId = () => user?.id || 'admin';
+
   useEffect(() => {
     fetchServices();
     fetchCategories();
@@ -49,9 +50,8 @@ function AdminServices() {
 
   const fetchServices = async () => {
     try {
-      const masterData = JSON.parse(localStorage.getItem('master_data') || '{"id": "admin"}');
-      const masterId = masterData.id;
-      const response = await axios.get(`${API}/services?master_id=${masterId}`);
+      const masterId = getMasterId();
+      const response = await api.get(`/services?master_id=${masterId}`);
       setServices(response.data);
     } catch (error) {
       toast.error('Помилка завантаження послуг');
@@ -62,12 +62,8 @@ function AdminServices() {
 
   const fetchCategories = async () => {
     try {
-      const masterData = JSON.parse(localStorage.getItem('master_data') || '{"id": "admin"}');
-      const masterId = masterData.id;
-      const token = localStorage.getItem('master_token') || localStorage.getItem('admin_token');
-      const response = await axios.get(`${API}/service-categories/${masterId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const masterId = getMasterId();
+      const response = await api.get(`/service-categories/${masterId}`);
       setCategories(response.data.all_labels);
       setCustomCategories(response.data.custom_categories || []);
     } catch (error) {
@@ -83,11 +79,7 @@ function AdminServices() {
     }
     
     try {
-      const token = localStorage.getItem('master_token') || localStorage.getItem('admin_token');
-      await axios.post(`${API}/service-categories`, 
-        { name: newCategoryName },
-        { headers: { Authorization: `Bearer ${token}` }}
-      );
+      await api.post('/service-categories', { name: newCategoryName });
       toast.success('Категорію створено');
       setNewCategoryName('');
       setCategoryDialogOpen(false);
@@ -101,10 +93,7 @@ function AdminServices() {
     if (!window.confirm('Видалити цю категорію? Послуги будуть переміщені в "Манікюр".')) return;
     
     try {
-      const token = localStorage.getItem('master_token') || localStorage.getItem('admin_token');
-      await axios.delete(`${API}/service-categories/${categoryId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/service-categories/${categoryId}`);
       toast.success('Категорію видалено');
       fetchCategories();
       fetchServices();
@@ -114,8 +103,7 @@ function AdminServices() {
   };
 
   const handleOpenDialog = (service = null) => {
-    const masterData = JSON.parse(localStorage.getItem('master_data') || '{"id": "admin"}');
-    const masterId = masterData.id;
+    const masterId = getMasterId();
     
     if (service) {
       setEditingService(service);
@@ -145,25 +133,15 @@ function AdminServices() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
-    const masterData = JSON.parse(localStorage.getItem('master_data') || '{"id": "admin"}');
-    const masterId = masterData.id;
+    const masterId = getMasterId();
     
     try {
       if (editingService) {
-        await axios.put(
-          `${API}/services/${editingService.id}`,
-          formData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await api.put(`/services/${editingService.id}`, formData);
         toast.success('Послугу оновлено');
       } else {
         const serviceData = { ...formData, master_id: masterId };
-        await axios.post(
-          `${API}/services`,
-          serviceData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await api.post('/services', serviceData);
         toast.success('Послугу створено');
       }
       setDialogOpen(false);
@@ -176,11 +154,8 @@ function AdminServices() {
   const handleDelete = async (serviceId) => {
     if (!window.confirm('Ви впевнені, що хочете видалити цю послугу?')) return;
     
-    const token = localStorage.getItem('admin_token') || localStorage.getItem('master_token');
     try {
-      await axios.delete(`${API}/services/${serviceId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/services/${serviceId}`);
       toast.success('Послугу видалено');
       fetchServices();
     } catch (error) {

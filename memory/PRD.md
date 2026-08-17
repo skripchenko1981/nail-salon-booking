@@ -29,12 +29,14 @@
 
 ### Homepage CMS (Complete)
 - Dynamic content editing
-- Promo blocks system
+- Promo blocks system with S3 presigned URLs
 - Gallery integration
 
 ### Notifications (Complete)
-- Telegram bot subscription flow
-- Automated notifications for booking status changes
+- Telegram bot subscription flow (webhook-based)
+- Automated client reminders (APScheduler, Europe/Kyiv timezone)
+- Individual master Telegram bots for new booking alerts
+- Admin bot with master name in notifications
 - Deep linking for client subscription
 
 ### Analytics Dashboard (Complete)
@@ -47,146 +49,91 @@
 - Hetzner S3 integration
 - Direct browser-to-bucket uploads for gallery
 - Presigned URLs for secure access
+- Thumbnails (Pillow-generated 400px WebP) for new gallery uploads
 
-## Recent Bug Fixes (2025-01-11)
+### SEO (Complete)
+- Meta tags, JSON-LD (NailSalon), Open Graph, sitemap.xml, robots.txt
+- Semantic HTML, geo tags for local SEO
 
-### P0 Bug Fixed: "помилка збереження блоку" (Error saving block)
-- **Root Cause:** Missing `/api` prefix in all API calls within `AdminPromoBlocks.js`
-- **Fix Applied:** Changed 6 instances of `${API}/admin/...` to `${API}/api/admin/...`
-- **Affected File:** `/app/frontend/src/components/admin/AdminPromoBlocks.js`
-- **Testing Status:** ✅ PASSED (all CRUD operations verified)
+### Backend Architecture (Complete - Refactored)
+- Modular router structure: `/app/backend/routes/`
+- Thin `server.py` entry point
+- Separated: `database.py`, `auth.py`, `models.py`, `helpers.py`, `notifications.py`, `scheduler.py`, `s3_utils.py`, `telegram_bot.py`, `telegram_webhook.py`
 
-### P1 Fix: Gallery Link Missing in Admin Menu
-- **Fix Applied:** Added Gallery menu item and route to AdminDashboard.js
-- **Affected File:** `/app/frontend/src/pages/AdminDashboard.js`
-- **Testing Status:** ✅ PASSED
-
-## Recent Bug Fixes (2025-01-19)
-
-### P0 Bug Fixed: Reminder Notifications Not Sending
-- **Root Cause:** 
-  1. No scheduled task was running to check for reminders
-  2. Default reminder time was 24 hours instead of 2 hours
-- **Fix Applied:**
-  - Added APScheduler for automatic reminder checks every 5 minutes
-  - Changed default `reminder_hours` from 24 to 2
-  - Added startup event to initialize scheduler
-  - Added admin endpoints for manual trigger and status check
-- **Affected Files:**
-  - `/app/backend/server.py` - Added scheduler and endpoints
-  - `/app/backend/send_reminders.py` - Updated logic
-- **New Endpoints:**
-  - `POST /api/admin/send-reminders` - Manual trigger
-  - `GET /api/admin/reminder-status` - Check status
-- **IMPORTANT:** Clients must subscribe to Telegram bot after booking to receive reminders
-
-## Recent Feature (2025-12-10): Individual Master Telegram Notifications
-
-### Implementation
-- **Backend endpoints:**
-  - `PATCH /api/masters/{master_id}/telegram` — Save bot token, chat ID, enable/disable
-  - `POST /api/masters/{master_id}/test-telegram` — Test message delivery
-  - `POST /api/masters/{master_id}/reset-notifications` — Reset unread counter
-- **Frontend:** New `MasterTelegramSettings.js` component added to MasterDashboard at `/master/telegram`
-- **Notification flow:** On new booking, `notify_master_new_booking()` increments counter and sends Telegram message via master's own bot
-- **Testing Status:** PASSED (19/19 backend, 100% frontend)
-
-## Gallery Optimization (2025-12-10)
-
-### Implemented
-- Multi-file upload: Batch endpoint `POST /api/admin/gallery/batch`, drag & drop UI with previews
-- Thumbnails: Auto-generated 400px WebP thumbnails via Pillow stored as `thumb_key` in S3
-- Pagination: `skip` & `limit` params on `/gallery` and `/masters/{id}/gallery`, "Load more" button
-- Lazy loading: `loading="lazy"` on all gallery images
-
-## Reminder Fix (2025-12-10)
-
-### Issues Fixed
-- Timezone: Replaced hardcoded UTC+2 with `Europe/Kyiv` (pytz) for automatic DST handling
-- Client telegram_id: Now stored permanently on client record after first subscription. All future bookings get reminders automatically without re-subscribing
-- Migrated existing subscriptions to client records (2 clients updated)
-
-### How Reminders Work Now
-1. Client books → gets Telegram bot link
-2. Client clicks /start once → telegram_id saved to client record permanently
-3. Future bookings by same phone → auto-reminders 2h before
-
-## SEO Integration (2025-12-10)
-
-### Implemented
-- Meta tags: title, description, keywords, canonical URL (`https://nail-studio.pp.ua/`)
-- Open Graph & Twitter Card tags with Soul Nail Studio logo
-- JSON-LD Structured Data: `NailSalon` schema with address, phone, email, social links, services
-- `sitemap.xml` with public pages (/, /booking, /portfolio, /my-bookings)
-- `robots.txt` blocking /admin and /master panels
-- Semantic HTML: `<header>`, `<main>`, `<footer>`, role attributes, descriptive alt tags
-- Geo tags for local SEO (Дніпропетровська область, Томаківка)
-- Brand updated to "Soul Nail Studio" in navigation
-
-### Business Details in SEO
-- Phone: +380967920596
-- Email: alena19panchenko92@gmail.com
-- Address: вул. Шевченка, 3, 2-й поверх, каб. 2, Томаківка
-- Facebook: https://www.facebook.com/al.ona.azarcik
-- Instagram: https://www.instagram.com/_soul_nail_studio_
-
-## Bug Fix (2025-12-10): Promo Block Images Not Loading After Reload
-
-### Root Cause
-Promo blocks stored presigned S3 URLs directly (expire after 1 hour). Gallery images used `file_key` and regenerated URLs on each request — promo blocks did not.
-
-### Fix
-- Added `image_key` field to PromoBlock models
-- Backend regenerates fresh presigned URLs from `image_key` on every API call
-- Frontend sends `file_key` from gallery upload response when creating/updating blocks
-- Migrated existing blocks with S3 images to store `image_key`
-
-## Backlog / Future Tasks
-
-### P1 - Refactoring
-- [ ] Split `backend/server.py` into feature-specific route files:
-  - `routes/masters.py`
-  - `routes/bookings.py`
-  - `routes/settings.py`
-  - `routes/promo_blocks.py`
-  - `routes/gallery.py`
-  - `routes/telegram.py`
-  - `routes/analytics.py`
-
-### P2 - Frontend Architecture
-- [ ] Implement centralized React Context for authentication
-- [ ] Consolidate duplicated auth logic across components
-
-### P2 - Production Issue (Unconfirmed)
-- [ ] Master login failure on production (potential password hash mismatch)
-- [ ] Script provided: `/app/reset_master_password.py`
-- [ ] Status: Awaiting user confirmation
+### Frontend Auth Context (Complete - 2026-08-06)
+- Centralized `AuthContext.js` with `loginAdmin()`, `loginMaster()`, `logout()`
+- `api.js` axios instance with auto-token interceptor
+- `ProtectedRoute` component for role-based route protection
+- Removed all direct `localStorage.getItem` calls from 13 files
+- All admin components use `useAuth()` hook and `api` instance
+- Cross-role protection (master can't access admin routes and vice versa)
+- **Testing:** 12/12 frontend scenarios passed
 
 ## API Endpoints Summary
 
 ### Public
 - `GET /api/promo-blocks` - Active promo blocks
-- `GET /api/gallery` - Gallery images
+- `GET /api/gallery` - Gallery images (with skip/limit pagination)
 - `POST /api/bookings` - Create booking
+- `GET /api/settings` - Site settings
 
 ### Admin
 - `POST /api/admin/login`
-- `GET /api/admin/promo-blocks`
-- `POST /api/admin/promo-blocks`
-- `PUT /api/admin/promo-blocks/{id}`
-- `DELETE /api/admin/promo-blocks/{id}`
-- `GET /api/admin/stats/monthly`
-- `GET /api/admin/stats/masters`
+- `GET /api/admin/promo-blocks`, `POST`, `PUT/{id}`, `DELETE/{id}`
+- `GET /api/admin/stats`, `/stats/monthly`, `/stats/masters`
+- `PUT /api/admin/settings`
 
 ### Master
 - `POST /api/masters/login`
-- `GET /api/masters/bookings`
-- `DELETE /api/bookings/{id}`
+- `PATCH /api/masters/{id}/telegram`
+- `POST /api/masters/{id}/test-telegram`
+- `POST /api/masters/{id}/reset-notifications`
+- `GET/PUT /api/masters/{id}/notes/{date}`
 
 ## Test Credentials
 - **Admin:** admin / admin123
-- **Master:** olena@example.com / master123
+- **Master:** olena@example.com / test123 (Master ID: 726a7346-f0d5-4f1d-99cc-4b7e1f5795cc)
+
+## Backlog / Future Tasks
+
+### P2 - Gallery Optimization
+- [ ] Generate thumbnails for existing older gallery photos in S3
+
+### P2 - Production Issue (Unconfirmed)
+- [ ] Master login failure on production (potential password hash mismatch)
+- [ ] Script provided: `/app/reset_master_password.py`
+
+### P3 - Cleanup
+- [ ] Remove `server_old.py` and test scripts (`test_6_month_booking.py`, `backend_test.py`, etc.)
+
+## Code Architecture
+```
+/app/
+├── backend/
+│   ├── server.py             # Thin entry point (FastAPI app, startup/shutdown)
+│   ├── database.py           # MongoDB connection logic
+│   ├── models.py             # All Pydantic models
+│   ├── auth.py               # JWT and password hashing
+│   ├── helpers.py            # Phone validation, etc.
+│   ├── notifications.py      # Master HTTPX notification logic
+│   ├── scheduler.py          # APScheduler logic (Europe/Kyiv timezone)
+│   ├── s3_utils.py           # Boto3 logic + Pillow thumbnail generation
+│   ├── telegram_bot.py       # Admin HTTPX bot logic
+│   ├── telegram_webhook.py   # Webhook for client bot
+│   └── routes/               # Modular API routes
+├── frontend/
+│   └── src/
+│       ├── context/
+│       │   ├── AuthContext.js     # Centralized auth state (NEW)
+│       │   ├── SettingsContext.js
+│       │   └── ThemeContext.js
+│       ├── lib/
+│       │   ├── api.js             # Axios instance with auto-token (NEW)
+│       │   └── utils.js
+│       ├── components/admin/      # All use useAuth() and api instance
+│       └── pages/                 # Login pages use AuthContext
+```
 
 ## Test Reports
-- `/app/test_reports/iteration_2.json` - Latest test results
-- `/app/tests/test_promo_blocks.py` - Promo blocks test suite
+- `/app/test_reports/iteration_3.json` - Telegram notification settings tests
+- `/app/test_reports/iteration_4.json` - Auth Context refactor tests (12/12 passed)

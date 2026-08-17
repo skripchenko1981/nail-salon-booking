@@ -4,7 +4,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Plus, Edit, Trash2, User, Mail, Phone } from 'lucide-react';
-import axios from 'axios';
+import api from '../../lib/api';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -14,9 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../ui/dialog';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
 
 function AdminMasters() {
   const [masters, setMasters] = useState([]);
@@ -38,10 +35,7 @@ function AdminMasters() {
 
   const fetchMasters = async () => {
     try {
-      const token = localStorage.getItem('admin_token');
-      const response = await axios.get(`${API}/masters`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/masters');
       setMasters(response.data);
     } catch (error) {
       toast.error('Помилка завантаження майстрів');
@@ -77,36 +71,21 @@ function AdminMasters() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('admin_token');
 
     try {
       if (editingMaster) {
-        // Оновити основні дані майстра
         const updateData = { ...formData };
-        delete updateData.password; // Видалити пароль з основних даних
+        delete updateData.password;
         
-        await axios.put(
-          `${API}/masters/${editingMaster.id}`,
-          updateData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await api.put(`/masters/${editingMaster.id}`, updateData);
         
-        // Якщо введено новий пароль, оновити його окремо
         if (formData.password && formData.password.trim() !== '') {
-          await axios.put(
-            `${API}/masters/${editingMaster.id}/password`,
-            { new_password: formData.password },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
+          await api.put(`/masters/${editingMaster.id}/password`, { new_password: formData.password });
         }
         
         toast.success('Майстра оновлено');
       } else {
-        await axios.post(
-          `${API}/masters`,
-          formData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await api.post('/masters', formData);
         toast.success('Майстра створено');
       }
       setDialogOpen(false);
@@ -121,24 +100,20 @@ function AdminMasters() {
     const masterName = master?.name || 'цього майстра';
     
     if (!window.confirm(
-      `⚠️ УВАГА! Ви впевнені, що хочете видалити майстра "${masterName}"?\n\n` +
+      `УВАГА! Ви впевнені, що хочете видалити майстра "${masterName}"?\n\n` +
       `Це також видалить:\n` +
-      `• Всі послуги майстра\n` +
-      `• Весь графік роботи\n` +
-      `• Всі бронювання\n` +
-      `• Всі відпустки\n` +
-      `• Всіх клієнтів\n` +
-      `• Всі фото в галереї\n\n` +
+      `- Всі послуги майстра\n` +
+      `- Весь графік роботи\n` +
+      `- Всі бронювання\n` +
+      `- Всі відпустки\n` +
+      `- Всіх клієнтів\n` +
+      `- Всі фото в галереї\n\n` +
       `Цю дію НЕ МОЖНА скасувати!`
     )) return;
 
-    const token = localStorage.getItem('admin_token');
     try {
-      const response = await axios.delete(`${API}/masters/${masterId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.delete(`/masters/${masterId}`);
       
-      // Показати детальну інформацію про видалення
       const deleted = response.data.deleted;
       let details = [];
       if (deleted.services > 0) details.push(`${deleted.services} послуг`);

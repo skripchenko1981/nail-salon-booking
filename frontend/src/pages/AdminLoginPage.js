@@ -5,13 +5,12 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { ArrowLeft, Lock } from 'lucide-react';
 import { toast } from 'sonner';
-import axios from 'axios';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import api from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 
 function AdminLoginPage() {
   const navigate = useNavigate();
+  const { loginAdmin } = useAuth();
   const [credentials, setCredentials] = useState({ username: '', password: '' });
   const [loading, setLoading] = useState(false);
 
@@ -20,9 +19,8 @@ function AdminLoginPage() {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${API}/admin/login`, credentials);
-      localStorage.setItem('admin_token', response.data.token);
-      localStorage.setItem('admin_username', response.data.username);
+      const response = await api.post('/admin/login', credentials);
+      loginAdmin(response.data.token, response.data.username);
       toast.success('Ласкаво просимо!');
       navigate('/admin/analytics');
     } catch (error) {
