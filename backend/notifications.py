@@ -2,8 +2,20 @@
 import httpx
 import logging
 from database import db
+from telegram_bot import telegram_bot
 
 logger = logging.getLogger(__name__)
+
+
+def _client_status_block(subscribed: bool, delivered: bool = None) -> str:
+    block = "\n\n📲 Клієнт у Telegram: " + ("✅ підписаний" if subscribed else "❌ не підписаний")
+    if delivered is not None:
+        if delivered:
+            block += "\n✉️ Сповіщення клієнту: ✅ надіслано"
+        else:
+            reason = "клієнт не підписаний" if not subscribed else "помилка відправки"
+            block += f"\n✉️ Сповіщення клієнту: ❌ не надіслано ({reason})"
+    return block
 
 
 async def get_head_master() -> dict | None:
@@ -99,10 +111,14 @@ async def notify_master_new_booking(booking: dict, service_name: str, master_nam
     if booking.get('notes'):
         message += f"\n📝 Примітка: {booking.get('notes')}"
 
+    subscribed = await telegram_bot.get_client_telegram_id(booking.get("id")) is not None
+    message += _client_status_block(subscribed)
+
     await _dispatch_to_masters(booking, message)
 
 
-async def notify_master_booking_cancelled(booking: dict, reason: str = None, master_name: str = ""):
+async def notify_master_booking_cancelled(booking: dict, reason: str = None, master_name: str = "",
+                                          subscribed: bool = None, delivered: bool = None):
     """Сповістити майстра (та головного майстра) про скасування запису"""
     service_name = booking.get("service_name", "")
     message = _build_booking_message("❌ <b>Запис скасовано</b>", booking, service_name, master_name)
@@ -110,4 +126,20 @@ async def notify_master_booking_cancelled(booking: dict, reason: str = None, mas
     if reason:
         message += f"\n📝 Причина: {reason}"
 
+    if subscribed is None:
+        subscribed = await telegram_bot.get_client_telegram_id(booking.get("id")) is not None
+    message += _client_status_block(subscribed, delivered)
+
     await _dispatch_to_masters(booking, message)
+
+
+async def notify_cancellation_flow(booking: dict, reason: str = None, master_name: str = ""):
+    """Скасування: спершу сповістити клієнта, потім майстрів зі статусом доставки"""
+    subscribed = await telegram_bot.get_client_telegram_id(booking.get("id")) is not None
+    delivered = False
+    if subscribed:
+        delivered = await telegram_bot.send_booking_cancelled(
+            booking["id"], booking.get("client_name", ""), booking.get("service_name", ""),
+            booking.get("date", ""), booking.get("time", ""), reason
+        )
+    await notify_master_booking_cancelled(booking, reason, master_name, subscribed, delivered)
