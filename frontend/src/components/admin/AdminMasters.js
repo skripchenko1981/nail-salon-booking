@@ -3,7 +3,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
-import { Plus, Edit, Trash2, User, Mail, Phone } from 'lucide-react';
+import { Plus, Edit, Trash2, User, Mail, Phone, Crown } from 'lucide-react';
 import api from '../../lib/api';
 import { toast } from 'sonner';
 import {
@@ -95,6 +95,16 @@ function AdminMasters() {
     }
   };
 
+  const handleSetHead = async (masterId) => {
+    try {
+      const response = await api.put(`/masters/${masterId}/set-head`);
+      toast.success(response.data.message);
+      fetchMasters();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Помилка призначення головного майстра');
+    }
+  };
+
   const handleDelete = async (masterId) => {
     const master = masters.find(m => m.id === masterId);
     const masterName = master?.name || 'цього майстра';
@@ -180,9 +190,17 @@ function AdminMasters() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg">{master.name}</h3>
-                  <span className={`text-xs px-2 py-1 rounded-full ${master.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                    {master.is_active ? 'Активний' : 'Неактивний'}
-                  </span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    <span className={`text-xs px-2 py-1 rounded-full ${master.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                      {master.is_active ? 'Активний' : 'Неактивний'}
+                    </span>
+                    {master.is_head && (
+                      <span className="text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-700 flex items-center gap-1" data-testid={`head-master-badge-${master.id}`}>
+                        <Crown className="h-3 w-3" />
+                        Головний
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -204,6 +222,18 @@ function AdminMasters() {
               )}
 
               <div className="flex gap-2 mt-4 pt-4 border-t border-rose-200/50">
+                {!master.is_head && (
+                  <Button
+                    onClick={() => handleSetHead(master.id)}
+                    variant="outline"
+                    size="sm"
+                    className="text-amber-600 hover:bg-amber-50"
+                    title="Зробити головним майстром"
+                    data-testid={`set-head-master-${master.id}`}
+                  >
+                    <Crown className="h-4 w-4" />
+                  </Button>
+                )}
                 <Button
                   onClick={() => handleOpenDialog(master)}
                   variant="outline"

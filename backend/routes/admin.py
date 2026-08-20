@@ -7,6 +7,7 @@ from models import (AdminLogin, AdminLoginResponse, Stats, Booking, BookingUpdat
 from auth import verify_admin, verify_master_or_admin, verify_token, hash_password, create_token
 from helpers import update_client_stats
 from telegram_bot import telegram_bot
+from notifications import notify_master_booking_cancelled
 from scheduler import check_and_send_reminders
 from datetime import datetime, timezone, timedelta
 import os
@@ -50,15 +51,19 @@ async def update_booking_status(booking_id: str, update: BookingUpdate,
         
         if new_status == "confirmed":
             background_tasks.add_task(
-                telegram_bot.notify_client_booking_confirmed,
+                telegram_bot.send_booking_confirmed,
                 booking_id, booking["client_name"],
                 booking.get("service_name", ""), booking["date"], booking["time"]
             )
         elif new_status == "cancelled" and booking.get("status") != "cancelled":
+            master = await db.masters.find_one({"id": booking.get("master_id")}, {"_id": 0, "name": 1})
+            m_name = master.get("name", "") if master else ""
+            background_tasks.add_task(
+                notify_master_booking_cancelled,
+                booking, update_data.get("notes"), m_name
+            )
             admin_telegram_id = os.environ.get('ADMIN_TELEGRAM_ID')
             if admin_telegram_id:
-                master = await db.masters.find_one({"id": booking.get("master_id")}, {"_id": 0, "name": 1})
-                m_name = master.get("name", "") if master else ""
                 background_tasks.add_task(
                     telegram_bot.notify_admin_booking_cancelled,
                     booking["client_name"], booking["client_phone"],

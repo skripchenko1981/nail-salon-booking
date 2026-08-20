@@ -22,6 +22,7 @@ class Master(BaseModel):
     telegram_chat_id: Optional[str] = None
     telegram_notifications_enabled: bool = False
     unread_bookings_count: int = 0
+    is_head: bool = False
 
 class MasterResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -37,6 +38,7 @@ class MasterResponse(BaseModel):
     telegram_chat_id: Optional[str] = None
     telegram_notifications_enabled: bool = False
     unread_bookings_count: int = 0
+    is_head: bool = False
 
 class MasterCreate(BaseModel):
     name: str
@@ -83,6 +85,7 @@ class MasterPublic(BaseModel):
     bio: Optional[str] = None
     photo_url: Optional[str] = None
     is_active: bool = True
+    is_head: bool = False
 
 
 # ============ VACATION MODELS ============

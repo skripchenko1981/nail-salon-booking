@@ -38,6 +38,8 @@
 - Individual master Telegram bots for new booking alerts
 - Admin bot with master name in notifications
 - Deep linking for client subscription
+- **Head master system (2026-08-20):** first-created master auto-marked `is_head=true`; head master receives Telegram notifications (new bookings + cancellations) for ALL masters, others only their own. Messages include master name, client full name (name+surname), phone, email. Admin can reassign head via crown button in Masters page (`PUT /api/masters/{id}/set-head`).
+- **Bug fixed (2026-08-20):** booking cancellation returned 500 (called non-existent `notify_client_booking_cancelled` / `notify_client_booking_confirmed`; renamed to `send_booking_cancelled` / `send_booking_confirmed`).
 
 ### Analytics Dashboard (Complete)
 - Overall statistics
@@ -88,6 +90,7 @@
 - `PATCH /api/masters/{id}/telegram`
 - `POST /api/masters/{id}/test-telegram`
 - `POST /api/masters/{id}/reset-notifications`
+- `PUT /api/masters/{id}/set-head` (admin only, reassign head master)
 - `GET/PUT /api/masters/{id}/notes/{date}`
 
 ## Test Credentials

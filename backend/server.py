@@ -8,6 +8,7 @@ import logging
 from database import client as db_client
 from telegram_webhook import telegram_router
 from scheduler import check_and_send_reminders
+from notifications import get_head_master
 
 # Routes
 from routes.services import router as services_router
@@ -71,6 +72,7 @@ async def startup_event():
     )
     scheduler.start()
     logger.info("Планувальник нагадувань запущено (кожні 5 хвилин)")
+    await get_head_master()
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
