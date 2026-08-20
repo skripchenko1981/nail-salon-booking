@@ -65,13 +65,8 @@ function BookingPage() {
       const response = await axios.get(`${API}/services/grouped`);
       setGroupedServices(response.data.services);
       setCategoryLabels(response.data.categories);
-      // Flatten for backward compatibility
-      const allServices = [
-        ...(response.data.services.manicure || []),
-        ...(response.data.services.pedicure || []),
-        ...(response.data.services.podology || [])
-      ];
-      setServices(allServices);
+      setActiveCategory(Object.keys(response.data.categories)[0] || 'manicure');
+      setServices(Object.values(response.data.services).flat());
     } catch (error) {
       toast.error('Помилка завантаження послуг');
     }
@@ -103,14 +98,8 @@ function BookingPage() {
       const response = await axios.get(`${API}/services/grouped?master_id=${masterId}`);
       setGroupedServices(response.data.services);
       setCategoryLabels(response.data.categories);
-      // Flatten for backward compatibility
-      const allServices = [
-        ...(response.data.services.manicure || []),
-        ...(response.data.services.pedicure || []),
-        ...(response.data.services.podology || [])
-      ];
-      setServices(allServices);
-      setActiveCategory('manicure');
+      setActiveCategory(Object.keys(response.data.categories)[0] || 'manicure');
+      setServices(Object.values(response.data.services).flat());
     } catch (error) {
       toast.error('Помилка завантаження послуг майстра');
     }

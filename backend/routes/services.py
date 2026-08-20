@@ -91,16 +91,28 @@ async def get_services_grouped(master_id: Optional[str] = None):
     
     grouped = {}
     for svc in services:
-        cat = svc.get("category") or "Інші"
+        cat = svc.get("category") or "other"
         if cat not in grouped:
             grouped[cat] = []
         grouped[cat].append(svc)
     
+    default_labels = {"manicure": "Манікюр", "pedicure": "Педикюр", "podology": "Подологія"}
     categories = await db.service_categories.find({}, {"_id": 0}).sort("position", 1).to_list(100)
-    cat_labels = {c["name"]: c["name"] for c in categories}
-    for cat_name in grouped:
-        if cat_name not in cat_labels:
-            cat_labels[cat_name] = cat_name
+    
+    # Впорядковані підписи лише для категорій, що мають послуги
+    cat_labels = {}
+    for key, label in default_labels.items():
+        if key in grouped:
+            cat_labels[key] = label
+    for c in categories:
+        key = c.get("key") or c.get("id")
+        if key in grouped and key not in cat_labels:
+            cat_labels[key] = c["name"]
+        elif c.get("name") in grouped and c["name"] not in cat_labels:
+            cat_labels[c["name"]] = c["name"]
+    for key in grouped:
+        if key not in cat_labels:
+            cat_labels[key] = "Інші" if key == "other" else key
     
     return {"services": grouped, "categories": cat_labels}
 
