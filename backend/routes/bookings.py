@@ -5,7 +5,7 @@ from database import db
 from models import Booking, BookingCreate, BookingUpdate, BookingCancelRequest, TimeSlot
 from auth import verify_master_or_admin
 from helpers import get_or_create_client
-from notifications import notify_master_new_booking, notify_master_booking_cancelled
+from notifications import notify_master_new_booking, notify_cancellation_flow
 from telegram_bot import telegram_bot
 from datetime import datetime, timedelta
 import os
@@ -124,18 +124,11 @@ async def cancel_booking(booking_id: str, cancel_req: BookingCancelRequest,
         {"$set": {"status": "cancelled", "cancellation_reason": cancel_req.cancellation_reason}}
     )
     
-    background_tasks.add_task(
-        telegram_bot.send_booking_cancelled,
-        booking_id, booking["client_name"],
-        booking["service_name"], booking["date"],
-        booking["time"], cancel_req.cancellation_reason
-    )
-    
     master = await db.masters.find_one({"id": booking.get("master_id")}, {"_id": 0, "name": 1})
     cancel_master_name = master.get("name", "") if master else ""
 
     background_tasks.add_task(
-        notify_master_booking_cancelled,
+        notify_cancellation_flow,
         booking, cancel_req.cancellation_reason, cancel_master_name
     )
 

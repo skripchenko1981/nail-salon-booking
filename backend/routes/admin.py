@@ -7,7 +7,7 @@ from models import (AdminLogin, AdminLoginResponse, Stats, Booking, BookingUpdat
 from auth import verify_admin, verify_master_or_admin, verify_token, hash_password, create_token
 from helpers import update_client_stats
 from telegram_bot import telegram_bot
-from notifications import notify_master_booking_cancelled
+from notifications import notify_cancellation_flow
 from scheduler import check_and_send_reminders
 from datetime import datetime, timezone, timedelta
 import os
@@ -59,7 +59,7 @@ async def update_booking_status(booking_id: str, update: BookingUpdate,
             master = await db.masters.find_one({"id": booking.get("master_id")}, {"_id": 0, "name": 1})
             m_name = master.get("name", "") if master else ""
             background_tasks.add_task(
-                notify_master_booking_cancelled,
+                notify_cancellation_flow,
                 booking, update_data.get("notes"), m_name
             )
             admin_telegram_id = os.environ.get('ADMIN_TELEGRAM_ID')
