@@ -137,6 +137,17 @@ async def test_master_telegram(master_id: str, user: Dict = Depends(verify_maste
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Помилка: {str(e)}")
 
+@router.put("/masters/{master_id}/set-head")
+async def set_head_master(master_id: str, _: Dict = Depends(verify_admin)):
+    """Призначити головного майстра (отримує сповіщення про записи всіх майстрів)"""
+    master = await db.masters.find_one({"id": master_id}, {"_id": 0, "name": 1})
+    if not master:
+        raise HTTPException(status_code=404, detail="Master not found")
+    await db.masters.update_many({}, {"$set": {"is_head": False}})
+    await db.masters.update_one({"id": master_id}, {"$set": {"is_head": True}})
+    return {"message": f"Головним майстром призначено {master['name']}"}
+
+
 @router.post("/masters/{master_id}/reset-notifications")
 async def reset_master_notifications(master_id: str, user: Dict = Depends(verify_master_or_admin)):
     if user["role"] == "master" and user["user_id"] != master_id:
