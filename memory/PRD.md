@@ -39,6 +39,9 @@
 - Admin bot with master name in notifications
 - Deep linking for client subscription
 - **Head master system (2026-08-20):** first-created master auto-marked `is_head=true`; head master receives Telegram notifications (new bookings + cancellations) for ALL masters, others only their own. Messages include master name, client full name (name+surname), phone, email. Admin can reassign head via crown button in Masters page (`PUT /api/masters/{id}/set-head`).
+- **Client subscription/delivery status (2026-08-21):** master messages include "📲 Клієнт у Telegram: підписаний/ні" and "✉️ Сповіщення клієнту: надіслано/ні". Admin-side cancellation now also notifies the client.
+- **Reminder status to masters (2026-08-21):** when the scheduler sends (or fails to send) a pre-visit reminder to a client, serving master + head master get a Telegram message with delivery status. Failure notification sent once per booking (`reminder_master_notified` flag).
+- **Settings fix (2026-08-21):** `/api/settings` routes rewritten to preserve all frontend field names (phone, address, working_hours...) — previously the refactored SiteSettings model (studio_* fields) filtered them out, hiding contacts on prod.
 - **Bug fixed (2026-08-20):** booking cancellation returned 500 (called non-existent `notify_client_booking_cancelled` / `notify_client_booking_confirmed`; renamed to `send_booking_cancelled` / `send_booking_confirmed`).
 
 ### Analytics Dashboard (Complete)
@@ -46,6 +49,7 @@
 - Monthly revenue breakdown
 - Per-master performance metrics
 - Filter by master
+- **Fixed (2026-08-21):** `/admin/stats/masters` and `/admin/stats/monthly` now return flat field names matching AdminOverview.js (master_name, confirmed, completed, cancelled, revenue, month_name in Ukrainian); "today" stat uses Europe/Kyiv timezone. Tested: iteration_6 (11/11 backend, 5/5 frontend).
 
 ### File Storage (Complete)
 - Hetzner S3 integration

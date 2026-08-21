@@ -143,3 +143,20 @@ async def notify_cancellation_flow(booking: dict, reason: str = None, master_nam
             booking.get("date", ""), booking.get("time", ""), reason
         )
     await notify_master_booking_cancelled(booking, reason, master_name, subscribed, delivered)
+
+
+async def notify_master_reminder_status(booking: dict, delivered: bool):
+    """Сповістити майстра (та головного майстра) про статус нагадування клієнту"""
+    master = await db.masters.find_one({"id": booking.get("master_id")}, {"_id": 0, "name": 1})
+    master_name = master.get("name", "") if master else ""
+
+    message = _build_booking_message(
+        "⏰ <b>Нагадування клієнту про візит</b>",
+        booking, booking.get("service_name", ""), master_name
+    )
+    if delivered:
+        message += "\n\n✉️ Нагадування: ✅ клієнт отримав нагадування в Telegram"
+    else:
+        message += "\n\n✉️ Нагадування: ❌ не доставлено (клієнт не підписаний на Telegram)"
+
+    await _dispatch_to_masters(booking, message)

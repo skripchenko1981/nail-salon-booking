@@ -101,7 +101,8 @@ async def get_stats(user: Dict = Depends(verify_master_or_admin)):
     client_query = {"master_id": user["user_id"]} if user["role"] == "master" else {}
     total_clients = await db.clients.count_documents(client_query)
     
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    import pytz
+    today = datetime.now(timezone.utc).astimezone(pytz.timezone('Europe/Kyiv')).strftime("%Y-%m-%d")
     pending = await db.bookings.count_documents({**query, "status": "pending"})
     confirmed = await db.bookings.count_documents({**query, "status": "confirmed"})
     completed = await db.bookings.count_documents({**query, "status": "completed"})
@@ -123,24 +124,38 @@ async def get_monthly_stats(year: int, master_id: Optional[str] = None, user: Di
     elif master_id:
         query["master_id"] = master_id
     
+    MONTH_NAMES = ["Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень",
+                   "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"]
+    
+    pipeline = [
+        {"$match": {**query, "date": {"$gte": f"{year}-01-01", "$lt": f"{year + 1}-01-01"}}},
+        {"$group": {
+            "_id": {"month": {"$substr": ["$date", 5, 2]}, "status": "$status"},
+            "count": {"$sum": 1},
+            "revenue": {"$sum": "$price"}
+        }}
+    ]
+    results = await db.bookings.aggregate(pipeline).to_list(200)
+    
     months = []
     for month in range(1, 13):
-        start = f"{year}-{month:02d}-01"
-        if month == 12:
-            end = f"{year + 1}-01-01"
-        else:
-            end = f"{year}-{month + 1:02d}-01"
-        
-        month_query = {**query, "date": {"$gte": start, "$lt": end}}
-        
-        bookings = await db.bookings.count_documents(month_query)
-        revenue_pipeline = [{"$match": {**month_query, "status": {"$in": ["confirmed", "completed"]}}},
-                            {"$group": {"_id": None, "total": {"$sum": "$price"}}}]
-        revenue = await db.bookings.aggregate(revenue_pipeline).to_list(1)
+        key = f"{month:02d}"
+        month_groups = [r for r in results if r["_id"]["month"] == key]
+        total = sum(r["count"] for r in month_groups)
+        confirmed = sum(r["count"] for r in month_groups if r["_id"]["status"] == "confirmed")
+        completed = sum(r["count"] for r in month_groups if r["_id"]["status"] == "completed")
+        cancelled = sum(r["count"] for r in month_groups if r["_id"]["status"] == "cancelled")
+        revenue = sum(r["revenue"] for r in month_groups if r["_id"]["status"] in ["confirmed", "completed"])
         
         months.append({
-            "month": month, "bookings": bookings,
-            "revenue": revenue[0]["total"] if revenue else 0
+            "month": month,
+            "month_name": MONTH_NAMES[month - 1],
+            "total_bookings": total,
+            "bookings": total,
+            "confirmed": confirmed,
+            "completed": completed,
+            "cancelled": cancelled,
+            "revenue": revenue
         })
     
     return months
@@ -152,17 +167,27 @@ async def get_masters_stats(user: Dict = Depends(verify_admin)):
     
     stats = []
     for master in masters:
-        total = await db.bookings.count_documents({"master_id": master["id"]})
+        mq = {"master_id": master["id"]}
+        total = await db.bookings.count_documents(mq)
+        confirmed = await db.bookings.count_documents({**mq, "status": "confirmed"})
+        completed = await db.bookings.count_documents({**mq, "status": "completed"})
+        cancelled = await db.bookings.count_documents({**mq, "status": "cancelled"})
         revenue_pipeline = [
-            {"$match": {"master_id": master["id"], "status": {"$in": ["confirmed", "completed"]}}},
+            {"$match": {**mq, "status": {"$in": ["confirmed", "completed"]}}},
             {"$group": {"_id": None, "total": {"$sum": "$price"}}}
         ]
         revenue = await db.bookings.aggregate(revenue_pipeline).to_list(1)
         
         stats.append({
-            "master": master,
+            "master_id": master["id"],
+            "master_name": master["name"],
+            "master_email": master.get("email", ""),
+            "is_active": master.get("is_active", True),
             "total_bookings": total,
-            "total_revenue": revenue[0]["total"] if revenue else 0
+            "confirmed": confirmed,
+            "completed": completed,
+            "cancelled": cancelled,
+            "revenue": revenue[0]["total"] if revenue else 0
         })
     
     return stats

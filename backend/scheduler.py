@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timezone, timedelta
 from database import db
 from telegram_bot import telegram_bot
+from notifications import notify_master_reminder_status
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +68,15 @@ async def check_and_send_reminders():
                         )
                         sent_count += 1
                         logger.info(f"✓ Нагадування відправлено для {booking['client_name']}")
+                        await notify_master_reminder_status(booking, delivered=True)
                     else:
                         skipped_no_sub += 1
+                        if not booking.get("reminder_master_notified"):
+                            await db.bookings.update_one(
+                                {"id": booking['id']},
+                                {"$set": {"reminder_master_notified": True}}
+                            )
+                            await notify_master_reminder_status(booking, delivered=False)
 
             except Exception as e:
                 logger.error(f"Помилка обробки запису {booking.get('id', 'unknown')}: {e}")
