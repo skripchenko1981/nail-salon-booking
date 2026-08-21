@@ -18,7 +18,7 @@ function AdminOverview() {
     fetchMonthlyStats();
     fetchMastersStats();
     fetchMasters();
-  }, [selectedMonth, selectedYear, selectedMaster]);
+  }, [selectedYear, selectedMaster]);
 
   const fetchStats = async () => {
     try {

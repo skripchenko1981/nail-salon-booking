@@ -1,0 +1,28 @@
+{
+  "summary": "Backend + frontend verification of the admin analytics fix and the new reminder master-notification feature. Created /app/backend/tests/test_admin_stats_reminders.py (11 pytest cases) — all passed. Verified /api/admin/stats (counts + Kyiv 'today' + revenue = sum of confirmed+completed only, cross-checked against /api/admin/bookings), /api/admin/stats/masters flat fields (master_id/master_name/master_email/is_active/total_bookings/confirmed/completed/cancelled/revenue, no _id/password_hash, per-master counts match DB), /api/admin/stats/monthly?year=2026 (12 items, Ukrainian month_name, revenue confirmed+completed only, master_id filter matches per-month DB counts, missing year -> 422), auth guards (401/403 unauthenticated). Reminder flow: created a booking today at +55min (Kyiv) with reminder_hours=2 and an unsubscribed client, POST /api/admin/send-reminders -> logs 'Час відправки нагадування...', 2 master dispatches ('Telegram not configured for master 197c3a5e... [serving]' + '726a7346... [head]'), booking doc gets reminder_master_notified=true, reminder_sent stays false; a second trigger produced NO further master dispatch (anti-spam flag works). Regression: POST /api/bookings 200 with id/status/service_name, GET persists, PUT /api/bookings/{id}/cancel 200 with status=cancelled, GET /api/settings returns phone/email/address/working_hours. Frontend /admin: logged in as admin/admin123, all 7 stat cards render numeric values (16/0/8/4/2/2/9000 ₴, no undefined/NaN), 'Статистика по майстрам' shows 5 master cards with real names+emails and numeric confirmed/completed/cancelled/revenue (master totals 14+2 = 16 matches global total), 'Аналіз діяльності по місяцях' shows all 12 Ukrainian month names with numbers/revenue, master filter dropdown lists 5 masters and filtering shows 'Показано статистику для: Олена Коваль' with refetched data. 0 error elements, no console errors.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Admin Огляд — monthly/master cards", "issues": ["Zero values and totals rendered in #D4A5A5 on white are very low contrast (e.g. '0 ₴', month totals) — hard to read; consider a darker tone for numeric values", "Month cards use cursor-pointer and highlight on click but clicking has no functional effect (selectedMonth only changes the border) — either remove interactivity or add a drill-down"]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_admin_stats_reminders.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "AdminOverview.js useEffect depends on selectedMonth, so simply clicking a month card refires all four API calls (stats, monthly, masters, masters list) with identical params — remove selectedMonth from the dependency array.",
+    "Monthly stats response duplicates the same value in both 'bookings' and 'total_bookings'; drop the legacy 'bookings' key once the frontend no longer needs it.",
+    "get_masters_stats runs 5 queries per master in a Python loop (N+1). With more masters this will get slow — a single $group aggregation over bookings joined with the masters list would be O(1) queries.",
+    "scheduler.check_and_send_reminders fetches bookings without a {'_id': 0} projection, so booking dicts carry the raw ObjectId into notify_master_reminder_status; harmless today (only string fields are read) but it will break if the dict is ever returned/serialised.",
+    "Reminder anti-spam: reminder_master_notified is only set on failure; if delivery later succeeds the success notification is sent every run until reminder_sent is set (currently it is set in the same branch, so OK) — worth an explicit guard for clarity."
+  ],
+  "updated_files": ["/app/backend/tests/test_admin_stats_reminders.py"],
+  "success_rate": {"backend": "100% (11/11 pytest cases)", "frontend": "100% (5/5 scenarios)"},
+  "seed_data_creation": "Created and deleted temporary bookings (TEST_Reminder today +55min, TEST_Regression +45 days) via API; no existing data modified or removed.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": true,
+  "test_credentials": "Admin: admin/admin123; Master: olena@example.com/test123",
+  "context_for_next_testing_agent": "Reusable regression suite at /app/backend/tests/test_admin_stats_reminders.py (stats cross-checked against /api/admin/bookings, so it is data-independent). The reminder test is time-sensitive: it books today at +55min and skips if that crosses Kyiv midnight or no free slot exists. Masters have no telegram tokens, so 'Telegram not configured for master <id>' warnings in /var/log/supervisor/backend.err.log are the expected proof of dispatch (serving master 197c3a5e..., head master 726a7346...).",
+  "rca_of_the_issue": "Original bug was a field-name mismatch after the backend refactor; endpoints now return the flat field names AdminOverview.js consumes, verified end-to-end in both API responses and rendered UI."
+}
