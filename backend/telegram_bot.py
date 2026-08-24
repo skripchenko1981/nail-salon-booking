@@ -299,48 +299,6 @@ class TelegramBot:
     
     # ============ ADMIN NOTIFICATIONS ============
     
-    async def notify_admin_new_booking(self, client_name: str, client_phone: str,
-                                      service_name: str, date: str, time: str,
-                                      price: int, admin_telegram_id: str,
-                                      master_name: str = "") -> bool:
-        """Повідомлення адміну про новий запис"""
-        text = f"""🔔 <b>НОВИЙ ЗАПИС!</b>
-
-💇 Майстер: {master_name}
-👤 Клієнт: {client_name}
-📱 Телефон: {client_phone}
-
-💅 Послуга: {service_name}
-📅 Дата: {date}
-🕐 Час: {time}
-💰 Вартість: {price} ₴
-
-⚠️ Потребує підтвердження!"""
-        
-        return await self.send_message(admin_telegram_id, text)
-    
-    async def notify_admin_booking_cancelled(self, client_name: str, client_phone: str,
-                                            service_name: str, date: str, time: str,
-                                            price: int, reason: Optional[str],
-                                            admin_telegram_id: str,
-                                            master_name: str = "") -> bool:
-        """Повідомлення адміну про скасування запису"""
-        text = f"""❌ <b>СКАСОВАНО ЗАПИС</b>
-
-💇 Майстер: {master_name}
-👤 Клієнт: {client_name}
-📱 Телефон: {client_phone}
-
-💅 Послуга: {service_name}
-📅 Дата: {date}
-🕐 Час: {time}
-💰 Втрачено: {price} ₴"""
-        
-        if reason:
-            text += f"\n\n📝 Причина: {reason}"
-        
-        return await self.send_message(admin_telegram_id, text)
-    
     async def notify_admin_daily_summary(self, today_bookings: int, pending_count: int,
                                         confirmed_count: int, total_revenue: int,
                                         admin_telegram_id: str) -> bool:

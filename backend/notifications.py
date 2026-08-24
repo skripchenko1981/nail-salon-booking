@@ -1,6 +1,8 @@
 """Telegram сповіщення для індивідуальних ботів майстрів"""
 import httpx
+import html
 import logging
+import os
 from database import db
 from telegram_bot import telegram_bot
 
@@ -68,18 +70,19 @@ async def send_master_telegram_notification(master_id: str, message: str) -> boo
 
 
 def _build_booking_message(header: str, booking: dict, service_name: str, master_name: str) -> str:
-    client_full_name = f"{booking.get('client_name', '')} {booking.get('client_surname', '') or ''}".strip()
+    esc = lambda v: html.escape(str(v)) if v else ""
+    client_full_name = f"{esc(booking.get('client_name'))} {esc(booking.get('client_surname'))}".strip()
     message = f"""{header}
 
-💇 Майстер: {master_name}
+💇 Майстер: {esc(master_name)}
 👤 Клієнт: {client_full_name}
-📱 Телефон: {booking.get('client_phone')}"""
+📱 Телефон: {esc(booking.get('client_phone'))}"""
 
     if booking.get('client_email'):
-        message += f"\n📧 Email: {booking.get('client_email')}"
+        message += f"\n📧 Email: {esc(booking.get('client_email'))}"
 
     message += f"""
-💅 Послуга: {service_name}
+💅 Послуга: {esc(service_name)}
 📅 Дата: {booking.get('date')}
 🕐 Час: {booking.get('time')}
 
@@ -87,8 +90,8 @@ def _build_booking_message(header: str, booking: dict, service_name: str, master
     return message
 
 
-async def _dispatch_to_masters(booking: dict, message: str):
-    """Надіслати повідомлення майстру запису та головному майстру (якщо це інший майстер)"""
+async def _dispatch_to_masters(booking: dict, message: str, admin_telegram_id: str = None):
+    """Надіслати повідомлення майстру запису, головному майстру та адмін-боту"""
     master_id = booking.get("master_id")
     await send_master_telegram_notification(master_id, message)
 
@@ -96,9 +99,13 @@ async def _dispatch_to_masters(booking: dict, message: str):
     if head and head["id"] != master_id:
         await send_master_telegram_notification(head["id"], message)
 
+    if admin_telegram_id:
+        await telegram_bot.send_message(admin_telegram_id, message)
 
-async def notify_master_new_booking(booking: dict, service_name: str, master_name: str = ""):
-    """Сповістити майстра (та головного майстра) про новий запис"""
+
+async def notify_master_new_booking(booking: dict, service_name: str, master_name: str = "",
+                                    admin_telegram_id: str = None):
+    """Сповістити майстра, головного майстра та адміна про новий запис"""
     master_id = booking.get("master_id")
 
     await db.masters.update_one(
@@ -109,32 +116,35 @@ async def notify_master_new_booking(booking: dict, service_name: str, master_nam
     message = _build_booking_message("🆕 <b>Новий запис!</b>", booking, service_name, master_name)
 
     if booking.get('notes'):
-        message += f"\n📝 Примітка: {booking.get('notes')}"
+        message += f"\n📝 Примітка: {html.escape(str(booking.get('notes')))}"
 
     subscribed = await telegram_bot.get_client_telegram_id(booking.get("id")) is not None
     message += _client_status_block(subscribed)
+    message += "\n\n⚠️ Потребує підтвердження!"
 
-    await _dispatch_to_masters(booking, message)
+    await _dispatch_to_masters(booking, message, admin_telegram_id)
 
 
 async def notify_master_booking_cancelled(booking: dict, reason: str = None, master_name: str = "",
-                                          subscribed: bool = None, delivered: bool = None):
-    """Сповістити майстра (та головного майстра) про скасування запису"""
+                                          subscribed: bool = None, delivered: bool = None,
+                                          admin_telegram_id: str = None):
+    """Сповістити майстра, головного майстра та адміна про скасування запису"""
     service_name = booking.get("service_name", "")
     message = _build_booking_message("❌ <b>Запис скасовано</b>", booking, service_name, master_name)
 
     if reason:
-        message += f"\n📝 Причина: {reason}"
+        message += f"\n📝 Причина: {html.escape(str(reason))}"
 
     if subscribed is None:
         subscribed = await telegram_bot.get_client_telegram_id(booking.get("id")) is not None
     message += _client_status_block(subscribed, delivered)
 
-    await _dispatch_to_masters(booking, message)
+    await _dispatch_to_masters(booking, message, admin_telegram_id)
 
 
-async def notify_cancellation_flow(booking: dict, reason: str = None, master_name: str = ""):
-    """Скасування: спершу сповістити клієнта, потім майстрів зі статусом доставки"""
+async def notify_cancellation_flow(booking: dict, reason: str = None, master_name: str = "",
+                                   admin_telegram_id: str = None):
+    """Скасування: спершу сповістити клієнта, потім майстрів/адміна зі статусом доставки"""
     subscribed = await telegram_bot.get_client_telegram_id(booking.get("id")) is not None
     delivered = False
     if subscribed:
@@ -142,7 +152,7 @@ async def notify_cancellation_flow(booking: dict, reason: str = None, master_nam
             booking["id"], booking.get("client_name", ""), booking.get("service_name", ""),
             booking.get("date", ""), booking.get("time", ""), reason
         )
-    await notify_master_booking_cancelled(booking, reason, master_name, subscribed, delivered)
+    await notify_master_booking_cancelled(booking, reason, master_name, subscribed, delivered, admin_telegram_id)
 
 
 async def notify_master_reminder_status(booking: dict, delivered: bool):
@@ -159,4 +169,4 @@ async def notify_master_reminder_status(booking: dict, delivered: bool):
     else:
         message += "\n\n✉️ Нагадування: ❌ не доставлено (клієнт не підписаний на Telegram)"
 
-    await _dispatch_to_masters(booking, message)
+    await _dispatch_to_masters(booking, message, os.environ.get('ADMIN_TELEGRAM_ID'))

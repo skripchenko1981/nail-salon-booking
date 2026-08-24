@@ -85,15 +85,7 @@ async def create_booking(booking: BookingCreate, background_tasks: BackgroundTas
     master_name = master.get("name", "Невідомий") if master else "Невідомий"
     
     admin_telegram_id = os.environ.get('ADMIN_TELEGRAM_ID')
-    if admin_telegram_id:
-        background_tasks.add_task(
-            telegram_bot.notify_admin_new_booking,
-            booking.client_name, booking.client_phone,
-            service["name"], booking.date, booking.time,
-            service["price"], admin_telegram_id, master_name
-        )
-    
-    background_tasks.add_task(notify_master_new_booking, doc, service["name"], master_name)
+    background_tasks.add_task(notify_master_new_booking, doc, service["name"], master_name, admin_telegram_id)
     
     response = booking_obj.model_dump()
     response["telegram_subscription_link"] = telegram_link
@@ -129,19 +121,9 @@ async def cancel_booking(booking_id: str, cancel_req: BookingCancelRequest,
 
     background_tasks.add_task(
         notify_cancellation_flow,
-        booking, cancel_req.cancellation_reason, cancel_master_name
+        booking, cancel_req.cancellation_reason, cancel_master_name,
+        os.environ.get('ADMIN_TELEGRAM_ID')
     )
-
-    admin_telegram_id = os.environ.get('ADMIN_TELEGRAM_ID')
-    if admin_telegram_id:
-        background_tasks.add_task(
-            telegram_bot.notify_admin_booking_cancelled,
-            booking["client_name"], booking["client_phone"],
-            booking["service_name"], booking["date"],
-            booking["time"], booking["price"],
-            cancel_req.cancellation_reason, admin_telegram_id,
-            cancel_master_name
-        )
     
     return {"message": "Booking cancelled successfully"}
 
