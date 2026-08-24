@@ -1,0 +1,33 @@
+{
+  "summary": "Backend-only verification of the unified Telegram notification fix (surname + status block in ALL channels). Created /app/backend/tests/test_unified_telegram_notifications.py (10 pytest cases) — 10/10 PASSED. Unit level (monkeypatched notifications.send_master_telegram_notification, telegram_bot.send_message / get_client_telegram_id / send_booking_cancelled): notify_master_new_booking(booking, 'Манікюр', 'Марія Петренко', 'ADMIN_CHAT') produced exactly 3 captured messages — serving master 197c3a5e..., head master 726a7346..., admin chat 'ADMIN_CHAT' — and all three are byte-identical and contain client name+surname ('Оксана Прізвиськова'), phone, email, master name, service/date/time/price, '📲 Клієнт у Telegram' status line and '⚠️ Потребує підтвердження!'. notify_cancellation_flow(booking, 'причина', 'Марія Петренко', 'ADMIN_CHAT') also produced 3 identical messages containing surname, '📝 Причина: причина', '📲 Клієнт у Telegram' AND '✉️ Сповіщення клієнту' lines, and first attempted the client cancellation message (send_booking_cancelled called once). Unsubscribed-client variant correctly renders '❌ не підписаний' + '✉️ Сповіщення клієнту: ❌ не надіслано'. E2E: POST /api/bookings with client_name+client_surname -> 200 with id, surname persisted via GET; PUT /api/bookings/{id}/cancel -> 200, status=cancelled + reason persisted; PUT /api/admin/bookings/{id} {status:cancelled} with admin token -> 200. For all three flows backend logs show dispatch to BOTH masters ('Telegram not configured for master 197c3a5e...' and '...726a7346...') plus a REAL successful admin-bot send ('INFO:telegram_bot:Повідомлення відправлено до 1097557544' — ADMIN_TELEGRAM_ID is configured in backend/.env), with no Traceback, no AttributeError and no 'notify_admin' references. Regression: grep confirms zero remaining telegram_bot.notify_admin_new_booking / notify_admin_booking_cancelled calls in routes/, notifications.py, scheduler.py (definitions remain dead code in telegram_bot.py); /api/admin/stats, /api/admin/stats/masters, /api/admin/stats/monthly?year=2026 still return the flat fields (12 months, no _id/password_hash).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "notifications.notify_master_reminder_status", "issue": "Reminder notifications still call _dispatch_to_masters WITHOUT admin_telegram_id, so the admin bot (head master's real channel) does not receive reminder-status messages while it now receives new-booking/cancellation ones — inconsistent with the 'unified all channels' goal."},
+      {"endpoint": "telegram_bot.notify_admin_new_booking / notify_admin_booking_cancelled", "issue": "Old short-format methods (lines ~302 and ~322) are now unused dead code; delete them so the legacy format cannot be re-introduced (this bug recurred twice via these methods)."}
+    ]
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_unified_telegram_notifications.py",
+    "/app/backend/tests/cleanup_test_bookings.py",
+    "/app/test_reports/pytest/pytest_results_iter7.xml"
+  ],
+  "action_items": [
+    "Optional: pass ADMIN_TELEGRAM_ID to notify_master_reminder_status dispatch (scheduler) so reminder status also reaches the admin bot.",
+    "Optional: remove dead telegram_bot.notify_admin_new_booking / notify_admin_booking_cancelled methods to prevent regression of the old short format."
+  ],
+  "critical_code_review_comments": [
+    "routes/admin.py cancelled branch passes update_data.get('notes') as the cancellation reason — if the admin only changes status without notes, the '📝 Причина' line is silently omitted; consider a dedicated cancellation_reason field.",
+    "routes/admin.py uses the pre-update booking doc for notify_cancellation_flow, so the message reflects the old status only (fine today) — be careful if the message ever prints the status.",
+    "_build_booking_message is invoked with raw client-supplied strings and parse_mode=HTML; a client name containing '<' or '&' will make Telegram reject the message (400 Bad Request). Escape HTML in client_name/surname/notes.",
+    "notifications._dispatch_to_masters sends sequentially and awaits each HTTP call; consider asyncio.gather to avoid 3x10s worst-case latency inside background tasks."
+  ],
+  "updated_files": ["/app/backend/tests/test_unified_telegram_notifications.py", "/app/backend/tests/cleanup_test_bookings.py"],
+  "success_rate": {"backend": "100% (10/10 pytest cases)", "frontend": "not tested (backend-only request)"},
+  "seed_data_creation": "3 temporary bookings (client_name TEST_Клієнт, master Марія Петренко, 2026-09-14) created via API and deleted afterwards via /api/admin/bookings/{id} (cleanup script). Unread-bookings counter increment from the unit test was reverted. No existing data modified.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Reusable suite: /app/backend/tests/test_unified_telegram_notifications.py (unit capture + E2E + stats regression). It picks the first free future slot 20-60 days out for master 197c3a5e / service 28858083 so it is rerunnable; run `python tests/cleanup_test_bookings.py` afterwards to delete TEST_ bookings. No pytest-asyncio installed — unit tests use a session-scoped event loop fixture with run_until_complete (motor shares that loop). ADMIN_TELEGRAM_ID=1097557544 IS configured, so E2E flows send real Telegram messages to the owner; masters have no bot tokens so 'Telegram not configured for master <id>' warnings are the dispatch proof.",
+  "rca_of_the_issue": "Previously the head master/admin copy went through telegram_bot.notify_admin_* which built a separate short message (client_name only). The fix builds one message in notifications._build_booking_message and fans it out in _dispatch_to_masters (serving master bot, head master bot, admin bot). Verified by capturing all three dispatches and asserting they are identical and contain surname + both status lines; verified E2E that the admin bot really received the unified message."
+}

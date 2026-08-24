@@ -60,17 +60,9 @@ async def update_booking_status(booking_id: str, update: BookingUpdate,
             m_name = master.get("name", "") if master else ""
             background_tasks.add_task(
                 notify_cancellation_flow,
-                booking, update_data.get("notes"), m_name
+                booking, update_data.get("notes"), m_name,
+                os.environ.get('ADMIN_TELEGRAM_ID')
             )
-            admin_telegram_id = os.environ.get('ADMIN_TELEGRAM_ID')
-            if admin_telegram_id:
-                background_tasks.add_task(
-                    telegram_bot.notify_admin_booking_cancelled,
-                    booking["client_name"], booking["client_phone"],
-                    booking.get("service_name", ""), booking["date"],
-                    booking["time"], booking.get("price", 0),
-                    update_data.get("notes"), admin_telegram_id, m_name
-                )
         
         if new_status in ["completed", "confirmed"]:
             client = await db.clients.find_one({"phone": booking["client_phone"]}, {"_id": 0})
